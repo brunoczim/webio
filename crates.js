@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["bumpalo","cfg_if","js_sys","lazy_static","log","proc_macro2","quote","syn","unicode_xid","wasm_bindgen","wasm_bindgen_backend","wasm_bindgen_futures","wasm_bindgen_macro","wasm_bindgen_macro_support","wasm_bindgen_shared","webio"];
