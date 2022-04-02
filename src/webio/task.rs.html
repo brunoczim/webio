@@ -78,6 +78,13 @@
 <span id="76">76</span>
 <span id="77">77</span>
 <span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module exports items related to task spawning.</span>
 
 <span class="kw">mod</span> <span class="ident">handle</span>;
@@ -123,12 +130,10 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// use webio::task;</span>
-<span class="doccomment">/// use futures::executor::block_on;</span>
-<span class="doccomment">/// use futures::join;</span>
+<span class="doccomment">/// use webio::{task, join};</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # fn main() {</span>
-<span class="doccomment">/// block_on(async {</span>
+<span class="doccomment">/// task::detach(async {</span>
 <span class="doccomment">///     let first_handle = task::spawn(async { 3 });</span>
 <span class="doccomment">///     let second_handle = task::spawn(async { 5 });</span>
 <span class="doccomment">///     let third_handle = task::spawn(async { 7 });</span>
@@ -155,6 +160,15 @@
     });
 
     <span class="ident">join_handle</span>
+}
+
+<span class="doccomment">/// Detaches a future from the current WASM call, but ensures the future</span>
+<span class="doccomment">/// completes.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">detach</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">future</span>: <span class="ident">A</span>)
+<span class="kw">where</span>
+    <span class="ident">A</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> ()<span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+{
+    <span class="ident">wasm_bindgen_futures::spawn_local</span>(<span class="ident">future</span>);
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0 (9d1b2106e 2022-02-23)" ></div>

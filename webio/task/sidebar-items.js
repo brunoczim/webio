@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["spawn","Spawns an asynchronous task in JS event loop."]],"struct":[["JoinHandle","A handle that allows the caller to join a task (i.e. wait for it to end)."]]});
+initSidebarItems({"fn":[["detach","Detaches a future from the current WASM call, but ensures the future completes."],["spawn","Spawns an asynchronous task in JS event loop."]],"struct":[["JoinHandle","A handle that allows the caller to join a task (i.e. wait for it to end)."]]});
