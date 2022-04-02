@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["task","This module exports items related to task spawning."]]});
+initSidebarItems({"macro":[["join",""]],"mod":[["task","This module exports items related to task spawning."]]});
