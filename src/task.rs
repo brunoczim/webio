@@ -2,16 +2,11 @@
 
 mod handle;
 
-#[cfg(test)]
-mod test;
-
-use handle::{PanicPayload, TaskHandle};
+use handle::{PanicPayload, Shared, TaskHandle};
 use std::{future::Future, panic, pin::Pin, rc::Rc, task};
 use wasm_bindgen_futures::spawn_local;
 
 pub use handle::JoinHandle;
-
-use self::handle::Shared;
 
 struct CatchUnwind<A>
 where

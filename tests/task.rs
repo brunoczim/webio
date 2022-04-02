@@ -1,5 +1,5 @@
-use crate::task;
-use futures::{executor::block_on, join};
+use webio::{join, task};
+use futures::executor::block_on;
 use wasm_bindgen_test::wasm_bindgen_test;
 
 #[wasm_bindgen_test]

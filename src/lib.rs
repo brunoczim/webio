@@ -11,3 +11,5 @@ pub use wasm_bindgen;
 pub use wasm_bindgen_futures;
 
 pub mod task;
+
+pub use webio_macros::join;
