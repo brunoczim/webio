@@ -14,5 +14,5 @@ sourcesIndex["wasm_bindgen_futures"] = {"name":"","dirs":[{"name":"task","files"
 sourcesIndex["wasm_bindgen_macro"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["wasm_bindgen_macro_support"] = {"name":"","files":["lib.rs","parser.rs"]};
 sourcesIndex["wasm_bindgen_shared"] = {"name":"","files":["lib.rs"]};
-sourcesIndex["webio"] = {"name":"","files":["lib.rs"]};
+sourcesIndex["webio"] = {"name":"","files":["lib.rs","task.rs"]};
 createSourceSidebar();

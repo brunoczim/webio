@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["spawn","Spawns an asynchronous task in JS event loop."]],"struct":[["JoinError","An error that might happen when waiting for a task."],["JoinHandle","A handle that allows the caller to join a task (i.e. wait for it to end)."]]});
