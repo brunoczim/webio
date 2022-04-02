@@ -43,12 +43,10 @@ where
 ///
 /// # Examples
 /// ```ignore
-/// use webio::task;
-/// use futures::executor::block_on;
-/// use futures::join;
+/// use webio::{task, join};
 ///
 /// # fn main() {
-/// block_on(async {
+/// task::detach(async {
 ///     let first_handle = task::spawn(async { 3 });
 ///     let second_handle = task::spawn(async { 5 });
 ///     let third_handle = task::spawn(async { 7 });
@@ -75,4 +73,13 @@ where
     });
 
     join_handle
+}
+
+/// Detaches a future from the current WASM call, but ensures the future
+/// completes.
+pub fn detach<A>(future: A)
+where
+    A: Future<Output = ()> + 'static,
+{
+    wasm_bindgen_futures::spawn_local(future);
 }
