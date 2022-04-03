@@ -17,6 +17,7 @@ where
         Self { inner }
     }
 
+    #[allow(dead_code)]
     pub fn into_inner(self) -> A {
         self.inner
     }

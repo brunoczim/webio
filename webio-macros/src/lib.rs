@@ -19,6 +19,38 @@ impl Parse for JoinInput {
     }
 }
 
+/// Joins a list of futures, and returns their output into a tuple in the same
+/// order that the futures were given. However, the future must be `'static`.
+///
+/// # Example
+/// ```ignore
+/// use std::time::Duration;
+/// use webio::{join, task, time::timeout};
+///
+/// # fn main() {
+/// # task::detach(async {
+/// // Spawn some tasks.
+/// let first_handle = task::spawn(async {
+///     timeout(Duration::from_millis(50)).await;
+///     3
+/// });
+/// let second_handle = task::spawn(async {
+///     timeout(Duration::from_millis(60)).await;
+///     5
+/// });
+/// let third_handle = task::spawn(async {
+///     timeout(Duration::from_millis(40)).await;
+///     7
+/// });
+///
+/// // Join them.
+/// let (first, second, third) = join!(first_handle, second_handle, third_handle);
+///
+/// // Expected output:
+/// assert_eq!((first.unwrap(), second.unwrap(), third.unwrap()), (3, 5, 7));
+/// # });
+/// # }
+/// ```
 #[proc_macro]
 pub fn join(raw_input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(raw_input as JoinInput);
