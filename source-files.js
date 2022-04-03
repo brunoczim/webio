@@ -18,6 +18,7 @@ sourcesIndex["wasm_bindgen_futures"] = {"name":"","dirs":[{"name":"task","files"
 sourcesIndex["wasm_bindgen_macro"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["wasm_bindgen_macro_support"] = {"name":"","files":["lib.rs","parser.rs"]};
 sourcesIndex["wasm_bindgen_shared"] = {"name":"","files":["lib.rs"]};
-sourcesIndex["webio"] = {"name":"","dirs":[{"name":"task","files":["handle.rs"]}],"files":["lib.rs","task.rs"]};
+sourcesIndex["web_sys"] = {"name":"","dirs":[{"name":"features","files":["gen_EventTarget.rs","gen_Window.rs","gen_console.rs","mod.rs"]}],"files":["lib.rs"]};
+sourcesIndex["webio"] = {"name":"","dirs":[{"name":"task","files":["handle.rs"]},{"name":"time","files":["instant.rs"]}],"files":["lib.rs","panic.rs","task.rs","time.rs"]};
 sourcesIndex["webio_macros"] = {"name":"","files":["lib.rs"]};
 createSourceSidebar();

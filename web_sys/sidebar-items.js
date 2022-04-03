@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["window","Getter for the `Window` object"]],"mod":[["console",""]],"struct":[["EventTarget","The `EventTarget` class."],["Window","The `Window` class."]]});

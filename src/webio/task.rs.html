@@ -55,76 +55,16 @@
 <span id="53">53</span>
 <span id="54">54</span>
 <span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
-<span id="63">63</span>
-<span id="64">64</span>
-<span id="65">65</span>
-<span id="66">66</span>
-<span id="67">67</span>
-<span id="68">68</span>
-<span id="69">69</span>
-<span id="70">70</span>
-<span id="71">71</span>
-<span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
-<span id="80">80</span>
-<span id="81">81</span>
-<span id="82">82</span>
-<span id="83">83</span>
-<span id="84">84</span>
-<span id="85">85</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module exports items related to task spawning.</span>
 
 <span class="kw">mod</span> <span class="ident">handle</span>;
 
-<span class="kw">use</span> <span class="ident">handle</span>::{<span class="ident">PanicPayload</span>, <span class="ident">Shared</span>, <span class="ident">TaskHandle</span>};
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">future::Future</span>, <span class="ident">panic</span>, <span class="ident">pin::Pin</span>, <span class="ident">rc::Rc</span>, <span class="ident">task</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::panic::CatchUnwind</span>;
+<span class="kw">use</span> <span class="ident">handle</span>::{<span class="ident">Shared</span>, <span class="ident">TaskHandle</span>};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">future::Future</span>, <span class="ident">rc::Rc</span>};
 <span class="kw">use</span> <span class="ident">wasm_bindgen_futures::spawn_local</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">handle::JoinHandle</span>;
-
-<span class="kw">struct</span> <span class="ident">CatchUnwind</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">A</span>: <span class="ident">Future</span>,
-{
-    <span class="ident">future</span>: <span class="ident">A</span>,
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> <span class="ident">Future</span> <span class="kw">for</span> <span class="ident">CatchUnwind</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">A</span>: <span class="ident">Future</span>,
-{
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">A::Output</span>, <span class="ident">PanicPayload</span><span class="op">&gt;</span>;
-
-    <span class="kw">fn</span> <span class="ident">poll</span>(
-        <span class="self">self</span>: <span class="ident">Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>,
-        <span class="ident">ctx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">task::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="ident">task::Poll</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">panic::catch_unwind</span>(<span class="ident">panic::AssertUnwindSafe</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">future</span> <span class="op">=</span>
-                <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">map_unchecked_mut</span>(<span class="op">|</span><span class="ident">this</span><span class="op">|</span> <span class="kw-2">&amp;mut</span> <span class="ident">this</span>.<span class="ident">future</span>) };
-            <span class="ident">future</span>.<span class="ident">poll</span>(<span class="ident">ctx</span>)
-        }));
-
-        <span class="kw">match</span> <span class="ident">result</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">task::Poll::Pending</span>) =&gt; <span class="ident">task::Poll::Pending</span>,
-            <span class="prelude-val">Ok</span>(<span class="ident">task::Poll::Ready</span>(<span class="ident">data</span>)) =&gt; <span class="ident">task::Poll::Ready</span>(<span class="prelude-val">Ok</span>(<span class="ident">data</span>)),
-            <span class="prelude-val">Err</span>(<span class="ident">error</span>) =&gt; <span class="ident">task::Poll::Ready</span>(<span class="prelude-val">Err</span>(<span class="ident">error</span>)),
-        }
-    }
-}
 
 <span class="doccomment">/// Spawns an asynchronous task in JS event loop.</span>
 <span class="doccomment">///</span>
@@ -152,7 +92,7 @@
     <span class="kw">let</span> <span class="ident">join_handle</span> <span class="op">=</span> <span class="ident">JoinHandle::new</span>(<span class="ident">shared</span>);
 
     <span class="ident">spawn_local</span>(<span class="kw">async</span> <span class="kw">move</span> {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">CatchUnwind</span> { <span class="ident">future</span> }.<span class="kw">await</span>;
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">CatchUnwind::new</span>(<span class="ident">future</span>).<span class="kw">await</span>;
         <span class="kw">match</span> <span class="ident">result</span> {
             <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">task_handle</span>.<span class="ident">success</span>(<span class="ident">data</span>),
             <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">task_handle</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
