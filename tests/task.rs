@@ -3,7 +3,7 @@ use webio::{join, task};
 
 #[wasm_bindgen_test]
 fn triple_spawn_join() {
-    wasm_bindgen_futures::spawn_local(async {
+    task::detach(async {
         let first_handle = task::spawn(async { 3 });
         let second_handle = task::spawn(async { 5 });
         let third_handle = task::spawn(async { 7 });

@@ -2,42 +2,12 @@
 
 mod handle;
 
-use handle::{PanicPayload, Shared, TaskHandle};
-use std::{future::Future, panic, pin::Pin, rc::Rc, task};
+use crate::panic::CatchUnwind;
+use handle::{Shared, TaskHandle};
+use std::{future::Future, rc::Rc};
 use wasm_bindgen_futures::spawn_local;
 
 pub use handle::JoinHandle;
-
-struct CatchUnwind<A>
-where
-    A: Future,
-{
-    future: A,
-}
-
-impl<A> Future for CatchUnwind<A>
-where
-    A: Future,
-{
-    type Output = Result<A::Output, PanicPayload>;
-
-    fn poll(
-        self: Pin<&mut Self>,
-        ctx: &mut task::Context<'_>,
-    ) -> task::Poll<Self::Output> {
-        let result = panic::catch_unwind(panic::AssertUnwindSafe(move || {
-            let future =
-                unsafe { self.map_unchecked_mut(|this| &mut this.future) };
-            future.poll(ctx)
-        }));
-
-        match result {
-            Ok(task::Poll::Pending) => task::Poll::Pending,
-            Ok(task::Poll::Ready(data)) => task::Poll::Ready(Ok(data)),
-            Err(error) => task::Poll::Ready(Err(error)),
-        }
-    }
-}
 
 /// Spawns an asynchronous task in JS event loop.
 ///
@@ -65,7 +35,7 @@ where
     let join_handle = JoinHandle::new(shared);
 
     spawn_local(async move {
-        let result = CatchUnwind { future }.await;
+        let result = CatchUnwind::new(future).await;
         match result {
             Ok(data) => task_handle.success(data),
             Err(payload) => task_handle.panicked(payload),

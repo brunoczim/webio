@@ -1,6 +1,5 @@
-use std::{any::Any, cell::Cell, fmt, future::Future, pin::Pin, rc::Rc, task};
-
-pub type PanicPayload = Box<dyn Any + Send + 'static>;
+use crate::panic::PanicPayload;
+use std::{cell::Cell, fmt, future::Future, pin::Pin, rc::Rc, task};
 
 #[derive(Debug)]
 enum JoinErrorKind {
