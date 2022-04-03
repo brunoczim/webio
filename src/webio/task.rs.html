@@ -73,13 +73,13 @@
 <span class="doccomment">/// use webio::{task, join};</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # fn main() {</span>
-<span class="doccomment">/// task::detach(async {</span>
-<span class="doccomment">///     let first_handle = task::spawn(async { 3 });</span>
-<span class="doccomment">///     let second_handle = task::spawn(async { 5 });</span>
-<span class="doccomment">///     let third_handle = task::spawn(async { 7 });</span>
-<span class="doccomment">///     let (first, second, third) = join!(first_handle, second_handle, third_handle);</span>
-<span class="doccomment">///     assert_eq!((first.unwrap(), second.unwrap(), third.unwrap()), (3, 5, 7));</span>
-<span class="doccomment">/// });</span>
+<span class="doccomment">/// # task::detach(async {</span>
+<span class="doccomment">/// let first_handle = task::spawn(async { 3 });</span>
+<span class="doccomment">/// let second_handle = task::spawn(async { 5 });</span>
+<span class="doccomment">/// let third_handle = task::spawn(async { 7 });</span>
+<span class="doccomment">/// let (first, second, third) = join!(first_handle, second_handle, third_handle);</span>
+<span class="doccomment">/// assert_eq!((first.unwrap(), second.unwrap(), third.unwrap()), (3, 5, 7));</span>
+<span class="doccomment">/// # });</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">spawn</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">future</span>: <span class="ident">A</span>) -&gt; <span class="ident">JoinHandle</span><span class="op">&lt;</span><span class="ident">A::Output</span><span class="op">&gt;</span>
