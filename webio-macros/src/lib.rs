@@ -158,6 +158,7 @@ impl Parse for ConsoleInput {
 /// ```ignore
 /// console!($method; $($arguments),*)
 /// ```
+/// Each argument is converted into a `JsValue` using `Into`.
 ///
 /// # Examples
 ///
@@ -178,7 +179,7 @@ pub fn console(raw_input: TokenStream) -> TokenStream {
         );
         let arguments = input.arguments.into_iter().map(|argument| {
             quote! {
-                &::webio::wasm_bindgen::JsValue::from(#argument)
+                &Into::<::webio::wasm_bindgen::JsValue>::into(#argument)
             }
         });
         quote! {
@@ -188,7 +189,9 @@ pub fn console(raw_input: TokenStream) -> TokenStream {
         let method = input.method;
         let arguments = input.arguments.into_iter().map(|argument| {
             quote! {
-                array.push(&::webio::wasm_bindgen::JsValue::from(#argument));
+                array.push(
+                    &Into::<::webio::wasm_bindgen::JsValue>::into(#argument)
+                );
             }
         });
         quote! {
