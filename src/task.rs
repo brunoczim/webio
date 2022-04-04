@@ -24,9 +24,9 @@ pub fn spawn<A>(future: A) -> JoinHandle<A::Output>
 where
     A: Future + 'static,
 {
-    let callback_once =
-        callback::Event::new(spawn_local).listen_once_async(future);
-    JoinHandle::new(callback_once)
+    let register = callback::AsyncOnceRegister::new(spawn_local);
+    let callback_handle = register.listen(future);
+    JoinHandle::new(callback_handle)
 }
 
 /// Detaches a future from the current WASM call, but ensures the future
@@ -82,11 +82,11 @@ impl JoinError {
 
 /// A handle that allows the caller to join a task (i.e. wait for it to end).
 pub struct JoinHandle<T> {
-    inner: callback::CallbackOnce<T>,
+    inner: callback::OnceHandle<T>,
 }
 
 impl<T> JoinHandle<T> {
-    fn new(inner: callback::CallbackOnce<T>) -> Self {
+    fn new(inner: callback::OnceHandle<T>) -> Self {
         Self { inner }
     }
 }

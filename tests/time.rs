@@ -13,7 +13,8 @@ fn timeout_and_instant() {
         let time = Duration::from_millis(100);
         timeout(time).await;
         let passed = then.elapsed();
-        assert!(passed >= time && passed < time + Duration::from_millis(20));
+        assert!(passed >= time);
+        assert!(passed < time + Duration::from_millis(50));
     });
 }
 

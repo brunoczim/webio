@@ -25,14 +25,14 @@ extern "C" {
 /// or it can be cancelled when the handle is dropped without the timeout
 /// completing.
 pub struct TimeoutHandle {
-    callback_handle: callback::CallbackOnce<()>,
+    callback_handle: callback::OnceHandle<()>,
     timeout_id: JsValue,
     _closure: JsValue,
 }
 
 impl TimeoutHandle {
     fn new(
-        callback_handle: callback::CallbackOnce<()>,
+        callback_handle: callback::OnceHandle<()>,
         timeout_id: JsValue,
         closure: JsValue,
     ) -> Self {
@@ -67,14 +67,14 @@ pub fn timeout(duration: Duration) -> TimeoutHandle {
 }
 
 fn timeout_ms(milliseconds: i32) -> TimeoutHandle {
-    let event = callback::Event::new(|callback_handle| {
-        let closure = Closure::once_into_js(callback_handle);
+    let register = callback::SyncOnceRegister::new(|callback| {
+        let closure = Closure::once_into_js(callback);
         let timeout_id = set_timeout(closure.dyn_ref().unwrap(), milliseconds);
         (timeout_id, closure)
     });
 
     let ((timeout_id, closure), callback_once) =
-        event.listen_once_returning(|| ());
+        register.listen_returning(|| ());
 
     TimeoutHandle::new(callback_once, timeout_id, closure)
 }

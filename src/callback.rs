@@ -4,50 +4,45 @@
 use crate::panic::{CatchUnwind, Payload};
 use std::{cell::Cell, fmt, future::Future, panic, pin::Pin, rc::Rc, task};
 
-pub type SyncCallback<'cb> = Box<dyn FnOnce() + 'cb>;
+pub type SyncOnceCallback<'cb> = Box<dyn FnOnce() + 'cb>;
 
-pub type AsyncCallback<'cb> = Pin<Box<dyn Future<Output = ()> + 'cb>>;
+pub type AsyncOnceCallback<'cb> = Pin<Box<dyn Future<Output = ()> + 'cb>>;
 
-/// An event on which callbacks are registered.
-pub struct Event<F> {
-    register: F,
+pub struct SyncOnceRegister<F> {
+    register_fn: F,
 }
 
-impl<F> Event<F> {
-    /// Creates an event from a registration function, which is used to
-    /// register callbacks into events.
-    pub fn new(register_callback: F) -> Self {
-        Self { register: register_callback }
+impl<F> SyncOnceRegister<F> {
+    pub fn new<'cb, T>(register_fn: F) -> Self
+    where
+        F: FnOnce(SyncOnceCallback<'cb>) -> T,
+    {
+        Self { register_fn }
     }
 
-    /// Register a callback for a oneshot call. Returns a future that completes
-    /// when the event completes.
-    pub fn listen_once<'cb, C, U>(self, callback: C) -> CallbackOnce<U>
+    pub fn listen<'cb, C, U>(self, callback: C) -> OnceHandle<U>
     where
-        F: FnOnce(SyncCallback<'cb>),
+        F: FnOnce(SyncOnceCallback<'cb>),
         C: FnOnce() -> U + 'cb,
         U: 'cb,
     {
-        let (_, callback) = self.listen_once_returning(callback);
-        callback
+        let (_, callback_handle) = self.listen_returning(callback);
+        callback_handle
     }
 
-    /// Register a callback for a oneshot call. Returns a future that completes
-    /// when the event completes, and also the return value of the registration
-    /// function.
-    pub fn listen_once_returning<'cb, C, T, U>(
+    pub fn listen_returning<'cb, C, T, U>(
         self,
         callback: C,
-    ) -> (T, CallbackOnce<U>)
+    ) -> (T, OnceHandle<U>)
     where
-        F: FnOnce(SyncCallback<'cb>) -> T,
+        F: FnOnce(SyncOnceCallback<'cb>) -> T,
         C: FnOnce() -> U + 'cb,
         U: 'cb,
     {
         let shared = Rc::new(Shared::init_connected());
 
-        let callback_handle = CallbackHandle::new(shared.clone());
-        let callback_once = CallbackOnce::new(shared);
+        let callback_handle = PollHandle::new(shared.clone());
+        let callback_once = OnceHandle::new(shared);
 
         let boxed_fn = Box::new(move || {
             let result = panic::catch_unwind(panic::AssertUnwindSafe(callback));
@@ -56,49 +51,54 @@ impl<F> Event<F> {
                 Err(payload) => callback_handle.panicked(payload),
             }
         });
-        let ret = (self.register)(boxed_fn as SyncCallback);
+        let ret = (self.register_fn)(boxed_fn as SyncOnceCallback);
 
         (ret, callback_once)
     }
+}
 
-    /// Register an asynchronous callback for a oneshot call. Returns a future
-    /// that completes when the event completes.
-    pub fn listen_once_async<'fut, A>(
-        self,
-        callback: A,
-    ) -> CallbackOnce<A::Output>
+pub struct AsyncOnceRegister<F> {
+    register_fn: F,
+}
+
+impl<F> AsyncOnceRegister<F> {
+    pub fn new<'cb, T>(register_fn: F) -> Self
     where
-        F: FnOnce(AsyncCallback<'fut>),
-        A: Future + 'fut,
+        F: FnOnce(AsyncOnceCallback<'cb>) -> T,
     {
-        let (_, callback) = self.listen_once_async_returning(callback);
-        callback
+        Self { register_fn }
     }
 
-    /// Register an asynchronous callback for a oneshot call. Returns a future
-    /// that completes when the event completes, and also the return value of
-    /// the registration function.
-    pub fn listen_once_async_returning<'fut, T, A>(
+    pub fn listen<'cb, A>(self, callback: A) -> OnceHandle<A::Output>
+    where
+        F: FnOnce(AsyncOnceCallback<'cb>),
+        A: Future + 'cb,
+    {
+        let (_, callback_once) = self.listen_returning(callback);
+        callback_once
+    }
+
+    pub fn listen_returning<'cb, A, T>(
         self,
         callback: A,
-    ) -> (T, CallbackOnce<A::Output>)
+    ) -> (T, OnceHandle<A::Output>)
     where
-        F: FnOnce(AsyncCallback<'fut>) -> T,
-        A: Future + 'fut,
+        F: FnOnce(AsyncOnceCallback<'cb>) -> T,
+        A: Future + 'cb,
     {
         let shared = Rc::new(Shared::init_connected());
 
-        let callback_handle = CallbackHandle::new(shared.clone());
-        let callback_once = CallbackOnce::new(shared);
+        let callback_handle = PollHandle::new(shared.clone());
+        let callback_once = OnceHandle::new(shared);
 
-        let future = Box::pin(async move {
+        let boxed_fut = Box::pin(async move {
             let result = CatchUnwind::new(callback).await;
             match result {
                 Ok(data) => callback_handle.success(data),
                 Err(payload) => callback_handle.panicked(payload),
             }
         });
-        let ret = (self.register)(future as AsyncCallback);
+        let ret = (self.register_fn)(boxed_fut as AsyncOnceCallback);
 
         (ret, callback_once)
     }
@@ -160,11 +160,11 @@ impl<T> Shared<T> {
 }
 
 #[derive(Debug)]
-struct CallbackHandle<T> {
+struct PollHandle<T> {
     shared: Rc<Shared<T>>,
 }
 
-impl<T> CallbackHandle<T> {
+impl<T> PollHandle<T> {
     fn new(shared: Rc<Shared<T>>) -> Self {
         Self { shared }
     }
@@ -178,7 +178,7 @@ impl<T> CallbackHandle<T> {
     }
 }
 
-impl<T> Drop for CallbackHandle<T> {
+impl<T> Drop for PollHandle<T> {
     fn drop(&mut self) {
         let was_connected = self.shared.connected.replace(false);
         if was_connected {
@@ -191,17 +191,17 @@ impl<T> Drop for CallbackHandle<T> {
 
 /// A handle to a oneshot callback registered in an event.
 #[derive(Debug)]
-pub struct CallbackOnce<T> {
+pub struct OnceHandle<T> {
     shared: Rc<Shared<T>>,
 }
 
-impl<T> CallbackOnce<T> {
+impl<T> OnceHandle<T> {
     fn new(shared: Rc<Shared<T>>) -> Self {
         Self { shared }
     }
 }
 
-impl<T> Future for CallbackOnce<T> {
+impl<T> Future for OnceHandle<T> {
     type Output = Result<T, Error>;
 
     fn poll(
@@ -222,7 +222,7 @@ impl<T> Future for CallbackOnce<T> {
     }
 }
 
-impl<T> Drop for CallbackOnce<T> {
+impl<T> Drop for OnceHandle<T> {
     fn drop(&mut self) {
         self.shared.connected.set(false);
     }
