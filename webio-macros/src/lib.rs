@@ -154,6 +154,19 @@ impl Parse for ConsoleInput {
     }
 }
 
+/// Prints to the JavaScript/browser/node console using a given method. Syntax:
+/// ```ignore
+/// console!($method; $($arguments),*)
+/// ```
+///
+/// # Examples
+///
+/// ```ignore
+/// use webio::console;
+/// # fn main() {
+/// console!(log; "Hello number", 5u8, "you're welcome!");
+/// # }
+/// ```
 #[proc_macro]
 pub fn console(raw_input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(raw_input as ConsoleInput);
