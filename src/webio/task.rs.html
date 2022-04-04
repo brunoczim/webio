@@ -131,9 +131,9 @@
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">Future</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 {
-    <span class="kw">let</span> <span class="ident">callback_once</span> <span class="op">=</span>
-        <span class="ident">callback::Event::new</span>(<span class="ident">spawn_local</span>).<span class="ident">listen_once_async</span>(<span class="ident">future</span>);
-    <span class="ident">JoinHandle::new</span>(<span class="ident">callback_once</span>)
+    <span class="kw">let</span> <span class="ident">register</span> <span class="op">=</span> <span class="ident">callback::AsyncOnceRegister::new</span>(<span class="ident">spawn_local</span>);
+    <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">register</span>.<span class="ident">listen</span>(<span class="ident">future</span>);
+    <span class="ident">JoinHandle::new</span>(<span class="ident">callback_handle</span>)
 }
 
 <span class="doccomment">/// Detaches a future from the current WASM call, but ensures the future</span>
@@ -189,11 +189,11 @@
 
 <span class="doccomment">/// A handle that allows the caller to join a task (i.e. wait for it to end).</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">JoinHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">inner</span>: <span class="ident">callback::CallbackOnce</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+    <span class="ident">inner</span>: <span class="ident">callback::OnceHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">JoinHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">inner</span>: <span class="ident">callback::CallbackOnce</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">inner</span>: <span class="ident">callback::OnceHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> { <span class="ident">inner</span> }
     }
 }

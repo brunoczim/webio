@@ -107,14 +107,14 @@
 <span class="doccomment">/// or it can be cancelled when the handle is dropped without the timeout</span>
 <span class="doccomment">/// completing.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TimeoutHandle</span> {
-    <span class="ident">callback_handle</span>: <span class="ident">callback::CallbackOnce</span><span class="op">&lt;</span>()<span class="op">&gt;</span>,
+    <span class="ident">callback_handle</span>: <span class="ident">callback::OnceHandle</span><span class="op">&lt;</span>()<span class="op">&gt;</span>,
     <span class="ident">timeout_id</span>: <span class="ident">JsValue</span>,
     <span class="ident">_closure</span>: <span class="ident">JsValue</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">TimeoutHandle</span> {
     <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">callback_handle</span>: <span class="ident">callback::CallbackOnce</span><span class="op">&lt;</span>()<span class="op">&gt;</span>,
+        <span class="ident">callback_handle</span>: <span class="ident">callback::OnceHandle</span><span class="op">&lt;</span>()<span class="op">&gt;</span>,
         <span class="ident">timeout_id</span>: <span class="ident">JsValue</span>,
         <span class="ident">closure</span>: <span class="ident">JsValue</span>,
     ) -&gt; <span class="self">Self</span> {
@@ -149,14 +149,14 @@
 }
 
 <span class="kw">fn</span> <span class="ident">timeout_ms</span>(<span class="ident">milliseconds</span>: <span class="ident">i32</span>) -&gt; <span class="ident">TimeoutHandle</span> {
-    <span class="kw">let</span> <span class="ident">event</span> <span class="op">=</span> <span class="ident">callback::Event::new</span>(<span class="op">|</span><span class="ident">callback_handle</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">closure</span> <span class="op">=</span> <span class="ident">Closure::once_into_js</span>(<span class="ident">callback_handle</span>);
+    <span class="kw">let</span> <span class="ident">register</span> <span class="op">=</span> <span class="ident">callback::SyncOnceRegister::new</span>(<span class="op">|</span><span class="ident">callback</span><span class="op">|</span> {
+        <span class="kw">let</span> <span class="ident">closure</span> <span class="op">=</span> <span class="ident">Closure::once_into_js</span>(<span class="ident">callback</span>);
         <span class="kw">let</span> <span class="ident">timeout_id</span> <span class="op">=</span> <span class="ident">set_timeout</span>(<span class="ident">closure</span>.<span class="ident">dyn_ref</span>().<span class="ident">unwrap</span>(), <span class="ident">milliseconds</span>);
         (<span class="ident">timeout_id</span>, <span class="ident">closure</span>)
     });
 
     <span class="kw">let</span> ((<span class="ident">timeout_id</span>, <span class="ident">closure</span>), <span class="ident">callback_once</span>) <span class="op">=</span>
-        <span class="ident">event</span>.<span class="ident">listen_once_returning</span>(<span class="op">|</span><span class="op">|</span> ());
+        <span class="ident">register</span>.<span class="ident">listen_returning</span>(<span class="op">|</span><span class="op">|</span> ());
 
     <span class="ident">TimeoutHandle::new</span>(<span class="ident">callback_once</span>, <span class="ident">timeout_id</span>, <span class="ident">closure</span>)
 }

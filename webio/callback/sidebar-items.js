@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Error","An error that might happen when the event completes."]],"struct":[["CallbackOnce","A handle to a oneshot callback registered in an event."],["Event","An event on which callbacks are registered."]],"type":[["AsyncCallback",""],["SyncCallback",""]]});
+initSidebarItems({"enum":[["Error","An error that might happen when the event completes."]],"struct":[["AsyncOnceRegister",""],["OnceHandle","A handle to a oneshot callback registered in an event."],["SyncOnceRegister",""]],"type":[["AsyncOnceCallback",""],["SyncOnceCallback",""]]});

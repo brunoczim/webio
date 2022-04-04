@@ -235,50 +235,45 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::panic</span>::{<span class="ident">CatchUnwind</span>, <span class="ident">Payload</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cell::Cell</span>, <span class="ident">fmt</span>, <span class="ident">future::Future</span>, <span class="ident">panic</span>, <span class="ident">pin::Pin</span>, <span class="ident">rc::Rc</span>, <span class="ident">task</span>};
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">SyncCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">FnOnce</span>() <span class="op">+</span> <span class="lifetime">&#39;cb</span><span class="op">&gt;</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">SyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">FnOnce</span>() <span class="op">+</span> <span class="lifetime">&#39;cb</span><span class="op">&gt;</span>;
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">AsyncCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> ()<span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">AsyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> ()<span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
-<span class="doccomment">/// An event on which callbacks are registered.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
-    <span class="ident">register</span>: <span class="ident">F</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SyncOnceRegister</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
+    <span class="ident">register_fn</span>: <span class="ident">F</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> <span class="ident">Event</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Creates an event from a registration function, which is used to</span>
-    <span class="doccomment">/// register callbacks into events.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">register_callback</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">register</span>: <span class="ident">register_callback</span> }
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> <span class="ident">SyncOnceRegister</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
+    <span class="kw">where</span>
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
+    {
+        <span class="self">Self</span> { <span class="ident">register_fn</span> }
     }
 
-    <span class="doccomment">/// Register a callback for a oneshot call. Returns a future that completes</span>
-    <span class="doccomment">/// when the event completes.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_once</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">C</span>, <span class="ident">U</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">C</span>) -&gt; <span class="ident">CallbackOnce</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">C</span>, <span class="ident">U</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">C</span>) -&gt; <span class="ident">OnceHandle</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
         <span class="ident">C</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
         <span class="ident">U</span>: <span class="lifetime">&#39;cb</span>,
     {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">callback</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">listen_once_returning</span>(<span class="ident">callback</span>);
-        <span class="ident">callback</span>
+        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">callback_handle</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">listen_returning</span>(<span class="ident">callback</span>);
+        <span class="ident">callback_handle</span>
     }
 
-    <span class="doccomment">/// Register a callback for a oneshot call. Returns a future that completes</span>
-    <span class="doccomment">/// when the event completes, and also the return value of the registration</span>
-    <span class="doccomment">/// function.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_once_returning</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">C</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>(
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_returning</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">C</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">callback</span>: <span class="ident">C</span>,
-    ) -&gt; (<span class="ident">T</span>, <span class="ident">CallbackOnce</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>)
+    ) -&gt; (<span class="ident">T</span>, <span class="ident">OnceHandle</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>)
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
         <span class="ident">C</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
         <span class="ident">U</span>: <span class="lifetime">&#39;cb</span>,
     {
         <span class="kw">let</span> <span class="ident">shared</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">Shared::init_connected</span>());
 
-        <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">CallbackHandle::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">callback_once</span> <span class="op">=</span> <span class="ident">CallbackOnce::new</span>(<span class="ident">shared</span>);
+        <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">PollHandle::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">callback_once</span> <span class="op">=</span> <span class="ident">OnceHandle::new</span>(<span class="ident">shared</span>);
 
         <span class="kw">let</span> <span class="ident">boxed_fn</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
             <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">panic::catch_unwind</span>(<span class="ident">panic::AssertUnwindSafe</span>(<span class="ident">callback</span>));
@@ -287,49 +282,54 @@
                 <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">callback_handle</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
             }
         });
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register</span>)(<span class="ident">boxed_fn</span> <span class="kw">as</span> <span class="ident">SyncCallback</span>);
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fn</span> <span class="kw">as</span> <span class="ident">SyncOnceCallback</span>);
 
         (<span class="ident">ret</span>, <span class="ident">callback_once</span>)
     }
+}
 
-    <span class="doccomment">/// Register an asynchronous callback for a oneshot call. Returns a future</span>
-    <span class="doccomment">/// that completes when the event completes.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_once_async</span><span class="op">&lt;</span><span class="lifetime">&#39;fut</span>, <span class="ident">A</span><span class="op">&gt;</span>(
-        <span class="self">self</span>,
-        <span class="ident">callback</span>: <span class="ident">A</span>,
-    ) -&gt; <span class="ident">CallbackOnce</span><span class="op">&lt;</span><span class="ident">A::Output</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AsyncOnceRegister</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
+    <span class="ident">register_fn</span>: <span class="ident">F</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> <span class="ident">AsyncOnceRegister</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;fut</span><span class="op">&gt;</span>),
-        <span class="ident">A</span>: <span class="ident">Future</span> <span class="op">+</span> <span class="lifetime">&#39;fut</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
     {
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">callback</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">listen_once_async_returning</span>(<span class="ident">callback</span>);
-        <span class="ident">callback</span>
+        <span class="self">Self</span> { <span class="ident">register_fn</span> }
     }
 
-    <span class="doccomment">/// Register an asynchronous callback for a oneshot call. Returns a future</span>
-    <span class="doccomment">/// that completes when the event completes, and also the return value of</span>
-    <span class="doccomment">/// the registration function.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_once_async_returning</span><span class="op">&lt;</span><span class="lifetime">&#39;fut</span>, <span class="ident">T</span>, <span class="ident">A</span><span class="op">&gt;</span>(
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">A</span>) -&gt; <span class="ident">OnceHandle</span><span class="op">&lt;</span><span class="ident">A::Output</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
+        <span class="ident">A</span>: <span class="ident">Future</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
+    {
+        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">callback_once</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">listen_returning</span>(<span class="ident">callback</span>);
+        <span class="ident">callback_once</span>
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_returning</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">A</span>, <span class="ident">T</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">callback</span>: <span class="ident">A</span>,
-    ) -&gt; (<span class="ident">T</span>, <span class="ident">CallbackOnce</span><span class="op">&lt;</span><span class="ident">A::Output</span><span class="op">&gt;</span>)
+    ) -&gt; (<span class="ident">T</span>, <span class="ident">OnceHandle</span><span class="op">&lt;</span><span class="ident">A::Output</span><span class="op">&gt;</span>)
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;fut</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
-        <span class="ident">A</span>: <span class="ident">Future</span> <span class="op">+</span> <span class="lifetime">&#39;fut</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
+        <span class="ident">A</span>: <span class="ident">Future</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
     {
         <span class="kw">let</span> <span class="ident">shared</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">Shared::init_connected</span>());
 
-        <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">CallbackHandle::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">callback_once</span> <span class="op">=</span> <span class="ident">CallbackOnce::new</span>(<span class="ident">shared</span>);
+        <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">PollHandle::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">callback_once</span> <span class="op">=</span> <span class="ident">OnceHandle::new</span>(<span class="ident">shared</span>);
 
-        <span class="kw">let</span> <span class="ident">future</span> <span class="op">=</span> <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
+        <span class="kw">let</span> <span class="ident">boxed_fut</span> <span class="op">=</span> <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
             <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">CatchUnwind::new</span>(<span class="ident">callback</span>).<span class="kw">await</span>;
             <span class="kw">match</span> <span class="ident">result</span> {
                 <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">callback_handle</span>.<span class="ident">success</span>(<span class="ident">data</span>),
                 <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">callback_handle</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
             }
         });
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register</span>)(<span class="ident">future</span> <span class="kw">as</span> <span class="ident">AsyncCallback</span>);
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fut</span> <span class="kw">as</span> <span class="ident">AsyncOnceCallback</span>);
 
         (<span class="ident">ret</span>, <span class="ident">callback_once</span>)
     }
@@ -391,11 +391,11 @@
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">struct</span> <span class="ident">CallbackHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">struct</span> <span class="ident">PollHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">shared</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Shared</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">CallbackHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">PollHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">shared</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Shared</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> { <span class="ident">shared</span> }
     }
@@ -409,7 +409,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">CallbackHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">PollHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
         <span class="kw">let</span> <span class="ident">was_connected</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">shared</span>.<span class="ident">connected</span>.<span class="ident">replace</span>(<span class="bool-val">false</span>);
         <span class="kw">if</span> <span class="ident">was_connected</span> {
@@ -422,17 +422,17 @@
 
 <span class="doccomment">/// A handle to a oneshot callback registered in an event.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CallbackOnce</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OnceHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">shared</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Shared</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">CallbackOnce</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">OnceHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">shared</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Shared</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> { <span class="ident">shared</span> }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Future</span> <span class="kw">for</span> <span class="ident">CallbackOnce</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Future</span> <span class="kw">for</span> <span class="ident">OnceHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
 
     <span class="kw">fn</span> <span class="ident">poll</span>(
@@ -453,7 +453,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">CallbackOnce</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">OnceHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
         <span class="self">self</span>.<span class="ident">shared</span>.<span class="ident">connected</span>.<span class="ident">set</span>(<span class="bool-val">false</span>);
     }
