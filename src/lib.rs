@@ -10,7 +10,7 @@ mod panic;
 
 pub mod task;
 
-//pub mod callback;
+pub mod callback;
 
 pub mod time;
 

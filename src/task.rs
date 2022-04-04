@@ -1,13 +1,8 @@
 //! This module exports items related to task spawning.
 
-mod handle;
-
-use crate::panic::CatchUnwind;
-use handle::{Shared, TaskHandle};
-use std::{future::Future, rc::Rc};
+use crate::{callback, panic::Payload};
+use std::{fmt, future::Future, pin::Pin, task};
 use wasm_bindgen_futures::spawn_local;
-
-pub use handle::JoinHandle;
 
 /// Spawns an asynchronous task in JS event loop.
 ///
@@ -29,20 +24,9 @@ pub fn spawn<A>(future: A) -> JoinHandle<A::Output>
 where
     A: Future + 'static,
 {
-    let shared = Rc::new(Shared::init_connected());
-
-    let task_handle = TaskHandle::new(shared.clone());
-    let join_handle = JoinHandle::new(shared);
-
-    spawn_local(async move {
-        let result = CatchUnwind::new(future).await;
-        match result {
-            Ok(data) => task_handle.success(data),
-            Err(payload) => task_handle.panicked(payload),
-        }
-    });
-
-    join_handle
+    let callback_once =
+        callback::Event::new(spawn_local).listen_once_async(future);
+    JoinHandle::new(callback_once)
 }
 
 /// Detaches a future from the current WASM call, but ensures the future
@@ -52,4 +36,70 @@ where
     A: Future<Output = ()> + 'static,
 {
     wasm_bindgen_futures::spawn_local(future);
+}
+
+/// An error that might happen when waiting for a task.
+#[derive(Debug)]
+pub struct JoinError {
+    kind: callback::Error,
+}
+
+impl fmt::Display for JoinError {
+    fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
+        write!(fmtr, "{}", self.kind)
+    }
+}
+
+impl JoinError {
+    /// Tests whether the target task was cancelled.
+    pub fn is_cancelled(&self) -> bool {
+        matches!(&self.kind, callback::Error::Cancelled)
+    }
+
+    /// Tests whether the target task panicked.
+    pub fn is_panic(&self) -> bool {
+        matches!(&self.kind, callback::Error::Panicked(_))
+    }
+
+    /// Attempts to convert this error into a panic payload. Fails if the target
+    /// task didn't panicked.
+    pub fn try_into_panic(self) -> Result<Payload, Self> {
+        match self.kind {
+            callback::Error::Panicked(payload) => Ok(payload),
+            kind => Err(Self { kind }),
+        }
+    }
+
+    /// Converts this error into a panic payload.
+    ///
+    /// # Panics
+    /// Panics if this error was not caused by panic (e.g. the task was
+    /// cancelled).
+    pub fn into_panic(self) -> Payload {
+        self.try_into_panic().unwrap()
+    }
+}
+
+/// A handle that allows the caller to join a task (i.e. wait for it to end).
+pub struct JoinHandle<T> {
+    inner: callback::CallbackOnce<T>,
+}
+
+impl<T> JoinHandle<T> {
+    fn new(inner: callback::CallbackOnce<T>) -> Self {
+        Self { inner }
+    }
+}
+
+impl<T> Future for JoinHandle<T> {
+    type Output = Result<T, JoinError>;
+
+    fn poll(
+        self: Pin<&mut Self>,
+        ctx: &mut task::Context<'_>,
+    ) -> task::Poll<Self::Output> {
+        unsafe { self.map_unchecked_mut(|pinned| &mut pinned.inner) }
+            .poll(ctx)
+            .map(|result| result.map_err(|kind| JoinError { kind }))
+    }
 }

@@ -2,8 +2,9 @@
 
 mod instant;
 
+use crate::callback;
 use js_sys::Function;
-use std::{cell::Cell, future::Future, rc::Rc, task, time::Duration};
+use std::{future::Future, task, time::Duration};
 use wasm_bindgen::{
     prelude::{wasm_bindgen, Closure},
     JsCast,
@@ -20,48 +21,22 @@ extern "C" {
     fn clear_timeout(timeout_id: &JsValue);
 }
 
-struct Shared {
-    connected: Cell<bool>,
-    waker: Cell<Option<task::Waker>>,
-}
-
-impl Shared {
-    fn init_connected() -> Self {
-        Self { connected: Cell::new(true), waker: Cell::new(None) }
-    }
-}
-
-struct CallbackHandle {
-    shared: Rc<Shared>,
-}
-
-impl CallbackHandle {
-    fn new(shared: Rc<Shared>) -> Self {
-        Self { shared }
-    }
-}
-
-impl Drop for CallbackHandle {
-    fn drop(&mut self) {
-        self.shared.connected.set(false);
-        if let Some(waker) = self.shared.waker.take() {
-            waker.wake();
-        }
-    }
-}
-
 /// A handle to a [`timeout`] call. The timeout can be waited through `.await`,
 /// or it can be cancelled when the handle is dropped without the timeout
 /// completing.
 pub struct TimeoutHandle {
+    callback_handle: callback::CallbackOnce<()>,
     timeout_id: JsValue,
-    shared: Rc<Shared>,
     _closure: JsValue,
 }
 
 impl TimeoutHandle {
-    fn new(shared: Rc<Shared>, timeout_id: JsValue, closure: JsValue) -> Self {
-        Self { shared, timeout_id, _closure: closure }
+    fn new(
+        callback_handle: callback::CallbackOnce<()>,
+        timeout_id: JsValue,
+        closure: JsValue,
+    ) -> Self {
+        Self { callback_handle, timeout_id, _closure: closure }
     }
 }
 
@@ -72,22 +47,14 @@ impl Future for TimeoutHandle {
         self: std::pin::Pin<&mut Self>,
         ctx: &mut task::Context<'_>,
     ) -> task::Poll<Self::Output> {
-        if self.shared.connected.get() {
-            task::Poll::Pending
-        } else {
-            let mut waker = self.shared.waker.take();
-            if waker.is_none() {
-                waker = Some(ctx.waker().clone());
-            }
-            self.shared.waker.set(waker);
-            task::Poll::Ready(())
-        }
+        unsafe { self.map_unchecked_mut(|this| &mut this.callback_handle) }
+            .poll(ctx)
+            .map(|result| result.unwrap())
     }
 }
 
 impl Drop for TimeoutHandle {
     fn drop(&mut self) {
-        self.shared.connected.set(false);
         clear_timeout(&self.timeout_id);
     }
 }
@@ -100,14 +67,14 @@ pub fn timeout(duration: Duration) -> TimeoutHandle {
 }
 
 fn timeout_ms(milliseconds: i32) -> TimeoutHandle {
-    let shared = Rc::new(Shared::init_connected());
-    let callback_handle = CallbackHandle::new(shared.clone());
+    let event = callback::Event::new(|callback_handle| {
+        let closure = Closure::once_into_js(callback_handle);
+        let timeout_id = set_timeout(closure.dyn_ref().unwrap(), milliseconds);
+        (timeout_id, closure)
+    });
 
-    let closure = Closure::once_into_js(Box::new(move || {
-        drop(callback_handle);
-    }));
+    let ((timeout_id, closure), callback_once) =
+        event.listen_once_returning(|| ());
 
-    let timeout_id = set_timeout(closure.dyn_ref().unwrap(), milliseconds);
-
-    TimeoutHandle::new(shared, timeout_id, closure)
+    TimeoutHandle::new(callback_once, timeout_id, closure)
 }
