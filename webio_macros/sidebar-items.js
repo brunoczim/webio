@@ -1,1 +1,1 @@
-initSidebarItems({"macro":[["join","Joins a list of futures, and returns their output into a tuple in the same order that the futures were given. However, the future must be `'static`."]]});
+initSidebarItems({"macro":[["console",""],["join","Joins a list of futures, and returns their output into a tuple in the same order that the futures were given. However, the future must be `'static`."]]});
