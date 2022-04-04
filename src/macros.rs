@@ -42,7 +42,7 @@ macro_rules! console_debug {
     };
 }
 
-/// Shows info in theJavaScript/browser/node console using a given method.
+/// Shows info in the JavaScript/browser/node console using a given method.
 /// Syntax:
 /// ```ignore
 /// console_info!($($arguments),*)
