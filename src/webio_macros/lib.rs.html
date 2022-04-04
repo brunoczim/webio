@@ -191,6 +191,19 @@
 <span id="189">189</span>
 <span id="190">190</span>
 <span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
 <span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Ident</span>, <span class="ident">Span</span>};
 <span class="kw">use</span> <span class="ident">quote::quote</span>;
@@ -347,6 +360,19 @@
     }
 }
 
+<span class="doccomment">/// Prints to the JavaScript/browser/node console using a given method. Syntax:</span>
+<span class="doccomment">/// ```ignore</span>
+<span class="doccomment">/// console!($method; $($arguments),*)</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```ignore</span>
+<span class="doccomment">/// use webio::console;</span>
+<span class="doccomment">/// # fn main() {</span>
+<span class="doccomment">/// console!(log; &quot;Hello number&quot;, 5u8, &quot;you&#39;re welcome!&quot;);</span>
+<span class="doccomment">/// # }</span>
+<span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">proc_macro</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">console</span>(<span class="ident">raw_input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
     <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">raw_input</span> <span class="kw">as</span> <span class="ident">ConsoleInput</span>);
