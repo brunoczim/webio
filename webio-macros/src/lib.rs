@@ -4,7 +4,7 @@ use quote::quote;
 use syn::{
     parse::{Parse, ParseStream},
     parse_macro_input,
-    token::Comma,
+    token::{Comma, Semi},
     Expr,
 };
 
@@ -132,5 +132,60 @@ pub fn join(raw_input: TokenStream) -> TokenStream {
             (#(#output_iter),*)
         }
     };
+    expanded.into()
+}
+
+struct ConsoleInput {
+    method: Ident,
+    arguments: Vec<Expr>,
+}
+
+impl Parse for ConsoleInput {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let method = input.parse()?;
+        let mut arguments = Vec::new();
+        if input.peek(Semi) {
+            input.parse::<Semi>()?;
+            arguments.extend(
+                input.parse_terminated::<Expr, Comma>(Expr::parse)?.into_iter(),
+            );
+        }
+        Ok(Self { method, arguments })
+    }
+}
+
+#[proc_macro]
+pub fn console(raw_input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(raw_input as ConsoleInput);
+
+    let expanded = if input.arguments.len() < 8 {
+        let method = Ident::new(
+            &format!("{}_{}", input.method, input.arguments.len()),
+            Span::mixed_site(),
+        );
+        let arguments = input.arguments.into_iter().map(|argument| {
+            quote! {
+                &::webio::wasm_bindgen::JsValue::from(#argument)
+            }
+        });
+        quote! {
+            ::webio::web_sys::console::#method(#(#arguments),*)
+        }
+    } else {
+        let method = input.method;
+        let arguments = input.arguments.into_iter().map(|argument| {
+            quote! {
+                array.push(&::webio::wasm_bindgen::JsValue::from(#argument));
+            }
+        });
+        quote! {
+            {
+                let mut array = ::webio::js_sys::Array::new();
+                #(#arguments)*
+                ::webio::web_sys::console::#method(&array)
+            }
+        }
+    };
+
     expanded.into()
 }
