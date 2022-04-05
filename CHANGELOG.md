@@ -3,7 +3,7 @@
 - [x] detach
 - [x] join macro
 - [x] console macro
+- [x] conversion from callback to future
 - [ ] select macro
 - [ ] main macro
-- [ ] conversion from callback to future
 - [ ] wrapper over JS asynchronous APIs or callbacks
