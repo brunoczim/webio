@@ -229,31 +229,79 @@
 <span id="227">227</span>
 <span id="228">228</span>
 <span id="229">229</span>
-</pre><pre class="rust"><code><span class="doccomment">//! This module defines utilities for translating a callback into asyncrhonous</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+</pre><pre class="rust"><code><span class="doccomment">//! This module defines utilities for translating a callback into asynchronous</span>
 <span class="doccomment">//! functions.</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::panic</span>::{<span class="ident">CatchUnwind</span>, <span class="ident">Payload</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cell::Cell</span>, <span class="ident">fmt</span>, <span class="ident">future::Future</span>, <span class="ident">panic</span>, <span class="ident">pin::Pin</span>, <span class="ident">rc::Rc</span>, <span class="ident">task</span>};
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">SyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">FnOnce</span>() <span class="op">+</span> <span class="lifetime">&#39;cb</span><span class="op">&gt;</span>;
+<span class="doccomment">/// The type of synchronous, oneshot callback handlers (i.e. the handler that</span>
+<span class="doccomment">/// calls callbacks): a boxed function.</span>
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">SyncOnceCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">FnOnce</span>() <span class="op">+</span> <span class="lifetime">&#39;cb</span><span class="op">&gt;</span>;
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">AsyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> ()<span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+<span class="doccomment">/// The type of asynchronous, oneshot callback handlers (i.e. the handler that</span>
+<span class="doccomment">/// calls callbacks): a boxed future.</span>
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">AsyncOnceCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> ()<span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
+<span class="doccomment">/// Register of oneshot callbacks into an event, where the callback is</span>
+<span class="doccomment">/// syncrhonous (waiting for the callback to complete is still asynchronous).</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SyncOnceRegister</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
     <span class="ident">register_fn</span>: <span class="ident">F</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> <span class="ident">SyncOnceRegister</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Creates a new register using an inner register function. Such function</span>
+    <span class="doccomment">/// receives callbacks handlers and register them. Callback handlers are</span>
+    <span class="doccomment">/// functions that are called when the event completes, and then, they call</span>
+    <span class="doccomment">/// the actual callbacks.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncOnceCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
     {
         <span class="self">Self</span> { <span class="ident">register_fn</span> }
     }
 
+    <span class="doccomment">/// Registers a callback and lets it listen for the target event. This</span>
+    <span class="doccomment">/// method is asyncrhonous: a future is returned, and when awaited, it waits</span>
+    <span class="doccomment">/// for the callback to complete.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">C</span>, <span class="ident">U</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">C</span>) -&gt; <span class="ident">OnceHandle</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncOnceCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
         <span class="ident">C</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
         <span class="ident">U</span>: <span class="lifetime">&#39;cb</span>,
     {
@@ -261,12 +309,17 @@
         <span class="ident">callback_handle</span>
     }
 
+    <span class="doccomment">/// Registers a callback and lets it listen for the target event. This</span>
+    <span class="doccomment">/// method is asyncrhonous: a future is returned, and when awaited, it</span>
+    <span class="doccomment">/// waits for the callback to complete. The register can also return a</span>
+    <span class="doccomment">/// value, and so, this method returns both the register&#39;s return value</span>
+    <span class="doccomment">/// and the wait-future.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_returning</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">C</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">callback</span>: <span class="ident">C</span>,
     ) -&gt; (<span class="ident">T</span>, <span class="ident">OnceHandle</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>)
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncOnceCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
         <span class="ident">C</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
         <span class="ident">U</span>: <span class="lifetime">&#39;cb</span>,
     {
@@ -282,39 +335,54 @@
                 <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">callback_handle</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
             }
         });
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fn</span> <span class="kw">as</span> <span class="ident">SyncOnceCallback</span>);
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fn</span> <span class="kw">as</span> <span class="ident">SyncOnceCbHandler</span>);
 
         (<span class="ident">ret</span>, <span class="ident">callback_once</span>)
     }
 }
 
+<span class="doccomment">/// Register of oneshot callbacks into an event, where the callback is</span>
+<span class="doccomment">/// asyncrhonous (waiting for the callback to complete is also asynchronous).</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AsyncOnceRegister</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
     <span class="ident">register_fn</span>: <span class="ident">F</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> <span class="ident">AsyncOnceRegister</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Creates a new register using an inner register function. Such function</span>
+    <span class="doccomment">/// receives callbacks handlers and register them. Callback handlers are</span>
+    <span class="doccomment">/// futures that are awaited when the event completes, and then, they await</span>
+    <span class="doccomment">/// the actual callbacks.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncOnceCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
     {
         <span class="self">Self</span> { <span class="ident">register_fn</span> }
     }
 
+    <span class="doccomment">/// Registers a callback and lets it listen for the target event. This</span>
+    <span class="doccomment">/// method is asynchronous: a future is returned, and when awaited, it</span>
+    <span class="doccomment">/// waits for the callback to complete.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">A</span>) -&gt; <span class="ident">OnceHandle</span><span class="op">&lt;</span><span class="ident">A::Output</span><span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncOnceCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
         <span class="ident">A</span>: <span class="ident">Future</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
     {
         <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">callback_once</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">listen_returning</span>(<span class="ident">callback</span>);
         <span class="ident">callback_once</span>
     }
 
+    <span class="doccomment">/// Registers a callback and lets it listen for the target event. This</span>
+    <span class="doccomment">/// method is asynchronous: a future is returned, and when awaited, it</span>
+    <span class="doccomment">/// waits for the callback to complete. The register can also return a</span>
+    <span class="doccomment">/// value, and so, this method returns both the register&#39;s return value</span>
+    <span class="doccomment">/// and the wait-future.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_returning</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">A</span>, <span class="ident">T</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">callback</span>: <span class="ident">A</span>,
     ) -&gt; (<span class="ident">T</span>, <span class="ident">OnceHandle</span><span class="op">&lt;</span><span class="ident">A::Output</span><span class="op">&gt;</span>)
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncOnceCallback</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncOnceCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
         <span class="ident">A</span>: <span class="ident">Future</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
     {
         <span class="kw">let</span> <span class="ident">shared</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">Shared::init_connected</span>());
@@ -329,7 +397,7 @@
                 <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">callback_handle</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
             }
         });
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fut</span> <span class="kw">as</span> <span class="ident">AsyncOnceCallback</span>);
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fut</span> <span class="kw">as</span> <span class="ident">AsyncOnceCbHandler</span>);
 
         (<span class="ident">ret</span>, <span class="ident">callback_once</span>)
     }
