@@ -8,7 +8,7 @@
 ///
 /// # Examples
 ///
-/// ```ignore
+/// ```no_run
 /// use webio::console_log;
 /// # fn main() {
 /// console_log!("Hello number", 5u8, "you're welcome!");
@@ -29,7 +29,7 @@ macro_rules! console_log {
 ///
 /// # Examples
 ///
-/// ```ignore
+/// ```no_run
 /// use webio::console_debug;
 /// # fn main() {
 /// console_debug!("Hello number", 5u8, "you're welcome!");
@@ -51,7 +51,7 @@ macro_rules! console_debug {
 ///
 /// # Examples
 ///
-/// ```ignore
+/// ```no_run
 /// use webio::console_info;
 /// # fn main() {
 /// console_info!("Hello number", 5u8, "you're welcome!");
@@ -72,7 +72,7 @@ macro_rules! console_info {
 ///
 /// # Examples
 ///
-/// ```ignore
+/// ```no_run
 /// use webio::console_warn;
 /// # fn main() {
 /// console_warn!("Something bad might happen");
@@ -94,7 +94,7 @@ macro_rules! console_warn {
 ///
 /// # Examples
 ///
-/// ```ignore
+/// ```no_run
 /// use webio::console_error;
 /// # fn main() {
 /// console_error!("Very bad things happened");

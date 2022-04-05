@@ -61,6 +61,23 @@ impl Drop for TimeoutHandle {
 
 /// Creates a [`Future`] that completes only after some duration of time has
 /// passed.
+///
+/// ```no_run
+/// use std::time::Duration;
+/// use webio::time::{timeout, Instant};
+///
+/// # use webio::task;
+/// # fn main() {
+/// # task::detach(async {
+/// let then = Instant::now();
+/// let time = Duration::from_millis(200);
+/// timeout(time).await;
+/// let passed = then.elapsed();
+/// assert!(passed >= time);
+/// assert!(passed < time + Duration::from_millis(50));
+/// # });
+/// # }
+/// ```
 pub fn timeout(duration: Duration) -> TimeoutHandle {
     let millis = duration.as_millis().min(i32::MAX as u128) as i32;
     timeout_ms(millis)

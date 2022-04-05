@@ -7,7 +7,8 @@ use wasm_bindgen_futures::spawn_local;
 /// Spawns an asynchronous task in JS event loop.
 ///
 /// # Examples
-/// ```ignore
+/// ## Simple Tasks
+/// ```no_run
 /// use webio::{task, join};
 ///
 /// # fn main() {

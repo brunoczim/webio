@@ -34,6 +34,25 @@ impl<F> SyncOnceRegister<F> {
     /// Registers a callback and lets it listen for the target event. This
     /// method is asyncrhonous: a future is returned, and when awaited, it waits
     /// for the callback to complete.
+    ///
+    /// # Examples
+    ///
+    /// ## Dummy Example
+    ///
+    /// ```no_run
+    /// use webio::callback;
+    ///
+    /// # use webio::task;
+    /// # fn main() {
+    /// # task::detach(async {
+    /// let register = callback::SyncOnceRegister::new(|callback| {
+    ///     callback();
+    /// });
+    /// let result = register.listen(|| 42).await;
+    /// assert_eq!(result.unwrap(), 42);
+    /// # });
+    /// # }
+    /// ```
     pub fn listen<'cb, C, U>(self, callback: C) -> OnceHandle<U>
     where
         F: FnOnce(SyncOnceCbHandler<'cb>),
@@ -49,6 +68,28 @@ impl<F> SyncOnceRegister<F> {
     /// waits for the callback to complete. The register can also return a
     /// value, and so, this method returns both the register's return value
     /// and the wait-future.
+    ///
+    /// # Examples
+    ///
+    /// ## Dummy Example
+    ///
+    /// ```no_run
+    /// use webio::callback;
+    ///
+    /// # use webio::task;
+    /// # fn main() {
+    /// # task::detach(async {
+    /// let register = callback::SyncOnceRegister::new(|callback| {
+    ///     callback();
+    ///     "my-ret-value"
+    /// });
+    /// let (ret_value, future) = register.listen_returning(|| 42);
+    /// assert_eq!(ret_value, "my-ret-value");
+    /// let result = future.await;
+    /// assert_eq!(result.unwrap(), 42);
+    /// # });
+    /// # }
+    /// ```
     pub fn listen_returning<'cb, C, T, U>(
         self,
         callback: C,
@@ -98,6 +139,24 @@ impl<F> AsyncOnceRegister<F> {
     /// Registers a callback and lets it listen for the target event. This
     /// method is asynchronous: a future is returned, and when awaited, it
     /// waits for the callback to complete.
+    ///
+    /// # Examples
+    ///
+    /// ## Dummy Example
+    ///
+    /// ```no_run
+    /// use webio::{callback, task};
+    ///
+    /// # fn main() {
+    /// # task::detach(async {
+    /// let register = callback::AsyncOnceRegister::new(|callback| {
+    ///     task::detach(callback);
+    /// });
+    /// let result = register.listen(async { 42 }).await;
+    /// assert_eq!(result.unwrap(), 42);
+    /// # });
+    /// # }
+    /// ```
     pub fn listen<'cb, A>(self, callback: A) -> OnceHandle<A::Output>
     where
         F: FnOnce(AsyncOnceCbHandler<'cb>),
@@ -112,6 +171,27 @@ impl<F> AsyncOnceRegister<F> {
     /// waits for the callback to complete. The register can also return a
     /// value, and so, this method returns both the register's return value
     /// and the wait-future.
+    ///
+    /// # Examples
+    ///
+    /// ## Dummy Example
+    ///
+    /// ```no_run
+    /// use webio::{callback, task};
+    ///
+    /// # fn main() {
+    /// # task::detach(async {
+    /// let register = callback::AsyncOnceRegister::new(|callback| {
+    ///     task::detach(callback);
+    ///     "my-ret-value"
+    /// });
+    /// let (ret_value, future) = register.listen_returning(async { 42 });
+    /// assert_eq!(ret_value, "my-ret-value");
+    /// let result = future.await;
+    /// assert_eq!(result.unwrap(), 42);
+    /// # });
+    /// # }
+    /// ```
     pub fn listen_returning<'cb, A, T>(
         self,
         callback: A,
