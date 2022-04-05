@@ -96,7 +96,6 @@
 <span id="94">94</span>
 <span id="95">95</span>
 <span id="96">96</span>
-<span id="97">97</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module implements time-related utilities.</span>
 
 <span class="kw">mod</span> <span class="ident">instant</span>;
@@ -189,10 +188,9 @@
         (<span class="ident">timeout_id</span>, <span class="ident">closure</span>)
     });
 
-    <span class="kw">let</span> ((<span class="ident">timeout_id</span>, <span class="ident">closure</span>), <span class="ident">callback_once</span>) <span class="op">=</span>
-        <span class="ident">register</span>.<span class="ident">listen_returning</span>(<span class="op">|</span><span class="op">|</span> ());
+    <span class="kw">let</span> ((<span class="ident">id</span>, <span class="ident">closure</span>), <span class="ident">callback_handle</span>) <span class="op">=</span> <span class="ident">register</span>.<span class="ident">listen_returning</span>(<span class="op">|</span><span class="op">|</span> ());
 
-    <span class="ident">TimeoutHandle::new</span>(<span class="ident">callback_once</span>, <span class="ident">timeout_id</span>, <span class="ident">closure</span>)
+    <span class="ident">TimeoutHandle::new</span>(<span class="ident">callback_handle</span>, <span class="ident">id</span>, <span class="ident">closure</span>)
 }
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0 (9d1b2106e 2022-02-23)" ></div>
