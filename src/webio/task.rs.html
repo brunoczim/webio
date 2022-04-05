@@ -105,6 +105,7 @@
 <span id="103">103</span>
 <span id="104">104</span>
 <span id="105">105</span>
+<span id="106">106</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module exports items related to task spawning.</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">callback</span>, <span class="ident">panic::Payload</span>};
@@ -114,7 +115,8 @@
 <span class="doccomment">/// Spawns an asynchronous task in JS event loop.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
-<span class="doccomment">/// ```ignore</span>
+<span class="doccomment">/// ## Simple Tasks</span>
+<span class="doccomment">/// ```no_run</span>
 <span class="doccomment">/// use webio::{task, join};</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # fn main() {</span>
