@@ -90,8 +90,7 @@ fn timeout_ms(milliseconds: i32) -> TimeoutHandle {
         (timeout_id, closure)
     });
 
-    let ((timeout_id, closure), callback_once) =
-        register.listen_returning(|| ());
+    let ((id, closure), callback_handle) = register.listen_returning(|| ());
 
-    TimeoutHandle::new(callback_once, timeout_id, closure)
+    TimeoutHandle::new(callback_handle, id, closure)
 }
