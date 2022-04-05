@@ -20,10 +20,10 @@ pub struct SyncOnceRegister<F> {
 }
 
 impl<F> SyncOnceRegister<F> {
-    /// Creates a new register using an inner register function. Such function
-    /// receives callbacks handlers and register them. Callback handlers are
-    /// functions that are called when the event completes, and then, they call
-    /// the actual callbacks.
+    /// Creates a new register using an inner register function that can be used
+    /// only once. Such function receives callbacks handlers and register
+    /// them. Callback handlers are functions that are called when the event
+    /// completes, and then, they call the actual callbacks.
     pub fn new<'cb, T>(register_fn: F) -> Self
     where
         F: FnOnce(SyncOnceCbHandler<'cb>) -> T,
@@ -31,9 +31,34 @@ impl<F> SyncOnceRegister<F> {
         Self { register_fn }
     }
 
+    /// Creates a new register using an inner register function that can be used
+    /// multiple times and imutabily. Such function receives callbacks handlers
+    /// and register them. Callback handlers are functions that are called when
+    /// the event completes, and then, they call the actual callbacks.
+    pub fn new_ref<'cb, T>(register_fn: F) -> Self
+    where
+        F: Fn(SyncOnceCbHandler<'cb>) -> T,
+    {
+        Self { register_fn }
+    }
+
+    /// Creates a new register using an inner register function that can be used
+    /// multiple times, with mutability, however. Such function receives
+    /// callbacks handlers and register them. Callback handlers are
+    /// functions that are called when the event completes, and then, they
+    /// call the actual callbacks.
+    pub fn new_mut<'cb, T>(register_fn: F) -> Self
+    where
+        F: FnMut(SyncOnceCbHandler<'cb>) -> T,
+    {
+        Self { register_fn }
+    }
+
     /// Registers a callback and lets it listen for the target event. This
     /// method is asyncrhonous: a future is returned, and when awaited, it waits
     /// for the callback to complete.
+    ///
+    /// This method consumes the register.
     ///
     /// # Examples
     ///
@@ -64,10 +89,44 @@ impl<F> SyncOnceRegister<F> {
     }
 
     /// Registers a callback and lets it listen for the target event. This
+    /// method is asyncrhonous: a future is returned, and when awaited, it waits
+    /// for the callback to complete.
+    ///
+    /// This method does not consume the register, requiring mutability,
+    /// however. ```
+    pub fn listen_mut<'cb, C, U>(&mut self, callback: C) -> OnceHandle<U>
+    where
+        F: FnMut(SyncOnceCbHandler<'cb>),
+        C: FnOnce() -> U + 'cb,
+        U: 'cb,
+    {
+        let (_, callback_handle) = self.listen_mut_returning(callback);
+        callback_handle
+    }
+
+    /// Registers a callback and lets it listen for the target event. This
+    /// method is asyncrhonous: a future is returned, and when awaited, it waits
+    /// for the callback to complete.
+    ///
+    /// This method does not consume the register and does not require
+    /// mutability.
+    pub fn listen_ref<'cb, C, U>(&self, callback: C) -> OnceHandle<U>
+    where
+        F: Fn(SyncOnceCbHandler<'cb>),
+        C: FnOnce() -> U + 'cb,
+        U: 'cb,
+    {
+        let (_, callback_handle) = self.listen_ref_returning(callback);
+        callback_handle
+    }
+
+    /// Registers a callback and lets it listen for the target event. This
     /// method is asyncrhonous: a future is returned, and when awaited, it
     /// waits for the callback to complete. The register can also return a
     /// value, and so, this method returns both the register's return value
     /// and the wait-future.
+    ///
+    /// This method consumes the register.
     ///
     /// # Examples
     ///
@@ -101,19 +160,87 @@ impl<F> SyncOnceRegister<F> {
     {
         let shared = Rc::new(Shared::init_connected());
 
-        let callback_handle = PollHandle::new(shared.clone());
-        let callback_once = OnceHandle::new(shared);
+        let poll_handle = PollHandle::new(shared.clone());
+        let callback_handle = OnceHandle::new(shared);
 
         let boxed_fn = Box::new(move || {
             let result = panic::catch_unwind(panic::AssertUnwindSafe(callback));
             match result {
-                Ok(data) => callback_handle.success(data),
-                Err(payload) => callback_handle.panicked(payload),
+                Ok(data) => poll_handle.success(data),
+                Err(payload) => poll_handle.panicked(payload),
             }
         });
         let ret = (self.register_fn)(boxed_fn as SyncOnceCbHandler);
 
-        (ret, callback_once)
+        (ret, callback_handle)
+    }
+
+    /// Registers a callback and lets it listen for the target event. This
+    /// method is asyncrhonous: a future is returned, and when awaited, it
+    /// waits for the callback to complete. The register can also return a
+    /// value, and so, this method returns both the register's return value
+    /// and the wait-future.
+    ///
+    /// This method does not consume the register, requiring mutability,
+    /// however.
+    pub fn listen_mut_returning<'cb, C, T, U>(
+        &mut self,
+        callback: C,
+    ) -> (T, OnceHandle<U>)
+    where
+        F: FnMut(SyncOnceCbHandler<'cb>) -> T,
+        C: FnOnce() -> U + 'cb,
+        U: 'cb,
+    {
+        let shared = Rc::new(Shared::init_connected());
+
+        let poll_handle = PollHandle::new(shared.clone());
+        let callback_handle = OnceHandle::new(shared);
+
+        let boxed_fn = Box::new(move || {
+            let result = panic::catch_unwind(panic::AssertUnwindSafe(callback));
+            match result {
+                Ok(data) => poll_handle.success(data),
+                Err(payload) => poll_handle.panicked(payload),
+            }
+        });
+        let ret = (self.register_fn)(boxed_fn as SyncOnceCbHandler);
+
+        (ret, callback_handle)
+    }
+
+    /// Registers a callback and lets it listen for the target event. This
+    /// method is asyncrhonous: a future is returned, and when awaited, it
+    /// waits for the callback to complete. The register can also return a
+    /// value, and so, this method returns both the register's return value
+    /// and the wait-future.
+    ///
+    /// This method does not consume the register and does not require
+    /// mutability.
+    pub fn listen_ref_returning<'cb, C, T, U>(
+        &self,
+        callback: C,
+    ) -> (T, OnceHandle<U>)
+    where
+        F: Fn(SyncOnceCbHandler<'cb>) -> T,
+        C: FnOnce() -> U + 'cb,
+        U: 'cb,
+    {
+        let shared = Rc::new(Shared::init_connected());
+
+        let poll_handle = PollHandle::new(shared.clone());
+        let callback_handle = OnceHandle::new(shared);
+
+        let boxed_fn = Box::new(move || {
+            let result = panic::catch_unwind(panic::AssertUnwindSafe(callback));
+            match result {
+                Ok(data) => poll_handle.success(data),
+                Err(payload) => poll_handle.panicked(payload),
+            }
+        });
+        let ret = (self.register_fn)(boxed_fn as SyncOnceCbHandler);
+
+        (ret, callback_handle)
     }
 }
 
@@ -125,10 +252,10 @@ pub struct AsyncOnceRegister<F> {
 }
 
 impl<F> AsyncOnceRegister<F> {
-    /// Creates a new register using an inner register function. Such function
-    /// receives callbacks handlers and register them. Callback handlers are
-    /// futures that are awaited when the event completes, and then, they await
-    /// the actual callbacks.
+    /// Creates a new register using an inner register function that can be used
+    /// only once. Such function receives callbacks handlers and register
+    /// them. Callback handlers are futures that are awaited when the event
+    /// completes, and then, they await the actual callbacks.
     pub fn new<'cb, T>(register_fn: F) -> Self
     where
         F: FnOnce(AsyncOnceCbHandler<'cb>) -> T,
@@ -136,9 +263,35 @@ impl<F> AsyncOnceRegister<F> {
         Self { register_fn }
     }
 
+    /// Creates a new register using an inner register function that can be used
+    /// multiple times, with mutability, however. Such function receives
+    /// callbacks handlers and register them. Callback handlers are futures
+    /// that are awaited when the event completes, and then, they await the
+    /// actual callbacks.
+    pub fn new_mut<'cb, T>(register_fn: F) -> Self
+    where
+        F: FnMut(AsyncOnceCbHandler<'cb>) -> T,
+    {
+        Self { register_fn }
+    }
+
+    /// Creates a new register using an inner register function that can be used
+    /// multiple times and does not require mutability. Such function receives
+    /// callbacks handlers and register them. Callback handlers are futures
+    /// that are awaited when the event completes, and then, they await the
+    /// actual callbacks.
+    pub fn new_ref<'cb, T>(register_fn: F) -> Self
+    where
+        F: Fn(AsyncOnceCbHandler<'cb>) -> T,
+    {
+        Self { register_fn }
+    }
+
     /// Registers a callback and lets it listen for the target event. This
     /// method is asynchronous: a future is returned, and when awaited, it
     /// waits for the callback to complete.
+    ///
+    /// This method consumes the register.
     ///
     /// # Examples
     ///
@@ -162,8 +315,38 @@ impl<F> AsyncOnceRegister<F> {
         F: FnOnce(AsyncOnceCbHandler<'cb>),
         A: Future + 'cb,
     {
-        let (_, callback_once) = self.listen_returning(callback);
-        callback_once
+        let (_, callback_handle) = self.listen_returning(callback);
+        callback_handle
+    }
+
+    /// Registers a callback and lets it listen for the target event. This
+    /// method is asynchronous: a future is returned, and when awaited, it
+    /// waits for the callback to complete.
+    ///
+    /// This method does not consume the register, requiring mutability,
+    /// however.
+    pub fn listen_mut<'cb, A>(&mut self, callback: A) -> OnceHandle<A::Output>
+    where
+        F: FnMut(AsyncOnceCbHandler<'cb>),
+        A: Future + 'cb,
+    {
+        let (_, callback_handle) = self.listen_mut_returning(callback);
+        callback_handle
+    }
+
+    /// Registers a callback and lets it listen for the target event. This
+    /// method is asynchronous: a future is returned, and when awaited, it
+    /// waits for the callback to complete.
+    ///
+    /// This method does not consume the register and does not require
+    /// mutability.
+    pub fn listen_ref<'cb, A>(&self, callback: A) -> OnceHandle<A::Output>
+    where
+        F: Fn(AsyncOnceCbHandler<'cb>),
+        A: Future + 'cb,
+    {
+        let (_, callback_handle) = self.listen_ref_returning(callback);
+        callback_handle
     }
 
     /// Registers a callback and lets it listen for the target event. This
@@ -171,6 +354,8 @@ impl<F> AsyncOnceRegister<F> {
     /// waits for the callback to complete. The register can also return a
     /// value, and so, this method returns both the register's return value
     /// and the wait-future.
+    ///
+    /// This method consumes the register.
     ///
     /// # Examples
     ///
@@ -202,19 +387,85 @@ impl<F> AsyncOnceRegister<F> {
     {
         let shared = Rc::new(Shared::init_connected());
 
-        let callback_handle = PollHandle::new(shared.clone());
-        let callback_once = OnceHandle::new(shared);
+        let poll_handle = PollHandle::new(shared.clone());
+        let callback_handle = OnceHandle::new(shared);
 
         let boxed_fut = Box::pin(async move {
             let result = CatchUnwind::new(callback).await;
             match result {
-                Ok(data) => callback_handle.success(data),
-                Err(payload) => callback_handle.panicked(payload),
+                Ok(data) => poll_handle.success(data),
+                Err(payload) => poll_handle.panicked(payload),
             }
         });
         let ret = (self.register_fn)(boxed_fut as AsyncOnceCbHandler);
 
-        (ret, callback_once)
+        (ret, callback_handle)
+    }
+
+    /// Registers a callback and lets it listen for the target event. This
+    /// method is asynchronous: a future is returned, and when awaited, it
+    /// waits for the callback to complete. The register can also return a
+    /// value, and so, this method returns both the register's return value
+    /// and the wait-future.
+    ///
+    /// This method does not consume the register, requiring mutability,
+    /// however.
+    pub fn listen_mut_returning<'cb, A, T>(
+        &mut self,
+        callback: A,
+    ) -> (T, OnceHandle<A::Output>)
+    where
+        F: FnMut(AsyncOnceCbHandler<'cb>) -> T,
+        A: Future + 'cb,
+    {
+        let shared = Rc::new(Shared::init_connected());
+
+        let poll_handle = PollHandle::new(shared.clone());
+        let callback_handle = OnceHandle::new(shared);
+
+        let boxed_fut = Box::pin(async move {
+            let result = CatchUnwind::new(callback).await;
+            match result {
+                Ok(data) => poll_handle.success(data),
+                Err(payload) => poll_handle.panicked(payload),
+            }
+        });
+        let ret = (self.register_fn)(boxed_fut as AsyncOnceCbHandler);
+
+        (ret, callback_handle)
+    }
+
+    /// Registers a callback and lets it listen for the target event. This
+    /// method is asynchronous: a future is returned, and when awaited, it
+    /// waits for the callback to complete. The register can also return a
+    /// value, and so, this method returns both the register's return value
+    /// and the wait-future.
+    ///
+    /// This method does not consume the register and does not require
+    /// mutability.
+    pub fn listen_ref_returning<'cb, A, T>(
+        &self,
+        callback: A,
+    ) -> (T, OnceHandle<A::Output>)
+    where
+        F: Fn(AsyncOnceCbHandler<'cb>) -> T,
+        A: Future + 'cb,
+    {
+        let shared = Rc::new(Shared::init_connected());
+
+        let poll_handle = PollHandle::new(shared.clone());
+        let callback_handle = OnceHandle::new(shared);
+
+        let boxed_fut = Box::pin(async move {
+            let result = CatchUnwind::new(callback).await;
+            match result {
+                Ok(data) => poll_handle.success(data),
+                Err(payload) => poll_handle.panicked(payload),
+            }
+        });
+        let ret = (self.register_fn)(boxed_fut as AsyncOnceCbHandler);
+
+        (ret, callback_handle)
     }
 }
 
