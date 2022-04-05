@@ -4,6 +4,47 @@
 use crate::panic::{CatchUnwind, Payload};
 use std::{cell::Cell, fmt, future::Future, panic, pin::Pin, rc::Rc, task};
 
+macro_rules! sync_once {
+    ($self:expr, $callback:expr) => {{
+        let shared = Rc::new(Shared::init_connected());
+
+        let poll_handle = PollHandle::new(shared.clone());
+        let callback_handle = OnceHandle::new(shared);
+
+        let boxed_fn = Box::new(move || {
+            let result =
+                panic::catch_unwind(panic::AssertUnwindSafe($callback));
+            match result {
+                Ok(data) => poll_handle.success(data),
+                Err(payload) => poll_handle.panicked(payload),
+            }
+        });
+        let ret = ($self.register_fn)(boxed_fn as SyncOnceCbHandler);
+
+        (ret, callback_handle)
+    }};
+}
+
+macro_rules! async_once {
+    ($self:expr, $callback:expr) => {{
+        let shared = Rc::new(Shared::init_connected());
+
+        let poll_handle = PollHandle::new(shared.clone());
+        let callback_handle = OnceHandle::new(shared);
+
+        let boxed_fut = Box::pin(async move {
+            let result = CatchUnwind::new($callback).await;
+            match result {
+                Ok(data) => poll_handle.success(data),
+                Err(payload) => poll_handle.panicked(payload),
+            }
+        });
+        let ret = ($self.register_fn)(boxed_fut as AsyncOnceCbHandler);
+
+        (ret, callback_handle)
+    }};
+}
+
 /// The type of synchronous, oneshot callback handlers (i.e. the handler that
 /// calls callbacks): a boxed function.
 pub type SyncOnceCbHandler<'cb> = Box<dyn FnOnce() + 'cb>;
@@ -158,21 +199,7 @@ impl<F> SyncOnceRegister<F> {
         C: FnOnce() -> U + 'cb,
         U: 'cb,
     {
-        let shared = Rc::new(Shared::init_connected());
-
-        let poll_handle = PollHandle::new(shared.clone());
-        let callback_handle = OnceHandle::new(shared);
-
-        let boxed_fn = Box::new(move || {
-            let result = panic::catch_unwind(panic::AssertUnwindSafe(callback));
-            match result {
-                Ok(data) => poll_handle.success(data),
-                Err(payload) => poll_handle.panicked(payload),
-            }
-        });
-        let ret = (self.register_fn)(boxed_fn as SyncOnceCbHandler);
-
-        (ret, callback_handle)
+        sync_once!(self, callback)
     }
 
     /// Registers a callback and lets it listen for the target event. This
@@ -192,21 +219,7 @@ impl<F> SyncOnceRegister<F> {
         C: FnOnce() -> U + 'cb,
         U: 'cb,
     {
-        let shared = Rc::new(Shared::init_connected());
-
-        let poll_handle = PollHandle::new(shared.clone());
-        let callback_handle = OnceHandle::new(shared);
-
-        let boxed_fn = Box::new(move || {
-            let result = panic::catch_unwind(panic::AssertUnwindSafe(callback));
-            match result {
-                Ok(data) => poll_handle.success(data),
-                Err(payload) => poll_handle.panicked(payload),
-            }
-        });
-        let ret = (self.register_fn)(boxed_fn as SyncOnceCbHandler);
-
-        (ret, callback_handle)
+        sync_once!(self, callback)
     }
 
     /// Registers a callback and lets it listen for the target event. This
@@ -226,21 +239,7 @@ impl<F> SyncOnceRegister<F> {
         C: FnOnce() -> U + 'cb,
         U: 'cb,
     {
-        let shared = Rc::new(Shared::init_connected());
-
-        let poll_handle = PollHandle::new(shared.clone());
-        let callback_handle = OnceHandle::new(shared);
-
-        let boxed_fn = Box::new(move || {
-            let result = panic::catch_unwind(panic::AssertUnwindSafe(callback));
-            match result {
-                Ok(data) => poll_handle.success(data),
-                Err(payload) => poll_handle.panicked(payload),
-            }
-        });
-        let ret = (self.register_fn)(boxed_fn as SyncOnceCbHandler);
-
-        (ret, callback_handle)
+        sync_once!(self, callback)
     }
 }
 
@@ -385,21 +384,7 @@ impl<F> AsyncOnceRegister<F> {
         F: FnOnce(AsyncOnceCbHandler<'cb>) -> T,
         A: Future + 'cb,
     {
-        let shared = Rc::new(Shared::init_connected());
-
-        let poll_handle = PollHandle::new(shared.clone());
-        let callback_handle = OnceHandle::new(shared);
-
-        let boxed_fut = Box::pin(async move {
-            let result = CatchUnwind::new(callback).await;
-            match result {
-                Ok(data) => poll_handle.success(data),
-                Err(payload) => poll_handle.panicked(payload),
-            }
-        });
-        let ret = (self.register_fn)(boxed_fut as AsyncOnceCbHandler);
-
-        (ret, callback_handle)
+        async_once!(self, callback)
     }
 
     /// Registers a callback and lets it listen for the target event. This
@@ -418,21 +403,7 @@ impl<F> AsyncOnceRegister<F> {
         F: FnMut(AsyncOnceCbHandler<'cb>) -> T,
         A: Future + 'cb,
     {
-        let shared = Rc::new(Shared::init_connected());
-
-        let poll_handle = PollHandle::new(shared.clone());
-        let callback_handle = OnceHandle::new(shared);
-
-        let boxed_fut = Box::pin(async move {
-            let result = CatchUnwind::new(callback).await;
-            match result {
-                Ok(data) => poll_handle.success(data),
-                Err(payload) => poll_handle.panicked(payload),
-            }
-        });
-        let ret = (self.register_fn)(boxed_fut as AsyncOnceCbHandler);
-
-        (ret, callback_handle)
+        async_once!(self, callback)
     }
 
     /// Registers a callback and lets it listen for the target event. This
@@ -451,21 +422,7 @@ impl<F> AsyncOnceRegister<F> {
         F: Fn(AsyncOnceCbHandler<'cb>) -> T,
         A: Future + 'cb,
     {
-        let shared = Rc::new(Shared::init_connected());
-
-        let poll_handle = PollHandle::new(shared.clone());
-        let callback_handle = OnceHandle::new(shared);
-
-        let boxed_fut = Box::pin(async move {
-            let result = CatchUnwind::new(callback).await;
-            match result {
-                Ok(data) => poll_handle.success(data),
-                Err(payload) => poll_handle.panicked(payload),
-            }
-        });
-        let ret = (self.register_fn)(boxed_fut as AsyncOnceCbHandler);
-
-        (ret, callback_handle)
+        async_once!(self, callback)
     }
 }
 
