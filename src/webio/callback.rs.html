@@ -551,54 +551,52 @@
 <span id="549">549</span>
 <span id="550">550</span>
 <span id="551">551</span>
-<span id="552">552</span>
-<span id="553">553</span>
-<span id="554">554</span>
-<span id="555">555</span>
-<span id="556">556</span>
-<span id="557">557</span>
-<span id="558">558</span>
-<span id="559">559</span>
-<span id="560">560</span>
-<span id="561">561</span>
-<span id="562">562</span>
-<span id="563">563</span>
-<span id="564">564</span>
-<span id="565">565</span>
-<span id="566">566</span>
-<span id="567">567</span>
-<span id="568">568</span>
-<span id="569">569</span>
-<span id="570">570</span>
-<span id="571">571</span>
-<span id="572">572</span>
-<span id="573">573</span>
-<span id="574">574</span>
-<span id="575">575</span>
-<span id="576">576</span>
-<span id="577">577</span>
-<span id="578">578</span>
-<span id="579">579</span>
-<span id="580">580</span>
-<span id="581">581</span>
-<span id="582">582</span>
-<span id="583">583</span>
-<span id="584">584</span>
-<span id="585">585</span>
-<span id="586">586</span>
-<span id="587">587</span>
-<span id="588">588</span>
-<span id="589">589</span>
-<span id="590">590</span>
-<span id="591">591</span>
-<span id="592">592</span>
-<span id="593">593</span>
-<span id="594">594</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module defines utilities for translating a callback into asynchronous</span>
 <span class="doccomment">//! functions.</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::panic</span>::{<span class="ident">CatchUnwind</span>, <span class="ident">Payload</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cell::Cell</span>, <span class="ident">fmt</span>, <span class="ident">future::Future</span>, <span class="ident">panic</span>, <span class="ident">pin::Pin</span>, <span class="ident">rc::Rc</span>, <span class="ident">task</span>};
+
+<span class="macro">macro_rules!</span> <span class="ident">sync_once</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">self</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>:<span class="ident">expr</span>) =&gt; {{
+        <span class="kw">let</span> <span class="ident">shared</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">Shared::init_connected</span>());
+
+        <span class="kw">let</span> <span class="ident">poll_handle</span> <span class="op">=</span> <span class="ident">PollHandle::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">OnceHandle::new</span>(<span class="ident">shared</span>);
+
+        <span class="kw">let</span> <span class="ident">boxed_fn</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
+            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span>
+                <span class="ident">panic::catch_unwind</span>(<span class="ident">panic::AssertUnwindSafe</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>));
+            <span class="kw">match</span> <span class="ident">result</span> {
+                <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">success</span>(<span class="ident">data</span>),
+                <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
+            }
+        });
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fn</span> <span class="kw">as</span> <span class="ident">SyncOnceCbHandler</span>);
+
+        (<span class="ident">ret</span>, <span class="ident">callback_handle</span>)
+    }};
+}
+
+<span class="macro">macro_rules!</span> <span class="ident">async_once</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">self</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>:<span class="ident">expr</span>) =&gt; {{
+        <span class="kw">let</span> <span class="ident">shared</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">Shared::init_connected</span>());
+
+        <span class="kw">let</span> <span class="ident">poll_handle</span> <span class="op">=</span> <span class="ident">PollHandle::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">OnceHandle::new</span>(<span class="ident">shared</span>);
+
+        <span class="kw">let</span> <span class="ident">boxed_fut</span> <span class="op">=</span> <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
+            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">CatchUnwind::new</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>).<span class="kw">await</span>;
+            <span class="kw">match</span> <span class="ident">result</span> {
+                <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">success</span>(<span class="ident">data</span>),
+                <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
+            }
+        });
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fut</span> <span class="kw">as</span> <span class="ident">AsyncOnceCbHandler</span>);
+
+        (<span class="ident">ret</span>, <span class="ident">callback_handle</span>)
+    }};
+}
 
 <span class="doccomment">/// The type of synchronous, oneshot callback handlers (i.e. the handler that</span>
 <span class="doccomment">/// calls callbacks): a boxed function.</span>
@@ -754,21 +752,7 @@
         <span class="ident">C</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
         <span class="ident">U</span>: <span class="lifetime">&#39;cb</span>,
     {
-        <span class="kw">let</span> <span class="ident">shared</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">Shared::init_connected</span>());
-
-        <span class="kw">let</span> <span class="ident">poll_handle</span> <span class="op">=</span> <span class="ident">PollHandle::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">OnceHandle::new</span>(<span class="ident">shared</span>);
-
-        <span class="kw">let</span> <span class="ident">boxed_fn</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">panic::catch_unwind</span>(<span class="ident">panic::AssertUnwindSafe</span>(<span class="ident">callback</span>));
-            <span class="kw">match</span> <span class="ident">result</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">success</span>(<span class="ident">data</span>),
-                <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
-            }
-        });
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fn</span> <span class="kw">as</span> <span class="ident">SyncOnceCbHandler</span>);
-
-        (<span class="ident">ret</span>, <span class="ident">callback_handle</span>)
+        <span class="macro">sync_once!</span>(<span class="self">self</span>, <span class="ident">callback</span>)
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. This</span>
@@ -788,21 +772,7 @@
         <span class="ident">C</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
         <span class="ident">U</span>: <span class="lifetime">&#39;cb</span>,
     {
-        <span class="kw">let</span> <span class="ident">shared</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">Shared::init_connected</span>());
-
-        <span class="kw">let</span> <span class="ident">poll_handle</span> <span class="op">=</span> <span class="ident">PollHandle::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">OnceHandle::new</span>(<span class="ident">shared</span>);
-
-        <span class="kw">let</span> <span class="ident">boxed_fn</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">panic::catch_unwind</span>(<span class="ident">panic::AssertUnwindSafe</span>(<span class="ident">callback</span>));
-            <span class="kw">match</span> <span class="ident">result</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">success</span>(<span class="ident">data</span>),
-                <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
-            }
-        });
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fn</span> <span class="kw">as</span> <span class="ident">SyncOnceCbHandler</span>);
-
-        (<span class="ident">ret</span>, <span class="ident">callback_handle</span>)
+        <span class="macro">sync_once!</span>(<span class="self">self</span>, <span class="ident">callback</span>)
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. This</span>
@@ -822,21 +792,7 @@
         <span class="ident">C</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
         <span class="ident">U</span>: <span class="lifetime">&#39;cb</span>,
     {
-        <span class="kw">let</span> <span class="ident">shared</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">Shared::init_connected</span>());
-
-        <span class="kw">let</span> <span class="ident">poll_handle</span> <span class="op">=</span> <span class="ident">PollHandle::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">OnceHandle::new</span>(<span class="ident">shared</span>);
-
-        <span class="kw">let</span> <span class="ident">boxed_fn</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">panic::catch_unwind</span>(<span class="ident">panic::AssertUnwindSafe</span>(<span class="ident">callback</span>));
-            <span class="kw">match</span> <span class="ident">result</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">success</span>(<span class="ident">data</span>),
-                <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
-            }
-        });
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fn</span> <span class="kw">as</span> <span class="ident">SyncOnceCbHandler</span>);
-
-        (<span class="ident">ret</span>, <span class="ident">callback_handle</span>)
+        <span class="macro">sync_once!</span>(<span class="self">self</span>, <span class="ident">callback</span>)
     }
 }
 
@@ -981,21 +937,7 @@
         <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncOnceCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
         <span class="ident">A</span>: <span class="ident">Future</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
     {
-        <span class="kw">let</span> <span class="ident">shared</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">Shared::init_connected</span>());
-
-        <span class="kw">let</span> <span class="ident">poll_handle</span> <span class="op">=</span> <span class="ident">PollHandle::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">OnceHandle::new</span>(<span class="ident">shared</span>);
-
-        <span class="kw">let</span> <span class="ident">boxed_fut</span> <span class="op">=</span> <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
-            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">CatchUnwind::new</span>(<span class="ident">callback</span>).<span class="kw">await</span>;
-            <span class="kw">match</span> <span class="ident">result</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">success</span>(<span class="ident">data</span>),
-                <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
-            }
-        });
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fut</span> <span class="kw">as</span> <span class="ident">AsyncOnceCbHandler</span>);
-
-        (<span class="ident">ret</span>, <span class="ident">callback_handle</span>)
+        <span class="macro">async_once!</span>(<span class="self">self</span>, <span class="ident">callback</span>)
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. This</span>
@@ -1014,21 +956,7 @@
         <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">AsyncOnceCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
         <span class="ident">A</span>: <span class="ident">Future</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
     {
-        <span class="kw">let</span> <span class="ident">shared</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">Shared::init_connected</span>());
-
-        <span class="kw">let</span> <span class="ident">poll_handle</span> <span class="op">=</span> <span class="ident">PollHandle::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">OnceHandle::new</span>(<span class="ident">shared</span>);
-
-        <span class="kw">let</span> <span class="ident">boxed_fut</span> <span class="op">=</span> <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
-            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">CatchUnwind::new</span>(<span class="ident">callback</span>).<span class="kw">await</span>;
-            <span class="kw">match</span> <span class="ident">result</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">success</span>(<span class="ident">data</span>),
-                <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
-            }
-        });
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fut</span> <span class="kw">as</span> <span class="ident">AsyncOnceCbHandler</span>);
-
-        (<span class="ident">ret</span>, <span class="ident">callback_handle</span>)
+        <span class="macro">async_once!</span>(<span class="self">self</span>, <span class="ident">callback</span>)
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. This</span>
@@ -1047,21 +975,7 @@
         <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">AsyncOnceCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
         <span class="ident">A</span>: <span class="ident">Future</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
     {
-        <span class="kw">let</span> <span class="ident">shared</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">Shared::init_connected</span>());
-
-        <span class="kw">let</span> <span class="ident">poll_handle</span> <span class="op">=</span> <span class="ident">PollHandle::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">OnceHandle::new</span>(<span class="ident">shared</span>);
-
-        <span class="kw">let</span> <span class="ident">boxed_fut</span> <span class="op">=</span> <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
-            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">CatchUnwind::new</span>(<span class="ident">callback</span>).<span class="kw">await</span>;
-            <span class="kw">match</span> <span class="ident">result</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">success</span>(<span class="ident">data</span>),
-                <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">poll_handle</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
-            }
-        });
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fut</span> <span class="kw">as</span> <span class="ident">AsyncOnceCbHandler</span>);
-
-        (<span class="ident">ret</span>, <span class="ident">callback_handle</span>)
+        <span class="macro">async_once!</span>(<span class="self">self</span>, <span class="ident">callback</span>)
     }
 }
 
