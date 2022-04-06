@@ -1,10 +1,10 @@
 use wasm_bindgen_test::wasm_bindgen_test;
-use webio::{callback, task::detach};
+use webio::{callback, task};
 
 #[wasm_bindgen_test]
 fn sync_once() {
-    detach(async {
-        let register = callback::SyncOnceRegister::new(|callback| {
+    task::detach(async {
+        let register = callback::once::SyncRegister::new(|callback| {
             callback();
         });
         let result = register.listen(|| 42).await;
@@ -14,8 +14,8 @@ fn sync_once() {
 
 #[wasm_bindgen_test]
 fn sync_once_with_ret() {
-    detach(async {
-        let event = callback::SyncOnceRegister::new(|callback| {
+    task::detach(async {
+        let event = callback::once::SyncRegister::new(|callback| {
             callback();
             "my-return-abc"
         });
@@ -28,9 +28,9 @@ fn sync_once_with_ret() {
 
 #[wasm_bindgen_test]
 fn async_once() {
-    detach(async {
-        let event = callback::AsyncOnceRegister::new(|callback| {
-            detach(callback);
+    task::detach(async {
+        let event = callback::once::AsyncRegister::new(|callback| {
+            task::detach(callback);
         });
         let result = event.listen(async { 42 }).await;
         assert_eq!(result.unwrap(), 42);
@@ -39,9 +39,9 @@ fn async_once() {
 
 #[wasm_bindgen_test]
 fn async_once_with_ret() {
-    detach(async {
-        let event = callback::AsyncOnceRegister::new(|callback| {
-            detach(callback);
+    task::detach(async {
+        let event = callback::once::AsyncRegister::new(|callback| {
+            task::detach(callback);
             "my-return-abc"
         });
         let (ret, future) = event.listen_returning(async { 42 });

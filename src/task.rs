@@ -25,7 +25,7 @@ pub fn spawn<A>(future: A) -> JoinHandle<A::Output>
 where
     A: Future + 'static,
 {
-    let register = callback::AsyncOnceRegister::new(spawn_local);
+    let register = callback::once::AsyncRegister::new(spawn_local);
     let callback_handle = register.listen(future);
     JoinHandle::new(callback_handle)
 }
@@ -42,7 +42,7 @@ where
 /// An error that might happen when waiting for a task.
 #[derive(Debug)]
 pub struct JoinError {
-    kind: callback::Error,
+    kind: callback::once::Error,
 }
 
 impl fmt::Display for JoinError {
@@ -54,19 +54,19 @@ impl fmt::Display for JoinError {
 impl JoinError {
     /// Tests whether the target task was cancelled.
     pub fn is_cancelled(&self) -> bool {
-        matches!(&self.kind, callback::Error::Cancelled)
+        matches!(&self.kind, callback::once::Error::Cancelled)
     }
 
     /// Tests whether the target task panicked.
     pub fn is_panic(&self) -> bool {
-        matches!(&self.kind, callback::Error::Panicked(_))
+        matches!(&self.kind, callback::once::Error::Panicked(_))
     }
 
     /// Attempts to convert this error into a panic payload. Fails if the target
     /// task didn't panicked.
     pub fn try_into_panic(self) -> Result<Payload, Self> {
         match self.kind {
-            callback::Error::Panicked(payload) => Ok(payload),
+            callback::once::Error::Panicked(payload) => Ok(payload),
             kind => Err(Self { kind }),
         }
     }
@@ -83,11 +83,11 @@ impl JoinError {
 
 /// A handle that allows the caller to join a task (i.e. wait for it to end).
 pub struct JoinHandle<T> {
-    inner: callback::OnceHandle<T>,
+    inner: callback::once::Listener<T>,
 }
 
 impl<T> JoinHandle<T> {
-    fn new(inner: callback::OnceHandle<T>) -> Self {
+    fn new(inner: callback::once::Listener<T>) -> Self {
         Self { inner }
     }
 }
