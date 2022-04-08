@@ -14,7 +14,7 @@ pub mod callback;
 
 pub mod time;
 
-pub use webio_macros::{console, join};
+pub use webio_macros::{console, join, main};
 
 #[doc(hidden)]
 pub use js_sys;

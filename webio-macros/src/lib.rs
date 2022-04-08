@@ -1,11 +1,12 @@
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span};
-use quote::quote;
+use quote::{quote, ToTokens};
 use syn::{
     parse::{Parse, ParseStream},
     parse_macro_input,
     token::{Comma, Semi},
     Expr,
+    ItemFn,
 };
 
 struct JoinInput {
@@ -204,4 +205,76 @@ pub fn console(raw_input: TokenStream) -> TokenStream {
     };
 
     expanded.into()
+}
+
+/// ```ignore
+/// use webio::time::timeout;
+/// use std::time::Duration;
+///
+/// #[webio::main]
+/// async fn main() {
+///     timeout(Duration::from_millis(200)).await;
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn main(raw_attribute: TokenStream, raw_input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(raw_input as ItemFn);
+    let mut errors: Option<syn::Error> = None;
+    let mut append_error = |error| match errors.as_mut() {
+        Some(stored) => stored.combine(error),
+        None => errors = Some(error),
+    };
+    if !raw_attribute.is_empty() {
+        append_error(syn::Error::new(
+            Span::call_site(),
+            "webio::main attribute must not receive arguments",
+        ));
+    }
+    if input.sig.asyncness.is_none() {
+        append_error(syn::Error::new(
+            Span::call_site(),
+            "webio::main must be an asynchronous function with async syntax",
+        ));
+    }
+    if input.sig.constness.is_some() {
+        append_error(syn::Error::new(
+            Span::call_site(),
+            "webio::main cannot be const",
+        ));
+    }
+    if input.sig.inputs.len() > 0 || input.sig.variadic.is_some() {
+        append_error(syn::Error::new(
+            Span::call_site(),
+            "webio::main function cannot receive parameters",
+        ));
+    }
+    if input.sig.abi.is_some() {
+        append_error(syn::Error::new(
+            Span::call_site(),
+            "webio::main does not support ABIs",
+        ));
+    }
+
+    match errors {
+        Some(stored) => stored.into_compile_error().into(),
+        None => {
+            let visibility = input.vis;
+            let fn_token = input.sig.fn_token;
+            let ident = input.sig.ident;
+            let body = input.block;
+            let attrs = input.attrs;
+            let unsafety = input.sig.unsafety;
+            let abi = input.sig.abi;
+            let expanded = quote! {
+                #(#attrs)*
+                #[::webio::wasm_bindgen::prelude::wasm_bindgen(start)]
+                #visibility #unsafety #abi #fn_token #ident() {
+                    ::webio::task::detach(async {
+                        let (): () = #body;
+                    });
+                }
+            };
+            expanded.into_token_stream().into()
+        },
+    }
 }
