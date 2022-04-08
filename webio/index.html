@@ -23,5 +23,8 @@ Syntax:</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.join.html" title="webio::join macro">join</a></div><div class="item-right docblock-short"><p>Joins a list of futures, and returns their output into a tuple in the same
 order that the futures were given. However, the future must be <code>'static</code>.</p>
 </div></div></div><h2 id="attributes" class="small-section-header"><a href="#attributes">Attribute Macros</a></h2>
-<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="attr" href="attr.main.html" title="webio::main attr">main</a></div><div class="item-right docblock-short"></div></div></div></section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="attr" href="attr.main.html" title="webio::main attr">main</a></div><div class="item-right docblock-short"><p>This macro converts an asynchronous main function into a synchronous one,
+that can actually be an entry point, and that invokes the asynchronous code.
+Under the hood, the asynchronous code is detached from the current call.</p>
+</div></div></div></section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
 </body></html>

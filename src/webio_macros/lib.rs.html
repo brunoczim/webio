@@ -283,6 +283,14 @@
 <span id="278">278</span>
 <span id="279">279</span>
 <span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
 <span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Ident</span>, <span class="ident">Span</span>};
 <span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">quote</span>, <span class="ident">ToTokens</span>};
@@ -492,6 +500,14 @@
     <span class="ident">expanded</span>.<span class="ident">into</span>()
 }
 
+<span class="doccomment">/// This macro converts an asynchronous main function into a synchronous one,</span>
+<span class="doccomment">/// that can actually be an entry point, and that invokes the asynchronous code.</span>
+<span class="doccomment">/// Under the hood, the asynchronous code is detached from the current call.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ## Main With Timeout</span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// ```ignore</span>
 <span class="doccomment">/// use webio::time::timeout;</span>
 <span class="doccomment">/// use std::time::Duration;</span>
