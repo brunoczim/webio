@@ -9,7 +9,7 @@
 }</code></pre></div>
 </div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Logs to the JavaScript/browser/node console using a given method. Syntax:</p>
 
-<div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="macro">console_log!</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>),<span class="kw-2">*</span>)</code></pre></div>
+<div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="macro">console_log!</span>(<span class="ident">argument0</span>, <span class="ident">argument1</span>, <span class="ident">argument2</span>, ..., <span class="ident">argument_n</span>)</code></pre></div>
 <p>Each argument is converted into a <code>JsValue</code> using <code>Into</code>.</p>
 <h2 id="examples"><a href="#examples">Examples</a></h2>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">webio::console_log</span>;

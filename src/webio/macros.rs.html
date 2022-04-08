@@ -111,11 +111,13 @@
 <span id="106">106</span>
 <span id="107">107</span>
 <span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module defines macros.</span>
 
 <span class="doccomment">/// Logs to the JavaScript/browser/node console using a given method. Syntax:</span>
 <span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// console_log!($($arguments),*)</span>
+<span class="doccomment">/// console_log!(argument0, argument1, argument2, ..., argument_n)</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// Each argument is converted into a `JsValue` using `Into`.</span>
 <span class="doccomment">///</span>
@@ -136,7 +138,7 @@
 
 <span class="doccomment">/// Debugs to the JavaScript/browser/node console using a given method. Syntax:</span>
 <span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// console_debug!($($arguments),*)</span>
+<span class="doccomment">/// console_debug!(argument0, argument1, argument2, ..., argument_n)</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// Each argument is converted into a `JsValue` using `Into`.</span>
 <span class="doccomment">///</span>
@@ -156,9 +158,10 @@
 }
 
 <span class="doccomment">/// Shows info in the JavaScript/browser/node console using a given method.</span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// Syntax:</span>
 <span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// console_info!($($arguments),*)</span>
+<span class="doccomment">/// console_info!(argument0, argument1, argument2, ..., argument_n)</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// Each argument is converted into a `JsValue` using `Into`.</span>
 <span class="doccomment">///</span>
@@ -179,7 +182,7 @@
 
 <span class="doccomment">/// Warns to the JavaScript/browser/node console using a given method. Syntax:</span>
 <span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// console_warn!($($arguments),*)</span>
+<span class="doccomment">/// console_warn!(argument0, argument1, argument2, ..., argument_n)</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// Each argument is converted into a `JsValue` using `Into`.</span>
 <span class="doccomment">///</span>
@@ -199,9 +202,10 @@
 }
 
 <span class="doccomment">/// Shows error in the JavaScript/browser/node console using a given method.</span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// Syntax:</span>
 <span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// console_error!($($arguments),*)</span>
+<span class="doccomment">/// console_error!(argument0, argument1, argument2, ..., argument_n)</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// Each argument is converted into a `JsValue` using `Into`.</span>
 <span class="doccomment">///</span>
