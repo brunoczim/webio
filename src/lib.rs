@@ -14,7 +14,7 @@ pub mod callback;
 
 pub mod time;
 
-pub use webio_macros::{console, join, main};
+pub use webio_macros::{console, join, main, select, test};
 
 #[doc(hidden)]
 pub use js_sys;
@@ -22,5 +22,7 @@ pub use js_sys;
 pub use wasm_bindgen;
 #[doc(hidden)]
 pub use wasm_bindgen_futures;
+#[doc(hidden)]
+pub use wasm_bindgen_test;
 #[doc(hidden)]
 pub use web_sys;

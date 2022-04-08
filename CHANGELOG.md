@@ -2,8 +2,10 @@
 - [x] spawn
 - [x] detach
 - [x] join macro
+- [x] select macro
 - [x] console macro
-- [x] conversion from callback to future
 - [x] main macro
-- [ ] select macro
+- [x] test macro
+- [x] conversion from callback to future
+    - [ ] support events that happen more than once
 - [ ] wrapper over JS asynchronous APIs or callbacks
