@@ -2,7 +2,7 @@
 
 /// Logs to the JavaScript/browser/node console using a given method. Syntax:
 /// ```ignore
-/// console_log!($($arguments),*)
+/// console_log!(argument0, argument1, argument2, ..., argument_n)
 /// ```
 /// Each argument is converted into a `JsValue` using `Into`.
 ///
@@ -23,7 +23,7 @@ macro_rules! console_log {
 
 /// Debugs to the JavaScript/browser/node console using a given method. Syntax:
 /// ```ignore
-/// console_debug!($($arguments),*)
+/// console_debug!(argument0, argument1, argument2, ..., argument_n)
 /// ```
 /// Each argument is converted into a `JsValue` using `Into`.
 ///
@@ -43,9 +43,10 @@ macro_rules! console_debug {
 }
 
 /// Shows info in the JavaScript/browser/node console using a given method.
+///
 /// Syntax:
 /// ```ignore
-/// console_info!($($arguments),*)
+/// console_info!(argument0, argument1, argument2, ..., argument_n)
 /// ```
 /// Each argument is converted into a `JsValue` using `Into`.
 ///
@@ -66,7 +67,7 @@ macro_rules! console_info {
 
 /// Warns to the JavaScript/browser/node console using a given method. Syntax:
 /// ```ignore
-/// console_warn!($($arguments),*)
+/// console_warn!(argument0, argument1, argument2, ..., argument_n)
 /// ```
 /// Each argument is converted into a `JsValue` using `Into`.
 ///
@@ -86,9 +87,10 @@ macro_rules! console_warn {
 }
 
 /// Shows error in the JavaScript/browser/node console using a given method.
+///
 /// Syntax:
 /// ```ignore
-/// console_error!($($arguments),*)
+/// console_error!(argument0, argument1, argument2, ..., argument_n)
 /// ```
 /// Each argument is converted into a `JsValue` using `Into`.
 ///
