@@ -207,6 +207,14 @@ pub fn console(raw_input: TokenStream) -> TokenStream {
     expanded.into()
 }
 
+/// This macro converts an asynchronous main function into a synchronous one,
+/// that can actually be an entry point, and that invokes the asynchronous code.
+/// Under the hood, the asynchronous code is detached from the current call.
+///
+/// # Examples
+///
+/// ## Main With Timeout
+///
 /// ```ignore
 /// use webio::time::timeout;
 /// use std::time::Duration;
