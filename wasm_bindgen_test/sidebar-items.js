@@ -1,0 +1,1 @@
+initSidebarItems({"attr":[["wasm_bindgen_test",""]],"macro":[["console_log","Helper macro which acts like `println!` only routes to `console.log` instead."],["wasm_bindgen_test_configure","A macro used to configured how this test is executed by the `wasm-bindgen-test-runner` harness."]],"mod":[["__rt","Internal-only runtime module used for the `wasm_bindgen_test` crate."]]});

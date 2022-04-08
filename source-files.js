@@ -1,6 +1,7 @@
 var N = null;var sourcesIndex = {};
 sourcesIndex["bumpalo"] = {"name":"","files":["alloc.rs","lib.rs"]};
 sourcesIndex["cfg_if"] = {"name":"","files":["lib.rs"]};
+sourcesIndex["console_error_panic_hook"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["itoa"] = {"name":"","files":["lib.rs","udiv128.rs"]};
 sourcesIndex["js_sys"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["lazy_static"] = {"name":"","files":["inline_lazy.rs","lib.rs"]};
@@ -8,6 +9,7 @@ sourcesIndex["log"] = {"name":"","files":["lib.rs","macros.rs"]};
 sourcesIndex["proc_macro2"] = {"name":"","files":["detection.rs","fallback.rs","lib.rs","marker.rs","parse.rs","wrapper.rs"]};
 sourcesIndex["quote"] = {"name":"","files":["ext.rs","format.rs","ident_fragment.rs","lib.rs","runtime.rs","spanned.rs","to_tokens.rs"]};
 sourcesIndex["ryu"] = {"name":"","dirs":[{"name":"buffer","files":["mod.rs"]},{"name":"pretty","files":["exponent.rs","mantissa.rs","mod.rs"]}],"files":["common.rs","d2s.rs","d2s_full_table.rs","d2s_intrinsics.rs","digit_table.rs","f2s.rs","f2s_intrinsics.rs","lib.rs"]};
+sourcesIndex["scoped_tls"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["serde"] = {"name":"","dirs":[{"name":"de","files":["format.rs","ignored_any.rs","impls.rs","mod.rs","seed.rs","utf8.rs","value.rs"]},{"name":"private","files":["de.rs","doc.rs","mod.rs","ser.rs","size_hint.rs"]},{"name":"ser","files":["fmt.rs","impls.rs","impossible.rs","mod.rs"]}],"files":["integer128.rs","lib.rs","macros.rs"]};
 sourcesIndex["serde_json"] = {"name":"","dirs":[{"name":"features_check","files":["mod.rs"]},{"name":"io","files":["mod.rs"]},{"name":"value","files":["de.rs","from.rs","index.rs","mod.rs","partial_eq.rs","ser.rs"]}],"files":["de.rs","error.rs","iter.rs","lib.rs","macros.rs","map.rs","number.rs","read.rs","ser.rs"]};
 sourcesIndex["syn"] = {"name":"","dirs":[{"name":"gen","files":["clone.rs","gen_helper.rs","visit.rs"]}],"files":["attr.rs","await.rs","bigint.rs","buffer.rs","custom_keyword.rs","custom_punctuation.rs","data.rs","derive.rs","discouraged.rs","error.rs","export.rs","expr.rs","ext.rs","file.rs","generics.rs","group.rs","ident.rs","item.rs","lib.rs","lifetime.rs","lit.rs","lookahead.rs","mac.rs","macros.rs","op.rs","parse.rs","parse_macro_input.rs","parse_quote.rs","pat.rs","path.rs","print.rs","punctuated.rs","reserved.rs","sealed.rs","span.rs","spanned.rs","stmt.rs","thread.rs","token.rs","ty.rs","verbatim.rs","whitespace.rs"]};
@@ -18,6 +20,8 @@ sourcesIndex["wasm_bindgen_futures"] = {"name":"","dirs":[{"name":"task","files"
 sourcesIndex["wasm_bindgen_macro"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["wasm_bindgen_macro_support"] = {"name":"","files":["lib.rs","parser.rs"]};
 sourcesIndex["wasm_bindgen_shared"] = {"name":"","files":["lib.rs"]};
+sourcesIndex["wasm_bindgen_test"] = {"name":"","dirs":[{"name":"rt","files":["browser.rs","detect.rs","mod.rs","node.rs"]}],"files":["lib.rs"]};
+sourcesIndex["wasm_bindgen_test_macro"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["web_sys"] = {"name":"","dirs":[{"name":"features","files":["gen_EventTarget.rs","gen_Window.rs","gen_console.rs","mod.rs"]}],"files":["lib.rs"]};
 sourcesIndex["webio"] = {"name":"","dirs":[{"name":"callback","files":["once.rs"]},{"name":"time","files":["instant.rs"]}],"files":["callback.rs","lib.rs","macros.rs","panic.rs","task.rs","time.rs"]};
 sourcesIndex["webio_macros"] = {"name":"","files":["lib.rs"]};
