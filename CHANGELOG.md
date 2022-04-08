@@ -4,6 +4,6 @@
 - [x] join macro
 - [x] console macro
 - [x] conversion from callback to future
+- [x] main macro
 - [ ] select macro
-- [ ] main macro
 - [ ] wrapper over JS asynchronous APIs or callbacks
