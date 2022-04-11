@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["once","This module implements conversion from callbacks to futures for callbacks that are called only once."]]});
+initSidebarItems({"enum":[["Error","An error that might happen when the event completes."]],"mod":[["multi","This module implements conversion from callbacks to futures for callbacks that are called multiple times, i.e. callbacks of events that occur more than once per callback."],["once","This module implements conversion from callbacks to futures for callbacks that are called only once."]]});

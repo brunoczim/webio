@@ -457,114 +457,17 @@
 <span id="452">452</span>
 <span id="453">453</span>
 <span id="454">454</span>
-<span id="455">455</span>
-<span id="456">456</span>
-<span id="457">457</span>
-<span id="458">458</span>
-<span id="459">459</span>
-<span id="460">460</span>
-<span id="461">461</span>
-<span id="462">462</span>
-<span id="463">463</span>
-<span id="464">464</span>
-<span id="465">465</span>
-<span id="466">466</span>
-<span id="467">467</span>
-<span id="468">468</span>
-<span id="469">469</span>
-<span id="470">470</span>
-<span id="471">471</span>
-<span id="472">472</span>
-<span id="473">473</span>
-<span id="474">474</span>
-<span id="475">475</span>
-<span id="476">476</span>
-<span id="477">477</span>
-<span id="478">478</span>
-<span id="479">479</span>
-<span id="480">480</span>
-<span id="481">481</span>
-<span id="482">482</span>
-<span id="483">483</span>
-<span id="484">484</span>
-<span id="485">485</span>
-<span id="486">486</span>
-<span id="487">487</span>
-<span id="488">488</span>
-<span id="489">489</span>
-<span id="490">490</span>
-<span id="491">491</span>
-<span id="492">492</span>
-<span id="493">493</span>
-<span id="494">494</span>
-<span id="495">495</span>
-<span id="496">496</span>
-<span id="497">497</span>
-<span id="498">498</span>
-<span id="499">499</span>
-<span id="500">500</span>
-<span id="501">501</span>
-<span id="502">502</span>
-<span id="503">503</span>
-<span id="504">504</span>
-<span id="505">505</span>
-<span id="506">506</span>
-<span id="507">507</span>
-<span id="508">508</span>
-<span id="509">509</span>
-<span id="510">510</span>
-<span id="511">511</span>
-<span id="512">512</span>
-<span id="513">513</span>
-<span id="514">514</span>
-<span id="515">515</span>
-<span id="516">516</span>
-<span id="517">517</span>
-<span id="518">518</span>
-<span id="519">519</span>
-<span id="520">520</span>
-<span id="521">521</span>
-<span id="522">522</span>
-<span id="523">523</span>
-<span id="524">524</span>
-<span id="525">525</span>
-<span id="526">526</span>
-<span id="527">527</span>
-<span id="528">528</span>
-<span id="529">529</span>
-<span id="530">530</span>
-<span id="531">531</span>
-<span id="532">532</span>
-<span id="533">533</span>
-<span id="534">534</span>
-<span id="535">535</span>
-<span id="536">536</span>
-<span id="537">537</span>
-<span id="538">538</span>
-<span id="539">539</span>
-<span id="540">540</span>
-<span id="541">541</span>
-<span id="542">542</span>
-<span id="543">543</span>
-<span id="544">544</span>
-<span id="545">545</span>
-<span id="546">546</span>
-<span id="547">547</span>
-<span id="548">548</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module implements conversion from callbacks to futures for callbacks</span>
 <span class="doccomment">//! that are called only once.</span>
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::panic</span>::{<span class="ident">CatchUnwind</span>, <span class="ident">Payload</span>};
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cell::Cell</span>, <span class="ident">fmt</span>, <span class="ident">future::Future</span>, <span class="ident">panic</span>, <span class="ident">pin::Pin</span>, <span class="ident">rc::Rc</span>, <span class="ident">task</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">callback</span>, <span class="ident">panic::CatchUnwind</span>};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">future::Future</span>, <span class="ident">panic</span>, <span class="ident">pin::Pin</span>, <span class="ident">task</span>};
 
 <span class="macro">macro_rules!</span> <span class="ident">sync_once</span> {
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">self</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>:<span class="ident">expr</span>) =&gt; {{
-        <span class="kw">let</span> <span class="ident">shared</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">Shared::init_connected</span>());
+        <span class="kw">let</span> (<span class="ident">notifier</span>, <span class="ident">inner_listener</span>) <span class="op">=</span> <span class="ident">callback::shared::channel</span>();
 
-        <span class="kw">let</span> <span class="ident">notifier</span> <span class="op">=</span> <span class="ident">Notifier::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">Listener::new</span>(<span class="ident">shared</span>);
-
-        <span class="kw">let</span> <span class="ident">boxed_fn</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
+        <span class="kw">let</span> <span class="ident">handler</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
             <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span>
                 <span class="ident">panic::catch_unwind</span>(<span class="ident">panic::AssertUnwindSafe</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>));
             <span class="kw">match</span> <span class="ident">result</span> {
@@ -572,50 +475,27 @@
                 <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">notifier</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
             }
         });
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fn</span> <span class="kw">as</span> <span class="ident">SyncCbHandler</span>);
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">self</span>.<span class="ident">register_fn</span>)(<span class="ident">handler</span> <span class="kw">as</span> <span class="ident">SyncCbHandler</span>);
 
-        (<span class="ident">ret</span>, <span class="ident">listener</span>)
+        (<span class="ident">ret</span>, <span class="ident">Listener::new</span>(<span class="ident">inner_listener</span>))
     }};
 }
 
 <span class="macro">macro_rules!</span> <span class="ident">async_once</span> {
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">self</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>:<span class="ident">expr</span>) =&gt; {{
-        <span class="kw">let</span> <span class="ident">shared</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">Shared::init_connected</span>());
+        <span class="kw">let</span> (<span class="ident">notifier</span>, <span class="ident">inner_listener</span>) <span class="op">=</span> <span class="ident">callback::shared::channel</span>();
 
-        <span class="kw">let</span> <span class="ident">notifier</span> <span class="op">=</span> <span class="ident">Notifier::new</span>(<span class="ident">shared</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">Listener::new</span>(<span class="ident">shared</span>);
-
-        <span class="kw">let</span> <span class="ident">boxed_fut</span> <span class="op">=</span> <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
+        <span class="kw">let</span> <span class="ident">handler</span> <span class="op">=</span> <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
             <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">CatchUnwind::new</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>).<span class="kw">await</span>;
             <span class="kw">match</span> <span class="ident">result</span> {
                 <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">notifier</span>.<span class="ident">success</span>(<span class="ident">data</span>),
                 <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">notifier</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
             }
         });
-        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">self</span>.<span class="ident">register_fn</span>)(<span class="ident">boxed_fut</span> <span class="kw">as</span> <span class="ident">AsyncCbHandler</span>);
+        <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">self</span>.<span class="ident">register_fn</span>)(<span class="ident">handler</span> <span class="kw">as</span> <span class="ident">AsyncCbHandler</span>);
 
-        (<span class="ident">ret</span>, <span class="ident">listener</span>)
+        (<span class="ident">ret</span>, <span class="ident">Listener::new</span>(<span class="ident">inner_listener</span>))
     }};
-}
-
-<span class="doccomment">/// An error that might happen when the event completes.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Error</span> {
-    <span class="doccomment">/// The callback panicked! And here is panic&#39;s payload.</span>
-    <span class="ident">Panicked</span>(<span class="ident">Payload</span>),
-    <span class="doccomment">/// The callback&#39;s future was cancelled.</span>
-    <span class="ident">Cancelled</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmtr</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Error::Panicked</span>(<span class="ident">payload</span>) =&gt; {
-                <span class="macro">write!</span>(<span class="ident">fmtr</span>, <span class="string">&quot;task panicked: {:?}&quot;</span>, <span class="ident">payload</span>)
-            },
-            <span class="ident">Error::Cancelled</span> =&gt; <span class="macro">write!</span>(<span class="ident">fmtr</span>, <span class="string">&quot;task cancelled&quot;</span>),
-        }
-    }
 }
 
 <span class="doccomment">/// The type of synchronous, oneshot callback handlers (i.e. the handler that</span>
@@ -627,7 +507,8 @@
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">AsyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> ()<span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// Register of oneshot callbacks into an event, where the callback is</span>
-<span class="doccomment">/// syncrhonous (waiting for the callback to complete is still asynchronous).</span>
+<span class="doccomment">/// syncrhonous (though waiting for the callback to complete is still</span>
+<span class="doccomment">/// asynchronous).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SyncRegister</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
     <span class="ident">register_fn</span>: <span class="ident">F</span>,
@@ -636,8 +517,9 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> <span class="ident">SyncRegister</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Creates a new register using an inner register function that can be used</span>
     <span class="doccomment">/// only once. Such function receives callbacks handlers and register</span>
-    <span class="doccomment">/// them. Callback handlers are functions that are called when the event</span>
-    <span class="doccomment">/// completes, and then, they call the actual callbacks.</span>
+    <span class="doccomment">/// them. Callback handlers are register-internal functions that are called</span>
+    <span class="doccomment">/// when the event completes, and then, they call the actual callbacks, i.e.</span>
+    <span class="doccomment">/// a wrapper for the actual callback.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
@@ -646,24 +528,26 @@
     }
 
     <span class="doccomment">/// Creates a new register using an inner register function that can be used</span>
-    <span class="doccomment">/// multiple times and imutabily. Such function receives callbacks handlers</span>
-    <span class="doccomment">/// and register them. Callback handlers are functions that are called when</span>
-    <span class="doccomment">/// the event completes, and then, they call the actual callbacks.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_ref</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
+    <span class="doccomment">/// multiple times, with mutability, however. Such function receives</span>
+    <span class="doccomment">/// callbacks handlers and register them. Callback handlers are</span>
+    <span class="doccomment">/// register-internal functions that are called when the event completes,</span>
+    <span class="doccomment">/// and then, they call the actual callbacks, i.e. a wrapper for the actual</span>
+    <span class="doccomment">/// callback.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_mut</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
+        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
     {
         <span class="self">Self</span> { <span class="ident">register_fn</span> }
     }
 
     <span class="doccomment">/// Creates a new register using an inner register function that can be used</span>
-    <span class="doccomment">/// multiple times, with mutability, however. Such function receives</span>
-    <span class="doccomment">/// callbacks handlers and register them. Callback handlers are</span>
-    <span class="doccomment">/// functions that are called when the event completes, and then, they</span>
-    <span class="doccomment">/// call the actual callbacks.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_mut</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
+    <span class="doccomment">/// multiple times and imutabily. Such function receives callbacks handlers</span>
+    <span class="doccomment">/// and register them. Callback handlers are register-internal functions</span>
+    <span class="doccomment">/// that are called when the event completes, and then, they call the</span>
+    <span class="doccomment">/// actual callbacks, i.e. a wrapper for the actual callback.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_ref</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
+        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
     {
         <span class="self">Self</span> { <span class="ident">register_fn</span> }
     }
@@ -707,7 +591,7 @@
     <span class="doccomment">/// for the callback to complete.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This method does not consume the register, requiring mutability,</span>
-    <span class="doccomment">/// however. ```</span>
+    <span class="doccomment">/// however.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_mut</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">C</span>, <span class="ident">U</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">C</span>) -&gt; <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
@@ -823,8 +707,9 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> <span class="ident">AsyncRegister</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Creates a new register using an inner register function that can be used</span>
     <span class="doccomment">/// only once. Such function receives callbacks handlers and register</span>
-    <span class="doccomment">/// them. Callback handlers are futures that are awaited when the event</span>
-    <span class="doccomment">/// completes, and then, they await the actual callbacks.</span>
+    <span class="doccomment">/// them. Callback handlers are register-internal futures that are awaited</span>
+    <span class="doccomment">/// for the event&#39;s completion, and that then await the actual callbacks,</span>
+    <span class="doccomment">/// i.e. a wrapper for the actual callback.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
@@ -834,9 +719,10 @@
 
     <span class="doccomment">/// Creates a new register using an inner register function that can be used</span>
     <span class="doccomment">/// multiple times, with mutability, however. Such function receives</span>
-    <span class="doccomment">/// callbacks handlers and register them. Callback handlers are futures</span>
-    <span class="doccomment">/// that are awaited when the event completes, and then, they await the</span>
-    <span class="doccomment">/// actual callbacks.</span>
+    <span class="doccomment">/// callbacks handlers and register them. Callback handlers are</span>
+    <span class="doccomment">/// register-internal futures that are awaited for the event&#39;s</span>
+    <span class="doccomment">/// completion, and that then await the actual callbacks,</span>
+    <span class="doccomment">/// i.e. a wrapper for the actual callback.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_mut</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">AsyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
@@ -846,9 +732,10 @@
 
     <span class="doccomment">/// Creates a new register using an inner register function that can be used</span>
     <span class="doccomment">/// multiple times and does not require mutability. Such function receives</span>
-    <span class="doccomment">/// callbacks handlers and register them. Callback handlers are futures</span>
-    <span class="doccomment">/// that are awaited when the event completes, and then, they await the</span>
-    <span class="doccomment">/// actual callbacks.</span>
+    <span class="doccomment">/// callbacks handlers and register them. Callback handlers are</span>
+    <span class="doccomment">/// register-internal futures that are awaited for the event&#39;s</span>
+    <span class="doccomment">/// completion, and that then await the actual callbacks,</span>
+    <span class="doccomment">/// i.e. a wrapper for the actual callback.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_ref</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">AsyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
@@ -999,103 +886,28 @@
 <span class="doccomment">/// A handle to a oneshot callback registered in an event.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">shared</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Shared</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">inner</span>: <span class="ident">callback::shared::Listener</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">shared</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Shared</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">shared</span> }
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">inner</span>: <span class="ident">callback::shared::Listener</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
+        <span class="self">Self</span> { <span class="ident">inner</span> }
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Future</span> <span class="kw">for</span> <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">callback::Error</span><span class="op">&gt;</span>;
 
     <span class="kw">fn</span> <span class="ident">poll</span>(
         <span class="self">self</span>: <span class="ident">Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>,
         <span class="ident">ctx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">task::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
     ) -&gt; <span class="ident">task::Poll</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">shared</span>.<span class="ident">connected</span>.<span class="ident">get</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">waker</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">shared</span>.<span class="ident">waker</span>.<span class="ident">take</span>();
-            <span class="kw">if</span> <span class="ident">waker</span>.<span class="ident">is_none</span>() {
-                <span class="ident">waker</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ctx</span>.<span class="ident">waker</span>().<span class="ident">clone</span>());
-            }
-            <span class="self">self</span>.<span class="ident">shared</span>.<span class="ident">waker</span>.<span class="ident">set</span>(<span class="ident">waker</span>);
-            <span class="ident">task::Poll::Pending</span>
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">shared</span>.<span class="ident">data</span>.<span class="ident">replace</span>(<span class="prelude-val">Err</span>(<span class="ident">Error::Cancelled</span>));
-            <span class="ident">task::Poll::Ready</span>(<span class="ident">data</span>)
-        }
-    }
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">shared</span>.<span class="ident">connected</span>.<span class="ident">set</span>(<span class="bool-val">false</span>);
-    }
-}
-
-<span class="kw">struct</span> <span class="ident">Shared</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">connected</span>: <span class="ident">Cell</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
-    <span class="ident">waker</span>: <span class="ident">Cell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">task::Waker</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">data</span>: <span class="ident">Cell</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Shared</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">fmt::Debug</span>,
-{
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmtr</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">let</span> <span class="ident">waker</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">waker</span>.<span class="ident">take</span>();
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">replace</span>(<span class="prelude-val">Err</span>(<span class="ident">Error::Cancelled</span>));
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">fmtr</span>
-            .<span class="ident">debug_struct</span>(<span class="string">&quot;callback::Shared&quot;</span>)
-            .<span class="ident">field</span>(<span class="string">&quot;connected&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">connected</span>)
-            .<span class="ident">field</span>(<span class="string">&quot;waker&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">waker</span>)
-            .<span class="ident">field</span>(<span class="string">&quot;data&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">data</span>)
-            .<span class="ident">finish</span>();
-        <span class="self">self</span>.<span class="ident">waker</span>.<span class="ident">set</span>(<span class="ident">waker</span>);
-        <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">set</span>(<span class="ident">data</span>);
-        <span class="ident">result</span>
-    }
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Shared</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">init_connected</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">connected</span>: <span class="ident">Cell::new</span>(<span class="bool-val">true</span>),
-            <span class="ident">waker</span>: <span class="ident">Cell::new</span>(<span class="prelude-val">None</span>),
-            <span class="ident">data</span>: <span class="ident">Cell::new</span>(<span class="prelude-val">Err</span>(<span class="ident">Error::Cancelled</span>)),
-        }
-    }
-}
-
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">struct</span> <span class="ident">Notifier</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">shared</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Shared</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Notifier</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">shared</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">Shared</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">shared</span> }
-    }
-
-    <span class="kw">fn</span> <span class="ident">panicked</span>(<span class="self">self</span>, <span class="ident">payload</span>: <span class="ident">Payload</span>) {
-        <span class="self">self</span>.<span class="ident">shared</span>.<span class="ident">data</span>.<span class="ident">set</span>(<span class="prelude-val">Err</span>(<span class="ident">Error::Panicked</span>(<span class="ident">payload</span>)));
-    }
-
-    <span class="kw">fn</span> <span class="ident">success</span>(<span class="self">self</span>, <span class="ident">data</span>: <span class="ident">T</span>) {
-        <span class="self">self</span>.<span class="ident">shared</span>.<span class="ident">data</span>.<span class="ident">set</span>(<span class="prelude-val">Ok</span>(<span class="ident">data</span>));
-    }
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Notifier</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">let</span> <span class="ident">was_connected</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">shared</span>.<span class="ident">connected</span>.<span class="ident">replace</span>(<span class="bool-val">false</span>);
-        <span class="kw">if</span> <span class="ident">was_connected</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">waker</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">shared</span>.<span class="ident">waker</span>.<span class="ident">take</span>() {
-                <span class="ident">waker</span>.<span class="ident">wake</span>();
-            }
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">receive</span>() {
+            <span class="prelude-val">Some</span>(<span class="ident">output</span>) =&gt; <span class="ident">task::Poll::Ready</span>(<span class="ident">output</span>),
+            <span class="prelude-val">None</span> =&gt; {
+                <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">subscribe</span>(<span class="ident">ctx</span>.<span class="ident">waker</span>());
+                <span class="ident">task::Poll::Pending</span>
+            },
         }
     }
 }
