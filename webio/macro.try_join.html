@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Joins a list of futures and returns their output into a tuple in the same order that the futures were given, but if one of them fails, `try_join` fails, and so a result of tuples is returned. Futures must be `&#x27;static`."><meta name="keywords" content="rust, rustlang, rust-lang, try_join"><title>try_join in webio - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../dark.css" disabled><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../storage.js"></script><script src="../crates.js"></script><script defer src="../main.js"></script>
+    <noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../favicon.svg"></head><body class="rustdoc macro"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../webio/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div>
+        </a><h2 class="location"></h2>
+    </nav>
+    <nav class="sidebar"><a class="sidebar-logo" href="../webio/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div>
+        </a><div class="sidebar-elems"><h2 class="location"><a href="index.html">In webio</a></h2><div id="sidebar-vars" data-name="try_join" data-ty="macro" data-relpath=""></div><script defer src="sidebar-items.js"></script></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../webio/index.html"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="main-heading">
+    <h1 class="fqn"><span class="in-band">Macro <a href="index.html">webio</a>::<wbr><a class="macro" href="#">try_join</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../src/webio_macros/lib.rs.html#221">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><div class="docblock item-decl"><pre class="rust macro"><code>try_join!() { /* proc-macro */ }</code></pre></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Joins a list of futures and returns their output into a tuple in the same
+order that the futures were given, but if one of them fails, <code>try_join</code>
+fails, and so a result of tuples is returned. Futures must be <code>'static</code>.</p>
+<p>Syntax:</p>
+
+<div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="macro">try_join!</span>(<span class="ident">future0</span>, <span class="ident">future1</span>, <span class="ident">future2</span>, ..., <span class="ident">future_n</span>)</code></pre></div>
+<h2 id="examples"><a href="#examples">Examples</a></h2><h3 id="with-timeout-and-success"><a href="#with-timeout-and-success">With Timeout and Success</a></h3>
+<div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="kw">use</span> <span class="ident">std::time::Duration</span>;
+<span class="kw">use</span> <span class="ident">webio</span>::{<span class="ident">try_join</span>, <span class="ident">time::timeout</span>};
+
+<span class="comment">// Create some tasks</span>
+<span class="kw">let</span> <span class="ident">first_handle</span> <span class="op">=</span> <span class="kw">async</span> {
+    <span class="ident">timeout</span>(<span class="ident">Duration::from_millis</span>(<span class="number">50</span>)).<span class="kw">await</span>;
+    <span class="prelude-ty">Result</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="ident">::Ok</span>(<span class="number">3</span>)
+};
+<span class="kw">let</span> <span class="ident">second_handle</span> <span class="op">=</span> <span class="kw">async</span> {
+    <span class="ident">timeout</span>(<span class="ident">Duration::from_millis</span>(<span class="number">60</span>)).<span class="kw">await</span>;
+    <span class="prelude-val">Ok</span>(<span class="number">5</span>)
+};
+<span class="kw">let</span> <span class="ident">third_handle</span> <span class="op">=</span> <span class="kw">async</span> {
+    <span class="ident">timeout</span>(<span class="ident">Duration::from_millis</span>(<span class="number">40</span>)).<span class="kw">await</span>;
+    <span class="prelude-val">Ok</span>(<span class="number">7</span>)
+};
+
+<span class="comment">// Try to join it</span>
+<span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="macro">try_join!</span>(<span class="ident">first_handle</span>, <span class="ident">second_handle</span>, <span class="ident">third_handle</span>);
+<span class="comment">// Should be Ok</span>
+<span class="kw">let</span> (<span class="ident">first</span>, <span class="ident">second</span>, <span class="ident">third</span>) <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();
+
+<span class="comment">// Expected output</span>
+<span class="macro">assert_eq!</span>((<span class="ident">first</span>, <span class="ident">second</span>, <span class="ident">third</span>), (<span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>));</code></pre></div>
+<h3 id="with-timeout-and-failure"><a href="#with-timeout-and-failure">With Timeout and Failure</a></h3>
+<div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="kw">use</span> <span class="ident">std::time::Duration</span>;
+<span class="kw">use</span> <span class="ident">webio</span>::{<span class="ident">try_join</span>, <span class="ident">time::timeout</span>};
+
+<span class="comment">// Create some tasks</span>
+<span class="kw">let</span> <span class="ident">first_handle</span> <span class="op">=</span> <span class="kw">async</span> {
+    <span class="ident">timeout</span>(<span class="ident">Duration::from_millis</span>(<span class="number">50</span>)).<span class="kw">await</span>;
+    <span class="prelude-val">Ok</span>(<span class="number">3</span>)
+};
+<span class="kw">let</span> <span class="ident">second_handle</span> <span class="op">=</span> <span class="kw">async</span> {
+    <span class="ident">timeout</span>(<span class="ident">Duration::from_millis</span>(<span class="number">60</span>)).<span class="kw">await</span>;
+    <span class="prelude-val">Err</span>(<span class="string">&quot;boom&quot;</span>)
+};
+<span class="kw">let</span> <span class="ident">third_handle</span> <span class="op">=</span> <span class="kw">async</span> {
+    <span class="ident">timeout</span>(<span class="ident">Duration::from_millis</span>(<span class="number">40</span>)).<span class="kw">await</span>;
+    <span class="prelude-val">Ok</span>(<span class="number">7</span>)
+};
+
+<span class="comment">// Try to join them</span>
+<span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="macro">try_join!</span>(<span class="ident">first_handle</span>, <span class="ident">second_handle</span>, <span class="ident">third_handle</span>);
+
+<span class="comment">// Should be an error</span>
+<span class="macro">assert_eq!</span>(<span class="ident">result</span>, <span class="prelude-val">Err</span>(<span class="string">&quot;boom&quot;</span>));</code></pre></div>
+</div></details></section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
+</body></html>

@@ -18,13 +18,16 @@ functions.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.console_info.html" title="webio::console_info macro">console_info</a></div><div class="item-right docblock-short"><p>Shows info in the JavaScript/browser/node console using a given method.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.console_log.html" title="webio::console_log macro">console_log</a></div><div class="item-right docblock-short"><p>Logs to the JavaScript/browser/node console using a given method. Syntax:</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.console_warn.html" title="webio::console_warn macro">console_warn</a></div><div class="item-right docblock-short"><p>Warns to the JavaScript/browser/node console using a given method. Syntax:</p>
-</div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.join.html" title="webio::join macro">join</a></div><div class="item-right docblock-short"><p>Joins a list of futures, and returns their output into a tuple in the same
-order that the futures were given. However, the future must be <code>'static</code>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.join.html" title="webio::join macro">join</a></div><div class="item-right docblock-short"><p>Joins a list of futures and returns their output into a tuple in the same
+order that the futures were given. Futures must be <code>'static</code>.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.select.html" title="webio::select macro">select</a></div><div class="item-right docblock-short"><p>Listens to a list of futures and finishes when the first future finishes,
 which is then selected. Every future is placed in a “match arm”, and when it
-is selected, the “arm” pattern is matched, and the macro evaluates to the
-right side of the “arm”. The pattern must be irrefutable, typically just
-a variable name, or destructuring.</p>
+is selected, the “arm” pattern is matched and the macro evaluates to the
+right side of the “arm”. Patterns must be irrefutable, typically just a
+variable name, or destructuring. Futures must be <code>'static</code>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.try_join.html" title="webio::try_join macro">try_join</a></div><div class="item-right docblock-short"><p>Joins a list of futures and returns their output into a tuple in the same
+order that the futures were given, but if one of them fails, <code>try_join</code>
+fails, and so a result of tuples is returned. Futures must be <code>'static</code>.</p>
 </div></div></div><h2 id="attributes" class="small-section-header"><a href="#attributes">Attribute Macros</a></h2>
 <div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="attr" href="attr.main.html" title="webio::main attr">main</a></div><div class="item-right docblock-short"><p>This macro converts an asynchronous main function into a synchronous one
 that can actually be an entry point, and that invokes the asynchronous code.

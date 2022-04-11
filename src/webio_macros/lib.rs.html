@@ -561,6 +561,104 @@
 <span id="556">556</span>
 <span id="557">557</span>
 <span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
+<span id="611">611</span>
+<span id="612">612</span>
+<span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
 <span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Ident</span>, <span class="ident">Span</span>};
 <span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">quote</span>, <span class="ident">ToTokens</span>};
@@ -585,8 +683,8 @@
     }
 }
 
-<span class="doccomment">/// Joins a list of futures, and returns their output into a tuple in the same</span>
-<span class="doccomment">/// order that the futures were given. However, the future must be `&#39;static`.</span>
+<span class="doccomment">/// Joins a list of futures and returns their output into a tuple in the same</span>
+<span class="doccomment">/// order that the futures were given. Futures must be `&#39;static`.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Syntax:</span>
 <span class="doccomment">///</span>
@@ -599,29 +697,27 @@
 <span class="doccomment">/// ## With Timeout</span>
 <span class="doccomment">/// ```ignore</span>
 <span class="doccomment">/// use std::time::Duration;</span>
-<span class="doccomment">/// use webio::{join, task, time::timeout};</span>
+<span class="doccomment">/// use webio::{join, time::timeout};</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// # fn main() {</span>
-<span class="doccomment">/// # task::detach(async {</span>
-<span class="doccomment">/// // Spawn some tasks.</span>
-<span class="doccomment">/// let first_handle = task::spawn(async {</span>
+<span class="doccomment">/// // Create some tasks</span>
+<span class="doccomment">/// let first_handle = async {</span>
 <span class="doccomment">///     timeout(Duration::from_millis(50)).await;</span>
 <span class="doccomment">///     3</span>
-<span class="doccomment">/// });</span>
-<span class="doccomment">/// let second_handle = task::spawn(async {</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">/// let second_handle = async {</span>
 <span class="doccomment">///     timeout(Duration::from_millis(60)).await;</span>
 <span class="doccomment">///     5</span>
-<span class="doccomment">/// });</span>
-<span class="doccomment">/// let third_handle = task::spawn(async {</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">/// let third_handle = async {</span>
 <span class="doccomment">///     timeout(Duration::from_millis(40)).await;</span>
 <span class="doccomment">///     7</span>
-<span class="doccomment">/// });</span>
+<span class="doccomment">/// };</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// // Join them.</span>
+<span class="doccomment">/// // Join them</span>
 <span class="doccomment">/// let (first, second, third) = join!(first_handle, second_handle, third_handle);</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// // Expected output:</span>
-<span class="doccomment">/// assert_eq!((first.unwrap(), second.unwrap(), third.unwrap()), (3, 5, 7));</span>
+<span class="doccomment">/// // Expected output</span>
+<span class="doccomment">/// assert_eq!((first, second, third), (3, 5, 7));</span>
 <span class="doccomment">/// # });</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
@@ -709,6 +805,101 @@
     <span class="ident">expanded</span>.<span class="ident">into</span>()
 }
 
+<span class="doccomment">/// Joins a list of futures and returns their output into a tuple in the same</span>
+<span class="doccomment">/// order that the futures were given, but if one of them fails, `try_join`</span>
+<span class="doccomment">/// fails, and so a result of tuples is returned. Futures must be `&#39;static`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Syntax:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```ignore</span>
+<span class="doccomment">/// try_join!(future0, future1, future2, ..., future_n)</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ## With Timeout and Success</span>
+<span class="doccomment">/// ```ignore</span>
+<span class="doccomment">/// use std::time::Duration;</span>
+<span class="doccomment">/// use webio::{try_join, time::timeout};</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # fn main() {</span>
+<span class="doccomment">/// # task::detach(async {</span>
+<span class="doccomment">/// // Create some tasks</span>
+<span class="doccomment">/// let first_handle = async {</span>
+<span class="doccomment">///     timeout(Duration::from_millis(50)).await;</span>
+<span class="doccomment">///     Result::&lt;u32, &amp;str&gt;::Ok(3)</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">/// let second_handle = async {</span>
+<span class="doccomment">///     timeout(Duration::from_millis(60)).await;</span>
+<span class="doccomment">///     Ok(5)</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">/// let third_handle = async {</span>
+<span class="doccomment">///     timeout(Duration::from_millis(40)).await;</span>
+<span class="doccomment">///     Ok(7)</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // Try to join it</span>
+<span class="doccomment">/// let result = try_join!(first_handle, second_handle, third_handle);</span>
+<span class="doccomment">/// // Should be Ok</span>
+<span class="doccomment">/// let (first, second, third) = result.unwrap();</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // Expected output</span>
+<span class="doccomment">/// assert_eq!((first, second, third), (3, 5, 7));</span>
+<span class="doccomment">/// # });</span>
+<span class="doccomment">/// # }</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ## With Timeout and Failure</span>
+<span class="doccomment">/// ```ignore</span>
+<span class="doccomment">/// use std::time::Duration;</span>
+<span class="doccomment">/// use webio::{try_join, time::timeout};</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # fn main() {</span>
+<span class="doccomment">/// # task::detach(async {</span>
+<span class="doccomment">/// // Create some tasks</span>
+<span class="doccomment">/// let first_handle = async {</span>
+<span class="doccomment">///     timeout(Duration::from_millis(50)).await;</span>
+<span class="doccomment">///     Ok(3)</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">/// let second_handle = async {</span>
+<span class="doccomment">///     timeout(Duration::from_millis(60)).await;</span>
+<span class="doccomment">///     Err(&quot;boom&quot;)</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">/// let third_handle = async {</span>
+<span class="doccomment">///     timeout(Duration::from_millis(40)).await;</span>
+<span class="doccomment">///     Ok(7)</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // Try to join them</span>
+<span class="doccomment">/// let result = try_join!(first_handle, second_handle, third_handle);</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // Should be an error</span>
+<span class="doccomment">/// assert_eq!(result, Err(&quot;boom&quot;));</span>
+<span class="doccomment">/// # });</span>
+<span class="doccomment">/// # }</span>
+<span class="doccomment">/// ```</span>
+<span class="attribute">#[<span class="ident">proc_macro</span>]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_join</span>(<span class="ident">raw_input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
+    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">raw_input</span> <span class="kw">as</span> <span class="ident">JoinInput</span>);
+    <span class="kw">let</span> <span class="ident">futures</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">futures</span>;
+    <span class="kw">let</span> <span class="ident">output_var_names</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> {
+        (<span class="number">0</span> .. <span class="ident">futures</span>.<span class="ident">len</span>())
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">Ident::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;output{}&quot;</span>, <span class="ident">i</span>), <span class="ident">Span::mixed_site</span>()))
+    };
+    <span class="kw">let</span> <span class="ident">output_iter</span> <span class="op">=</span> <span class="ident">output_var_names</span>();
+    <span class="kw">let</span> <span class="ident">output_try_iter</span> <span class="op">=</span> <span class="ident">output_var_names</span>();
+    <span class="kw">let</span> <span class="ident">expanded</span> <span class="op">=</span> <span class="macro">quote!</span> {
+        <span class="kw">async</span> <span class="kw">move</span> {
+            <span class="kw">let</span> (#(#<span class="ident">output_iter</span>),<span class="kw-2">*</span>) <span class="op">=</span> <span class="macro">::webio::join!</span>(#(#<span class="ident">futures</span>),<span class="kw-2">*</span>);
+            <span class="prelude-val">Ok</span>((#(<span class="kw">match</span> #<span class="ident">output_try_iter</span> {
+                <span class="prelude-val">Ok</span>(<span class="ident">output</span>) =&gt; <span class="ident">output</span>,
+                <span class="prelude-val">Err</span>(<span class="ident">error</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">error</span>),
+            }),<span class="kw-2">*</span>))
+        }.<span class="kw">await</span>
+    };
+    <span class="ident">expanded</span>.<span class="ident">into</span>()
+}
+
 <span class="kw">struct</span> <span class="ident">SelectArm</span> {
     <span class="ident">pattern</span>: <span class="ident">Pat</span>,
     <span class="ident">future</span>: <span class="ident">Expr</span>,
@@ -740,9 +931,9 @@
 
 <span class="doccomment">/// Listens to a list of futures and finishes when the first future finishes,</span>
 <span class="doccomment">/// which is then selected. Every future is placed in a &quot;match arm&quot;, and when it</span>
-<span class="doccomment">/// is selected, the &quot;arm&quot; pattern is matched, and the macro evaluates to the</span>
-<span class="doccomment">/// right side of the &quot;arm&quot;. The pattern must be irrefutable, typically just</span>
-<span class="doccomment">/// a variable name, or destructuring.</span>
+<span class="doccomment">/// is selected, the &quot;arm&quot; pattern is matched and the macro evaluates to the</span>
+<span class="doccomment">/// right side of the &quot;arm&quot;. Patterns must be irrefutable, typically just a</span>
+<span class="doccomment">/// variable name, or destructuring. Futures must be `&#39;static`.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Syntax:</span>
 <span class="doccomment">///</span>
@@ -761,28 +952,33 @@
 <span class="doccomment">/// ## With Timeout</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// use webio::{task, select, time::timeout};</span>
 <span class="doccomment">/// use std::time::Duration;</span>
+<span class="doccomment">/// use webio::{select, time::timeout};</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # fn main () {</span>
 <span class="doccomment">/// # task::detach(async {</span>
-<span class="doccomment">/// let first_handle = task::spawn(async {</span>
+<span class="doccomment">/// // Create some tasks</span>
+<span class="doccomment">/// let first_handle = async {</span>
 <span class="doccomment">///     timeout(Duration::from_millis(500)).await;</span>
 <span class="doccomment">///     3u32</span>
-<span class="doccomment">/// });</span>
-<span class="doccomment">/// let second_handle = task::spawn(async {</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">/// let second_handle = async {</span>
 <span class="doccomment">///     timeout(Duration::from_millis(50)).await;</span>
 <span class="doccomment">///     5u32</span>
-<span class="doccomment">/// });</span>
-<span class="doccomment">/// let third_handle = task::spawn(async {</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">/// let third_handle = async {</span>
 <span class="doccomment">///     timeout(Duration::from_millis(350)).await;</span>
 <span class="doccomment">///     7u32</span>
-<span class="doccomment">/// });</span>
-<span class="doccomment">/// let output = select! {</span>
-<span class="doccomment">///     first_val = first_handle =&gt; first_val.unwrap() + 10,</span>
-<span class="doccomment">///     second_val = second_handle =&gt; second_val.unwrap() + 20,</span>
-<span class="doccomment">///     third_val = third_handle =&gt; third_val.unwrap() - 5</span>
 <span class="doccomment">/// };</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // Select the first one to complete</span>
+<span class="doccomment">/// let output = select! {</span>
+<span class="doccomment">///     val = first_handle =&gt; val + 10,</span>
+<span class="doccomment">///     val = second_handle =&gt; val + 20,</span>
+<span class="doccomment">///     val = third_handle =&gt; val - 5</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // Second one should be the first</span>
 <span class="doccomment">/// assert_eq!(output, 25);</span>
 <span class="doccomment">/// # });</span>
 <span class="doccomment">/// # }</span>
