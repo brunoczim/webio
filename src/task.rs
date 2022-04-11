@@ -39,10 +39,61 @@ where
     wasm_bindgen_futures::spawn_local(future);
 }
 
+/// Yields control back to the event loop once and returns back to execution as
+/// soon as possible.
+///
+/// # Example
+///
+/// ## Between Asynchronous Functions
+/// ```no_run
+/// use webio::task;
+/// # fn main() {
+/// # async fn foo() -> bool { true }
+/// # async fn bar() {}
+/// # task::detach(async {
+/// while foo().await {
+///     task::yield_now().await;
+///     bar().await;
+/// }
+/// # });
+/// # }
+/// ```
+pub async fn yield_now() {
+    YieldNow::new().await
+}
+
+#[derive(Debug)]
+struct YieldNow {
+    done: bool,
+}
+
+impl YieldNow {
+    fn new() -> Self {
+        Self { done: false }
+    }
+}
+
+impl Future for YieldNow {
+    type Output = ();
+
+    fn poll(
+        mut self: Pin<&mut Self>,
+        ctx: &mut task::Context<'_>,
+    ) -> task::Poll<Self::Output> {
+        if self.done {
+            task::Poll::Ready(())
+        } else {
+            ctx.waker().wake_by_ref();
+            self.done = true;
+            task::Poll::Pending
+        }
+    }
+}
+
 /// An error that might happen when waiting for a task.
 #[derive(Debug)]
 pub struct JoinError {
-    kind: callback::once::Error,
+    kind: callback::Error,
 }
 
 impl fmt::Display for JoinError {
@@ -54,19 +105,19 @@ impl fmt::Display for JoinError {
 impl JoinError {
     /// Tests whether the target task was cancelled.
     pub fn is_cancelled(&self) -> bool {
-        matches!(&self.kind, callback::once::Error::Cancelled)
+        matches!(&self.kind, callback::Error::Cancelled)
     }
 
     /// Tests whether the target task panicked.
     pub fn is_panic(&self) -> bool {
-        matches!(&self.kind, callback::once::Error::Panicked(_))
+        matches!(&self.kind, callback::Error::Panicked(_))
     }
 
     /// Attempts to convert this error into a panic payload. Fails if the target
     /// task didn't panicked.
     pub fn try_into_panic(self) -> Result<Payload, Self> {
         match self.kind {
-            callback::once::Error::Panicked(payload) => Ok(payload),
+            callback::Error::Panicked(payload) => Ok(payload),
             kind => Err(Self { kind }),
         }
     }

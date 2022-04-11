@@ -1,6 +1,7 @@
 # 0.1.0
 - [x] spawn
 - [x] detach
+- [x] yield\_now
 - [x] join macro
 - [x] try join macro
 - [x] select macro
@@ -8,5 +9,6 @@
 - [x] main macro
 - [x] test macro
 - [x] conversion from callback to future
-    - [ ] support events that happen more than once
+    - [x] support events that happen more than once non-streaming
+    - [ ] support events that happen more than once streaming
 - [ ] wrapper over JS asynchronous APIs or callbacks

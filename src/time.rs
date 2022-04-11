@@ -19,24 +19,33 @@ extern "C" {
     fn set_timeout(function: &Function, milliseconds: i32) -> JsValue;
     #[wasm_bindgen(js_name = "clearTimeout")]
     fn clear_timeout(timeout_id: &JsValue);
+
+    #[wasm_bindgen(js_name = "setInterval")]
+    fn set_interval(function: &Function, milliseconds: i32) -> JsValue;
+    #[wasm_bindgen(js_name = "clearInterval")]
+    fn clear_interval(interval_id: &JsValue);
+}
+
+fn duration_to_millis(duration: Duration) -> i32 {
+    duration.as_millis().min(i32::MAX as u128) as i32
 }
 
 /// A handle to a [`timeout`] call. The timeout can be waited through `.await`,
 /// or it can be cancelled when the handle is dropped without the timeout
 /// completing.
 pub struct TimeoutHandle {
-    callback_handle: callback::once::Listener<()>,
+    listener: callback::once::Listener<()>,
     timeout_id: JsValue,
     _closure: JsValue,
 }
 
 impl TimeoutHandle {
     fn new(
-        callback_handle: callback::once::Listener<()>,
+        listener: callback::once::Listener<()>,
         timeout_id: JsValue,
         closure: JsValue,
     ) -> Self {
-        Self { callback_handle, timeout_id, _closure: closure }
+        Self { listener, timeout_id, _closure: closure }
     }
 }
 
@@ -47,7 +56,7 @@ impl Future for TimeoutHandle {
         self: std::pin::Pin<&mut Self>,
         ctx: &mut task::Context<'_>,
     ) -> task::Poll<Self::Output> {
-        unsafe { self.map_unchecked_mut(|this| &mut this.callback_handle) }
+        unsafe { self.map_unchecked_mut(|this| &mut this.listener) }
             .poll(ctx)
             .map(|result| result.unwrap())
     }
@@ -79,8 +88,7 @@ impl Drop for TimeoutHandle {
 /// # }
 /// ```
 pub fn timeout(duration: Duration) -> TimeoutHandle {
-    let millis = duration.as_millis().min(i32::MAX as u128) as i32;
-    timeout_ms(millis)
+    timeout_ms(duration_to_millis(duration))
 }
 
 fn timeout_ms(milliseconds: i32) -> TimeoutHandle {
@@ -90,7 +98,103 @@ fn timeout_ms(milliseconds: i32) -> TimeoutHandle {
         (timeout_id, closure)
     });
 
-    let ((id, closure), callback_handle) = register.listen_returning(|| ());
+    let ((id, closure), listener) = register.listen_returning(|| ());
 
-    TimeoutHandle::new(callback_handle, id, closure)
+    TimeoutHandle::new(listener, id, closure)
+}
+
+/// A handle to an [`interval`] call. An interval can be waited through
+/// `.tick().await`, or it can be cancelled when the handle is dropped without
+/// the interval completing.
+pub struct IntervalHandle {
+    listener: callback::multi::Listener<()>,
+    interval_id: JsValue,
+    _closure: JsValue,
+}
+
+impl IntervalHandle {
+    fn new(
+        listener: callback::multi::Listener<()>,
+        interval_id: JsValue,
+        closure: JsValue,
+    ) -> Self {
+        Self { listener, interval_id, _closure: closure }
+    }
+
+    /// Ticks for the next interval. This is an asynchronous function.
+    pub fn tick<'this>(&'this self) -> IntervalTick<'this> {
+        IntervalTick { listener: self.listener.next() }
+    }
+}
+
+impl Drop for IntervalHandle {
+    fn drop(&mut self) {
+        clear_interval(&self.interval_id);
+    }
+}
+
+/// A single interval tick that can be awaited.
+pub struct IntervalTick<'handle> {
+    listener: callback::multi::ListenNext<'handle, ()>,
+}
+
+impl<'handle> Future for IntervalTick<'handle> {
+    type Output = ();
+
+    fn poll(
+        self: std::pin::Pin<&mut Self>,
+        ctx: &mut task::Context<'_>,
+    ) -> task::Poll<Self::Output> {
+        unsafe { self.map_unchecked_mut(|this| &mut this.listener) }
+            .poll(ctx)
+            .map(|result| result.unwrap())
+    }
+}
+
+/// Creates a handle that produces [`Future`]s that, when awaited, are always
+/// completed approximately with the same interval between them, they "tick",
+/// given by a `duration`.
+///
+/// ```no_run
+/// use std::time::Duration;
+/// use webio::time::{interval, Instant};
+///
+/// # use webio::task;
+/// # fn main() {
+/// # task::detach(async {
+/// let time = Duration::from_millis(100);
+/// let handle = interval(time);
+/// let then = Instant::now();
+///
+/// handle.tick().await;
+/// let passed = then.elapsed();
+/// assert!(passed >= time - Duration::from_millis(50));
+/// assert!(passed < time + Duration::from_millis(50));
+///
+/// handle.tick().await;
+/// let passed = then.elapsed();
+/// assert!(passed >= time * 2 - Duration::from_millis(50));
+/// assert!(passed < time * 2 + Duration::from_millis(50));
+///
+/// handle.tick().await;
+/// let passed = then.elapsed();
+/// assert!(passed >= time * 3 - Duration::from_millis(50));
+/// assert!(passed < time * 3 + Duration::from_millis(50));
+/// # });
+/// # }
+/// ```
+pub fn interval(duration: Duration) -> IntervalHandle {
+    interval_ms(duration_to_millis(duration))
+}
+
+fn interval_ms(milliseconds: i32) -> IntervalHandle {
+    let register = callback::multi::SyncRegister::new(|callback| {
+        let closure = Closure::wrap(callback).into_js_value();
+        let timeout_id = set_interval(closure.dyn_ref().unwrap(), milliseconds);
+        (timeout_id, closure)
+    });
+
+    let ((id, closure), listener) = register.listen_returning(|| ());
+
+    IntervalHandle::new(listener, id, closure)
 }

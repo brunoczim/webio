@@ -1,17 +1,14 @@
 //! This module implements conversion from callbacks to futures for callbacks
 //! that are called only once.
 
-use crate::panic::{CatchUnwind, Payload};
-use std::{cell::Cell, fmt, future::Future, panic, pin::Pin, rc::Rc, task};
+use crate::{callback, panic::CatchUnwind};
+use std::{future::Future, panic, pin::Pin, task};
 
 macro_rules! sync_once {
     ($self:expr, $callback:expr) => {{
-        let shared = Rc::new(Shared::init_connected());
+        let (notifier, inner_listener) = callback::shared::channel();
 
-        let notifier = Notifier::new(shared.clone());
-        let listener = Listener::new(shared);
-
-        let boxed_fn = Box::new(move || {
+        let handler = Box::new(move || {
             let result =
                 panic::catch_unwind(panic::AssertUnwindSafe($callback));
             match result {
@@ -19,50 +16,27 @@ macro_rules! sync_once {
                 Err(payload) => notifier.panicked(payload),
             }
         });
-        let ret = ($self.register_fn)(boxed_fn as SyncCbHandler);
+        let ret = ($self.register_fn)(handler as SyncCbHandler);
 
-        (ret, listener)
+        (ret, Listener::new(inner_listener))
     }};
 }
 
 macro_rules! async_once {
     ($self:expr, $callback:expr) => {{
-        let shared = Rc::new(Shared::init_connected());
+        let (notifier, inner_listener) = callback::shared::channel();
 
-        let notifier = Notifier::new(shared.clone());
-        let listener = Listener::new(shared);
-
-        let boxed_fut = Box::pin(async move {
+        let handler = Box::pin(async move {
             let result = CatchUnwind::new($callback).await;
             match result {
                 Ok(data) => notifier.success(data),
                 Err(payload) => notifier.panicked(payload),
             }
         });
-        let ret = ($self.register_fn)(boxed_fut as AsyncCbHandler);
+        let ret = ($self.register_fn)(handler as AsyncCbHandler);
 
-        (ret, listener)
+        (ret, Listener::new(inner_listener))
     }};
-}
-
-/// An error that might happen when the event completes.
-#[derive(Debug)]
-pub enum Error {
-    /// The callback panicked! And here is panic's payload.
-    Panicked(Payload),
-    /// The callback's future was cancelled.
-    Cancelled,
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Error::Panicked(payload) => {
-                write!(fmtr, "task panicked: {:?}", payload)
-            },
-            Error::Cancelled => write!(fmtr, "task cancelled"),
-        }
-    }
 }
 
 /// The type of synchronous, oneshot callback handlers (i.e. the handler that
@@ -74,7 +48,8 @@ pub type SyncCbHandler<'cb> = Box<dyn FnOnce() + 'cb>;
 pub type AsyncCbHandler<'cb> = Pin<Box<dyn Future<Output = ()> + 'cb>>;
 
 /// Register of oneshot callbacks into an event, where the callback is
-/// syncrhonous (waiting for the callback to complete is still asynchronous).
+/// syncrhonous (though waiting for the callback to complete is still
+/// asynchronous).
 #[derive(Debug, Clone, Copy)]
 pub struct SyncRegister<F> {
     register_fn: F,
@@ -83,8 +58,9 @@ pub struct SyncRegister<F> {
 impl<F> SyncRegister<F> {
     /// Creates a new register using an inner register function that can be used
     /// only once. Such function receives callbacks handlers and register
-    /// them. Callback handlers are functions that are called when the event
-    /// completes, and then, they call the actual callbacks.
+    /// them. Callback handlers are register-internal functions that are called
+    /// when the event completes, and then, they call the actual callbacks, i.e.
+    /// a wrapper for the actual callback.
     pub fn new<'cb, T>(register_fn: F) -> Self
     where
         F: FnOnce(SyncCbHandler<'cb>) -> T,
@@ -93,24 +69,26 @@ impl<F> SyncRegister<F> {
     }
 
     /// Creates a new register using an inner register function that can be used
-    /// multiple times and imutabily. Such function receives callbacks handlers
-    /// and register them. Callback handlers are functions that are called when
-    /// the event completes, and then, they call the actual callbacks.
-    pub fn new_ref<'cb, T>(register_fn: F) -> Self
+    /// multiple times, with mutability, however. Such function receives
+    /// callbacks handlers and register them. Callback handlers are
+    /// register-internal functions that are called when the event completes,
+    /// and then, they call the actual callbacks, i.e. a wrapper for the actual
+    /// callback.
+    pub fn new_mut<'cb, T>(register_fn: F) -> Self
     where
-        F: Fn(SyncCbHandler<'cb>) -> T,
+        F: FnMut(SyncCbHandler<'cb>) -> T,
     {
         Self { register_fn }
     }
 
     /// Creates a new register using an inner register function that can be used
-    /// multiple times, with mutability, however. Such function receives
-    /// callbacks handlers and register them. Callback handlers are
-    /// functions that are called when the event completes, and then, they
-    /// call the actual callbacks.
-    pub fn new_mut<'cb, T>(register_fn: F) -> Self
+    /// multiple times and imutabily. Such function receives callbacks handlers
+    /// and register them. Callback handlers are register-internal functions
+    /// that are called when the event completes, and then, they call the
+    /// actual callbacks, i.e. a wrapper for the actual callback.
+    pub fn new_ref<'cb, T>(register_fn: F) -> Self
     where
-        F: FnMut(SyncCbHandler<'cb>) -> T,
+        F: Fn(SyncCbHandler<'cb>) -> T,
     {
         Self { register_fn }
     }
@@ -154,7 +132,7 @@ impl<F> SyncRegister<F> {
     /// for the callback to complete.
     ///
     /// This method does not consume the register, requiring mutability,
-    /// however. ```
+    /// however.
     pub fn listen_mut<'cb, C, U>(&mut self, callback: C) -> Listener<U>
     where
         F: FnMut(SyncCbHandler<'cb>),
@@ -270,8 +248,9 @@ pub struct AsyncRegister<F> {
 impl<F> AsyncRegister<F> {
     /// Creates a new register using an inner register function that can be used
     /// only once. Such function receives callbacks handlers and register
-    /// them. Callback handlers are futures that are awaited when the event
-    /// completes, and then, they await the actual callbacks.
+    /// them. Callback handlers are register-internal futures that are awaited
+    /// for the event's completion, and that then await the actual callbacks,
+    /// i.e. a wrapper for the actual callback.
     pub fn new<'cb, T>(register_fn: F) -> Self
     where
         F: FnOnce(AsyncCbHandler<'cb>) -> T,
@@ -281,9 +260,10 @@ impl<F> AsyncRegister<F> {
 
     /// Creates a new register using an inner register function that can be used
     /// multiple times, with mutability, however. Such function receives
-    /// callbacks handlers and register them. Callback handlers are futures
-    /// that are awaited when the event completes, and then, they await the
-    /// actual callbacks.
+    /// callbacks handlers and register them. Callback handlers are
+    /// register-internal futures that are awaited for the event's
+    /// completion, and that then await the actual callbacks,
+    /// i.e. a wrapper for the actual callback.
     pub fn new_mut<'cb, T>(register_fn: F) -> Self
     where
         F: FnMut(AsyncCbHandler<'cb>) -> T,
@@ -293,9 +273,10 @@ impl<F> AsyncRegister<F> {
 
     /// Creates a new register using an inner register function that can be used
     /// multiple times and does not require mutability. Such function receives
-    /// callbacks handlers and register them. Callback handlers are futures
-    /// that are awaited when the event completes, and then, they await the
-    /// actual callbacks.
+    /// callbacks handlers and register them. Callback handlers are
+    /// register-internal futures that are awaited for the event's
+    /// completion, and that then await the actual callbacks,
+    /// i.e. a wrapper for the actual callback.
     pub fn new_ref<'cb, T>(register_fn: F) -> Self
     where
         F: Fn(AsyncCbHandler<'cb>) -> T,
@@ -446,103 +427,28 @@ impl<F> AsyncRegister<F> {
 /// A handle to a oneshot callback registered in an event.
 #[derive(Debug)]
 pub struct Listener<T> {
-    shared: Rc<Shared<T>>,
+    inner: callback::shared::Listener<T>,
 }
 
 impl<T> Listener<T> {
-    fn new(shared: Rc<Shared<T>>) -> Self {
-        Self { shared }
+    fn new(inner: callback::shared::Listener<T>) -> Self {
+        Self { inner }
     }
 }
 
 impl<T> Future for Listener<T> {
-    type Output = Result<T, Error>;
+    type Output = Result<T, callback::Error>;
 
     fn poll(
         self: Pin<&mut Self>,
         ctx: &mut task::Context<'_>,
     ) -> task::Poll<Self::Output> {
-        if self.shared.connected.get() {
-            let mut waker = self.shared.waker.take();
-            if waker.is_none() {
-                waker = Some(ctx.waker().clone());
-            }
-            self.shared.waker.set(waker);
-            task::Poll::Pending
-        } else {
-            let data = self.shared.data.replace(Err(Error::Cancelled));
-            task::Poll::Ready(data)
-        }
-    }
-}
-
-impl<T> Drop for Listener<T> {
-    fn drop(&mut self) {
-        self.shared.connected.set(false);
-    }
-}
-
-struct Shared<T> {
-    connected: Cell<bool>,
-    waker: Cell<Option<task::Waker>>,
-    data: Cell<Result<T, Error>>,
-}
-
-impl<T> fmt::Debug for Shared<T>
-where
-    T: fmt::Debug,
-{
-    fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
-        let waker = self.waker.take();
-        let data = self.data.replace(Err(Error::Cancelled));
-        let result = fmtr
-            .debug_struct("callback::Shared")
-            .field("connected", &self.connected)
-            .field("waker", &waker)
-            .field("data", &data)
-            .finish();
-        self.waker.set(waker);
-        self.data.set(data);
-        result
-    }
-}
-
-impl<T> Shared<T> {
-    fn init_connected() -> Self {
-        Self {
-            connected: Cell::new(true),
-            waker: Cell::new(None),
-            data: Cell::new(Err(Error::Cancelled)),
-        }
-    }
-}
-
-#[derive(Debug)]
-struct Notifier<T> {
-    shared: Rc<Shared<T>>,
-}
-
-impl<T> Notifier<T> {
-    fn new(shared: Rc<Shared<T>>) -> Self {
-        Self { shared }
-    }
-
-    fn panicked(self, payload: Payload) {
-        self.shared.data.set(Err(Error::Panicked(payload)));
-    }
-
-    fn success(self, data: T) {
-        self.shared.data.set(Ok(data));
-    }
-}
-
-impl<T> Drop for Notifier<T> {
-    fn drop(&mut self) {
-        let was_connected = self.shared.connected.replace(false);
-        if was_connected {
-            if let Some(waker) = self.shared.waker.take() {
-                waker.wake();
-            }
+        match self.inner.receive() {
+            Some(output) => task::Poll::Ready(output),
+            None => {
+                self.inner.subscribe(ctx.waker());
+                task::Poll::Pending
+            },
         }
     }
 }
