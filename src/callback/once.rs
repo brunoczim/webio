@@ -9,7 +9,7 @@ macro_rules! sync_once {
         let shared = Rc::new(Shared::init_connected());
 
         let notifier = Notifier::new(shared.clone());
-        let callback_handle = Listener::new(shared);
+        let listener = Listener::new(shared);
 
         let boxed_fn = Box::new(move || {
             let result =
@@ -21,7 +21,7 @@ macro_rules! sync_once {
         });
         let ret = ($self.register_fn)(boxed_fn as SyncCbHandler);
 
-        (ret, callback_handle)
+        (ret, listener)
     }};
 }
 
@@ -30,7 +30,7 @@ macro_rules! async_once {
         let shared = Rc::new(Shared::init_connected());
 
         let notifier = Notifier::new(shared.clone());
-        let callback_handle = Listener::new(shared);
+        let listener = Listener::new(shared);
 
         let boxed_fut = Box::pin(async move {
             let result = CatchUnwind::new($callback).await;
@@ -41,7 +41,7 @@ macro_rules! async_once {
         });
         let ret = ($self.register_fn)(boxed_fut as AsyncCbHandler);
 
-        (ret, callback_handle)
+        (ret, listener)
     }};
 }
 
@@ -145,8 +145,8 @@ impl<F> SyncRegister<F> {
         C: Fn() -> U + 'cb,
         U: 'cb,
     {
-        let (_, callback_handle) = self.listen_returning(callback);
-        callback_handle
+        let (_, listener) = self.listen_returning(callback);
+        listener
     }
 
     /// Registers a callback and lets it listen for the target event. This
@@ -161,8 +161,8 @@ impl<F> SyncRegister<F> {
         C: Fn() -> U + 'cb,
         U: 'cb,
     {
-        let (_, callback_handle) = self.listen_mut_returning(callback);
-        callback_handle
+        let (_, listener) = self.listen_mut_returning(callback);
+        listener
     }
 
     /// Registers a callback and lets it listen for the target event. This
@@ -177,8 +177,8 @@ impl<F> SyncRegister<F> {
         C: Fn() -> U + 'cb,
         U: 'cb,
     {
-        let (_, callback_handle) = self.listen_ref_returning(callback);
-        callback_handle
+        let (_, listener) = self.listen_ref_returning(callback);
+        listener
     }
 
     /// Registers a callback and lets it listen for the target event. This
@@ -331,8 +331,8 @@ impl<F> AsyncRegister<F> {
         F: Fn(AsyncCbHandler<'cb>),
         A: Future + 'cb,
     {
-        let (_, callback_handle) = self.listen_returning(callback);
-        callback_handle
+        let (_, listener) = self.listen_returning(callback);
+        listener
     }
 
     /// Registers a callback and lets it listen for the target event. This
@@ -346,8 +346,8 @@ impl<F> AsyncRegister<F> {
         F: FnMut(AsyncCbHandler<'cb>),
         A: Future + 'cb,
     {
-        let (_, callback_handle) = self.listen_mut_returning(callback);
-        callback_handle
+        let (_, listener) = self.listen_mut_returning(callback);
+        listener
     }
 
     /// Registers a callback and lets it listen for the target event. This
@@ -361,8 +361,8 @@ impl<F> AsyncRegister<F> {
         F: Fn(AsyncCbHandler<'cb>),
         A: Future + 'cb,
     {
-        let (_, callback_handle) = self.listen_ref_returning(callback);
-        callback_handle
+        let (_, listener) = self.listen_ref_returning(callback);
+        listener
     }
 
     /// Registers a callback and lets it listen for the target event. This
