@@ -2,6 +2,7 @@
 - [x] spawn
 - [x] detach
 - [x] join macro
+- [x] try join macro
 - [x] select macro
 - [x] console macro
 - [x] main macro

@@ -22,8 +22,8 @@ impl Parse for JoinInput {
     }
 }
 
-/// Joins a list of futures, and returns their output into a tuple in the same
-/// order that the futures were given. However, the future must be `'static`.
+/// Joins a list of futures and returns their output into a tuple in the same
+/// order that the futures were given. Futures must be `'static`.
 ///
 /// Syntax:
 ///
@@ -36,29 +36,27 @@ impl Parse for JoinInput {
 /// ## With Timeout
 /// ```ignore
 /// use std::time::Duration;
-/// use webio::{join, task, time::timeout};
+/// use webio::{join, time::timeout};
 ///
-/// # fn main() {
-/// # task::detach(async {
-/// // Spawn some tasks.
-/// let first_handle = task::spawn(async {
+/// // Create some tasks
+/// let first_handle = async {
 ///     timeout(Duration::from_millis(50)).await;
 ///     3
-/// });
-/// let second_handle = task::spawn(async {
+/// };
+/// let second_handle = async {
 ///     timeout(Duration::from_millis(60)).await;
 ///     5
-/// });
-/// let third_handle = task::spawn(async {
+/// };
+/// let third_handle = async {
 ///     timeout(Duration::from_millis(40)).await;
 ///     7
-/// });
+/// };
 ///
-/// // Join them.
+/// // Join them
 /// let (first, second, third) = join!(first_handle, second_handle, third_handle);
 ///
-/// // Expected output:
-/// assert_eq!((first.unwrap(), second.unwrap(), third.unwrap()), (3, 5, 7));
+/// // Expected output
+/// assert_eq!((first, second, third), (3, 5, 7));
 /// # });
 /// # }
 /// ```
@@ -146,6 +144,101 @@ pub fn join(raw_input: TokenStream) -> TokenStream {
     expanded.into()
 }
 
+/// Joins a list of futures and returns their output into a tuple in the same
+/// order that the futures were given, but if one of them fails, `try_join`
+/// fails, and so a result of tuples is returned. Futures must be `'static`.
+///
+/// Syntax:
+///
+/// ```ignore
+/// try_join!(future0, future1, future2, ..., future_n)
+/// ```
+///
+/// # Examples
+///
+/// ## With Timeout and Success
+/// ```ignore
+/// use std::time::Duration;
+/// use webio::{try_join, time::timeout};
+///
+/// # fn main() {
+/// # task::detach(async {
+/// // Create some tasks
+/// let first_handle = async {
+///     timeout(Duration::from_millis(50)).await;
+///     Result::<u32, &str>::Ok(3)
+/// };
+/// let second_handle = async {
+///     timeout(Duration::from_millis(60)).await;
+///     Ok(5)
+/// };
+/// let third_handle = async {
+///     timeout(Duration::from_millis(40)).await;
+///     Ok(7)
+/// };
+///
+/// // Try to join it
+/// let result = try_join!(first_handle, second_handle, third_handle);
+/// // Should be Ok
+/// let (first, second, third) = result.unwrap();
+///
+/// // Expected output
+/// assert_eq!((first, second, third), (3, 5, 7));
+/// # });
+/// # }
+/// ```
+///
+/// ## With Timeout and Failure
+/// ```ignore
+/// use std::time::Duration;
+/// use webio::{try_join, time::timeout};
+///
+/// # fn main() {
+/// # task::detach(async {
+/// // Create some tasks
+/// let first_handle = async {
+///     timeout(Duration::from_millis(50)).await;
+///     Ok(3)
+/// };
+/// let second_handle = async {
+///     timeout(Duration::from_millis(60)).await;
+///     Err("boom")
+/// };
+/// let third_handle = async {
+///     timeout(Duration::from_millis(40)).await;
+///     Ok(7)
+/// };
+///
+/// // Try to join them
+/// let result = try_join!(first_handle, second_handle, third_handle);
+///
+/// // Should be an error
+/// assert_eq!(result, Err("boom"));
+/// # });
+/// # }
+/// ```
+#[proc_macro]
+pub fn try_join(raw_input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(raw_input as JoinInput);
+    let futures = input.futures;
+    let output_var_names = || {
+        (0 .. futures.len())
+            .map(|i| Ident::new(&format!("output{}", i), Span::mixed_site()))
+    };
+    let output_iter = output_var_names();
+    let output_try_iter = output_var_names();
+    let expanded = quote! {
+        async move {
+            let (#(#output_iter),*) = ::webio::join!(#(#futures),*);
+            Ok((#(match #output_try_iter {
+                Ok(output) => output,
+                Err(error) => return Err(error),
+            }),*))
+        }.await
+    };
+    expanded.into()
+}
+
 struct SelectArm {
     pattern: Pat,
     future: Expr,
@@ -177,9 +270,9 @@ impl Parse for SelectInput {
 
 /// Listens to a list of futures and finishes when the first future finishes,
 /// which is then selected. Every future is placed in a "match arm", and when it
-/// is selected, the "arm" pattern is matched, and the macro evaluates to the
-/// right side of the "arm". The pattern must be irrefutable, typically just
-/// a variable name, or destructuring.
+/// is selected, the "arm" pattern is matched and the macro evaluates to the
+/// right side of the "arm". Patterns must be irrefutable, typically just a
+/// variable name, or destructuring. Futures must be `'static`.
 ///
 /// Syntax:
 ///
@@ -198,28 +291,33 @@ impl Parse for SelectInput {
 /// ## With Timeout
 ///
 /// ```ignore
-/// use webio::{task, select, time::timeout};
 /// use std::time::Duration;
+/// use webio::{select, time::timeout};
 ///
 /// # fn main () {
 /// # task::detach(async {
-/// let first_handle = task::spawn(async {
+/// // Create some tasks
+/// let first_handle = async {
 ///     timeout(Duration::from_millis(500)).await;
 ///     3u32
-/// });
-/// let second_handle = task::spawn(async {
+/// };
+/// let second_handle = async {
 ///     timeout(Duration::from_millis(50)).await;
 ///     5u32
-/// });
-/// let third_handle = task::spawn(async {
+/// };
+/// let third_handle = async {
 ///     timeout(Duration::from_millis(350)).await;
 ///     7u32
-/// });
-/// let output = select! {
-///     first_val = first_handle => first_val.unwrap() + 10,
-///     second_val = second_handle => second_val.unwrap() + 20,
-///     third_val = third_handle => third_val.unwrap() - 5
 /// };
+///
+/// // Select the first one to complete
+/// let output = select! {
+///     val = first_handle => val + 10,
+///     val = second_handle => val + 20,
+///     val = third_handle => val - 5
+/// };
+///
+/// // Second one should be the first
 /// assert_eq!(output, 25);
 /// # });
 /// # }
