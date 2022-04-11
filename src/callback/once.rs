@@ -87,7 +87,7 @@ impl<F> SyncRegister<F> {
     /// completes, and then, they call the actual callbacks.
     pub fn new<'cb, T>(register_fn: F) -> Self
     where
-        F: Fn(SyncCbHandler<'cb>) -> T,
+        F: FnOnce(SyncCbHandler<'cb>) -> T,
     {
         Self { register_fn }
     }
@@ -141,8 +141,8 @@ impl<F> SyncRegister<F> {
     /// ```
     pub fn listen<'cb, C, U>(self, callback: C) -> Listener<U>
     where
-        F: Fn(SyncCbHandler<'cb>),
-        C: Fn() -> U + 'cb,
+        F: FnOnce(SyncCbHandler<'cb>),
+        C: FnOnce() -> U + 'cb,
         U: 'cb,
     {
         let (_, listener) = self.listen_returning(callback);
@@ -158,7 +158,7 @@ impl<F> SyncRegister<F> {
     pub fn listen_mut<'cb, C, U>(&mut self, callback: C) -> Listener<U>
     where
         F: FnMut(SyncCbHandler<'cb>),
-        C: Fn() -> U + 'cb,
+        C: FnOnce() -> U + 'cb,
         U: 'cb,
     {
         let (_, listener) = self.listen_mut_returning(callback);
@@ -174,7 +174,7 @@ impl<F> SyncRegister<F> {
     pub fn listen_ref<'cb, C, U>(&self, callback: C) -> Listener<U>
     where
         F: Fn(SyncCbHandler<'cb>),
-        C: Fn() -> U + 'cb,
+        C: FnOnce() -> U + 'cb,
         U: 'cb,
     {
         let (_, listener) = self.listen_ref_returning(callback);
@@ -212,8 +212,8 @@ impl<F> SyncRegister<F> {
     /// ```
     pub fn listen_returning<'cb, C, T, U>(self, callback: C) -> (T, Listener<U>)
     where
-        F: Fn(SyncCbHandler<'cb>) -> T,
-        C: Fn() -> U + 'cb,
+        F: FnOnce(SyncCbHandler<'cb>) -> T,
+        C: FnOnce() -> U + 'cb,
         U: 'cb,
     {
         sync_once!(self, callback)
@@ -233,7 +233,7 @@ impl<F> SyncRegister<F> {
     ) -> (T, Listener<U>)
     where
         F: FnMut(SyncCbHandler<'cb>) -> T,
-        C: Fn() -> U + 'cb,
+        C: FnOnce() -> U + 'cb,
         U: 'cb,
     {
         sync_once!(self, callback)
@@ -253,7 +253,7 @@ impl<F> SyncRegister<F> {
     ) -> (T, Listener<U>)
     where
         F: Fn(SyncCbHandler<'cb>) -> T,
-        C: Fn() -> U + 'cb,
+        C: FnOnce() -> U + 'cb,
         U: 'cb,
     {
         sync_once!(self, callback)
@@ -274,7 +274,7 @@ impl<F> AsyncRegister<F> {
     /// completes, and then, they await the actual callbacks.
     pub fn new<'cb, T>(register_fn: F) -> Self
     where
-        F: Fn(AsyncCbHandler<'cb>) -> T,
+        F: FnOnce(AsyncCbHandler<'cb>) -> T,
     {
         Self { register_fn }
     }
@@ -328,7 +328,7 @@ impl<F> AsyncRegister<F> {
     /// ```
     pub fn listen<'cb, A>(self, callback: A) -> Listener<A::Output>
     where
-        F: Fn(AsyncCbHandler<'cb>),
+        F: FnOnce(AsyncCbHandler<'cb>),
         A: Future + 'cb,
     {
         let (_, listener) = self.listen_returning(callback);
@@ -398,7 +398,7 @@ impl<F> AsyncRegister<F> {
         callback: A,
     ) -> (T, Listener<A::Output>)
     where
-        F: Fn(AsyncCbHandler<'cb>) -> T,
+        F: FnOnce(AsyncCbHandler<'cb>) -> T,
         A: Future + 'cb,
     {
         async_once!(self, callback)
