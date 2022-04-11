@@ -8,15 +8,15 @@ macro_rules! sync_once {
     ($self:expr, $callback:expr) => {{
         let shared = Rc::new(Shared::init_connected());
 
-        let poll_handle = Notifier::new(shared.clone());
+        let notifier = Notifier::new(shared.clone());
         let callback_handle = Listener::new(shared);
 
         let boxed_fn = Box::new(move || {
             let result =
                 panic::catch_unwind(panic::AssertUnwindSafe($callback));
             match result {
-                Ok(data) => poll_handle.success(data),
-                Err(payload) => poll_handle.panicked(payload),
+                Ok(data) => notifier.success(data),
+                Err(payload) => notifier.panicked(payload),
             }
         });
         let ret = ($self.register_fn)(boxed_fn as SyncCbHandler);
@@ -29,14 +29,14 @@ macro_rules! async_once {
     ($self:expr, $callback:expr) => {{
         let shared = Rc::new(Shared::init_connected());
 
-        let poll_handle = Notifier::new(shared.clone());
+        let notifier = Notifier::new(shared.clone());
         let callback_handle = Listener::new(shared);
 
         let boxed_fut = Box::pin(async move {
             let result = CatchUnwind::new($callback).await;
             match result {
-                Ok(data) => poll_handle.success(data),
-                Err(payload) => poll_handle.panicked(payload),
+                Ok(data) => notifier.success(data),
+                Err(payload) => notifier.panicked(payload),
             }
         });
         let ret = ($self.register_fn)(boxed_fut as AsyncCbHandler);
