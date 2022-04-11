@@ -640,7 +640,7 @@
     <span class="doccomment">/// completes, and then, they call the actual callbacks.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
     {
         <span class="self">Self</span> { <span class="ident">register_fn</span> }
     }
@@ -694,8 +694,8 @@
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">C</span>, <span class="ident">U</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">C</span>) -&gt; <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
-        <span class="ident">C</span>: <span class="ident">Fn</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
+        <span class="ident">C</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
         <span class="ident">U</span>: <span class="lifetime">&#39;cb</span>,
     {
         <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">listener</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">listen_returning</span>(<span class="ident">callback</span>);
@@ -711,7 +711,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_mut</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">C</span>, <span class="ident">U</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">C</span>) -&gt; <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
-        <span class="ident">C</span>: <span class="ident">Fn</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
+        <span class="ident">C</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
         <span class="ident">U</span>: <span class="lifetime">&#39;cb</span>,
     {
         <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">listener</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">listen_mut_returning</span>(<span class="ident">callback</span>);
@@ -727,7 +727,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_ref</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">C</span>, <span class="ident">U</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">C</span>) -&gt; <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
-        <span class="ident">C</span>: <span class="ident">Fn</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
+        <span class="ident">C</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
         <span class="ident">U</span>: <span class="lifetime">&#39;cb</span>,
     {
         <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">listener</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">listen_ref_returning</span>(<span class="ident">callback</span>);
@@ -765,8 +765,8 @@
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_returning</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">C</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">C</span>) -&gt; (<span class="ident">T</span>, <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>)
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
-        <span class="ident">C</span>: <span class="ident">Fn</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
+        <span class="ident">C</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
         <span class="ident">U</span>: <span class="lifetime">&#39;cb</span>,
     {
         <span class="macro">sync_once!</span>(<span class="self">self</span>, <span class="ident">callback</span>)
@@ -786,7 +786,7 @@
     ) -&gt; (<span class="ident">T</span>, <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>)
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
-        <span class="ident">C</span>: <span class="ident">Fn</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
+        <span class="ident">C</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
         <span class="ident">U</span>: <span class="lifetime">&#39;cb</span>,
     {
         <span class="macro">sync_once!</span>(<span class="self">self</span>, <span class="ident">callback</span>)
@@ -806,7 +806,7 @@
     ) -&gt; (<span class="ident">T</span>, <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>)
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
-        <span class="ident">C</span>: <span class="ident">Fn</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
+        <span class="ident">C</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">U</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
         <span class="ident">U</span>: <span class="lifetime">&#39;cb</span>,
     {
         <span class="macro">sync_once!</span>(<span class="self">self</span>, <span class="ident">callback</span>)
@@ -827,7 +827,7 @@
     <span class="doccomment">/// completes, and then, they await the actual callbacks.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">register_fn</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">AsyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
     {
         <span class="self">Self</span> { <span class="ident">register_fn</span> }
     }
@@ -881,7 +881,7 @@
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">callback</span>: <span class="ident">A</span>) -&gt; <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">A::Output</span><span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">AsyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>),
         <span class="ident">A</span>: <span class="ident">Future</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
     {
         <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">listener</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">listen_returning</span>(<span class="ident">callback</span>);
@@ -951,7 +951,7 @@
         <span class="ident">callback</span>: <span class="ident">A</span>,
     ) -&gt; (<span class="ident">T</span>, <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">A::Output</span><span class="op">&gt;</span>)
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">AsyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">AsyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) -&gt; <span class="ident">T</span>,
         <span class="ident">A</span>: <span class="ident">Future</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span>,
     {
         <span class="macro">async_once!</span>(<span class="self">self</span>, <span class="ident">callback</span>)
