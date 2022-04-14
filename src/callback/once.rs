@@ -1,7 +1,7 @@
 //! This module implements conversion from callbacks to futures for callbacks
 //! that are called only once.
 
-use crate::{callback, panic::CatchUnwind};
+use crate::{callback, panic::FutureCatchUnwind};
 use std::{future::Future, panic, pin::Pin, task};
 
 macro_rules! sync_once {
@@ -27,7 +27,7 @@ macro_rules! async_once {
         let (notifier, inner_listener) = callback::shared::channel();
 
         let handler = Box::pin(async move {
-            let result = CatchUnwind::new($callback).await;
+            let result = FutureCatchUnwind::new($callback).await;
             match result {
                 Ok(data) => notifier.success(data),
                 Err(payload) => notifier.panicked(payload),

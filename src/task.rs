@@ -48,7 +48,7 @@ where
 /// ```no_run
 /// use webio::task;
 /// # fn main() {
-/// # async fn foo() -> bool { true }
+/// # async fn foo() -> bool { false }
 /// # async fn bar() {}
 /// # task::detach(async {
 /// while foo().await {

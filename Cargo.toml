@@ -7,12 +7,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-wasm-bindgen = { version = "^0.2.79", features = ["serde-serialize"] }
-wasm-bindgen-futures = "^0.4.29" 
+wasm-bindgen = { version = "^0.2.80", features = ["serde-serialize"] }
 js-sys = "^0.3.57"
+wasm-bindgen-futures = "^0.4.30" 
 web-sys = { version = "^0.3.57", features = ["Window", "console"] }
-webio-macros = { path = "./webio-macros" }
-wasm-bindgen-test = "^0.3.0"
-
-[dev-dependencies]
+wasm-bindgen-test = "^0.3.30"
 futures = "^0.3.21"
+
+webio-macros = { path = "./webio-macros" }

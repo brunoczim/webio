@@ -3,16 +3,7 @@
 
 #![warn(missing_docs)]
 
-#[macro_use]
-mod macros;
-
-mod panic;
-
-pub mod task;
-
-pub mod callback;
-
-pub mod time;
+extern crate self as webio;
 
 pub use webio_macros::{console, join, main, select, test, try_join};
 
@@ -26,3 +17,14 @@ pub use wasm_bindgen_futures;
 pub use wasm_bindgen_test;
 #[doc(hidden)]
 pub use web_sys;
+
+#[macro_use]
+mod macros;
+
+mod panic;
+
+pub mod task;
+
+pub mod callback;
+
+pub mod time;

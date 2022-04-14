@@ -8,7 +8,9 @@
 - [x] console macro
 - [x] main macro
 - [x] test macro
+    - [ ] support for `should_panic` macros
 - [x] conversion from callback to future
     - [x] support events that happen more than once non-streaming
-    - [ ] support events that happen more than once streaming
+    - [x] support events that happen more than once streaming
+    - [ ] support for event parameters
 - [ ] wrapper over JS asynchronous APIs or callbacks

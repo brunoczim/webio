@@ -32,3 +32,14 @@ async fn interval_and_instant() {
     assert!(passed >= time * 3 - Duration::from_millis(50));
     assert!(passed < time * 3 + Duration::from_millis(50));
 }
+
+/*
+ * TODO
+#[webio::test]
+#[should_panic]
+async fn panic_even_after_timeout() {
+    let time = Duration::from_millis(100);
+    timeout(time).await;
+    panic!("This test should panic");
+}
+*/
