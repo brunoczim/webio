@@ -31,21 +31,14 @@
 <span id="26">26</span>
 <span id="27">27</span>
 <span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is an experimental implementation of a web-based async runtime. Web as</span>
 <span class="doccomment">//! in &quot;browser&quot;.</span>
 
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
 
-<span class="attribute">#[<span class="ident">macro_use</span>]</span>
-<span class="kw">mod</span> <span class="ident">macros</span>;
-
-<span class="kw">mod</span> <span class="ident">panic</span>;
-
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">task</span>;
-
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">callback</span>;
-
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">time</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="self">self</span> <span class="kw">as</span> <span class="ident">webio</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">webio_macros</span>::{<span class="ident">console</span>, <span class="ident">join</span>, <span class="ident">main</span>, <span class="ident">select</span>, <span class="ident">test</span>, <span class="ident">try_join</span>};
 
@@ -59,6 +52,17 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">wasm_bindgen_test</span>;
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">web_sys</span>;
+
+<span class="attribute">#[<span class="ident">macro_use</span>]</span>
+<span class="kw">mod</span> <span class="ident">macros</span>;
+
+<span class="kw">mod</span> <span class="ident">panic</span>;
+
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">task</span>;
+
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">callback</span>;
+
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">time</span>;
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
 </body></html>

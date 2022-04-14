@@ -460,7 +460,7 @@
 </pre><pre class="rust"><code><span class="doccomment">//! This module implements conversion from callbacks to futures for callbacks</span>
 <span class="doccomment">//! that are called only once.</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">callback</span>, <span class="ident">panic::CatchUnwind</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">callback</span>, <span class="ident">panic::FutureCatchUnwind</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">future::Future</span>, <span class="ident">panic</span>, <span class="ident">pin::Pin</span>, <span class="ident">task</span>};
 
 <span class="macro">macro_rules!</span> <span class="ident">sync_once</span> {
@@ -486,7 +486,7 @@
         <span class="kw">let</span> (<span class="ident">notifier</span>, <span class="ident">inner_listener</span>) <span class="op">=</span> <span class="ident">callback::shared::channel</span>();
 
         <span class="kw">let</span> <span class="ident">handler</span> <span class="op">=</span> <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
-            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">CatchUnwind::new</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>).<span class="kw">await</span>;
+            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">FutureCatchUnwind::new</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>).<span class="kw">await</span>;
             <span class="kw">match</span> <span class="ident">result</span> {
                 <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">notifier</span>.<span class="ident">success</span>(<span class="ident">data</span>),
                 <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">notifier</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
