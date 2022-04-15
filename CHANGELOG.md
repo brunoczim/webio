@@ -1,16 +1,20 @@
 # 0.1.0
-- [x] spawn
-- [x] detach
-- [x] yield\_now
-- [x] join macro
-- [x] try join macro
-- [x] select macro
-- [x] console macro
-- [x] main macro
-- [x] test macro
-    - [ ] support for `should_panic` macros
-- [x] conversion from callback to future
-    - [x] support events that happen more than once non-streaming
-    - [x] support events that happen more than once streaming
-    - [ ] support for event parameters
-- [ ] wrapper over JS asynchronous APIs or callbacks
+
+## DONE
+
+-  spawn
+-  detach
+-  yield\_now
+-  join macro
+-  try join macro
+-  select macro
+-  console macro
+-  main macro
+-  test macro
+-  conversion from callback to futures or streams
+
+## TODO
+
+- What should be done with panics?
+- Name of `callback::multi::Listener::next()` method?
+- More nice wrapper for JS callbacks and events.
