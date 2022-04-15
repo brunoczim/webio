@@ -493,6 +493,7 @@
 <span id="488">488</span>
 <span id="489">489</span>
 <span id="490">490</span>
+<span id="491">491</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module implements conversion from callbacks to futures for callbacks</span>
 <span class="doccomment">//! that are called only once.</span>
 
@@ -541,7 +542,7 @@
 }
 
 <span class="doccomment">/// The type of synchronous, oneshot callback handlers (i.e. the handler that</span>
-<span class="doccomment">/// calls callbacks): a boxed function.</span>
+<span class="doccomment">/// calls callbacks): a boxed function, i.e. a wrapper over the actual callback.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">FnOnce</span>(<span class="ident">T</span>) <span class="op">+</span> <span class="lifetime">&#39;cb</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// The type of futures used in asynchronous, oneshot callback handlers (i.e.</span>
@@ -549,7 +550,8 @@
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">AsyncCbHandlerFuture</span><span class="op">&lt;</span><span class="lifetime">&#39;fut</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Pin</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> ()<span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;fut</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// The type of asynchronous, oneshot callback handlers (i.e. the handler that</span>
-<span class="doccomment">/// calls callbacks): a boxed future.</span>
+<span class="doccomment">/// calls callbacks): a boxed function that returns a boxed future, i.e. a</span>
+<span class="doccomment">/// wrapper over the actual callback.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">AsyncCbHandler</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span>, <span class="lifetime">&#39;fut</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span>
     <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">FnOnce</span>(<span class="ident">T</span>) -&gt; <span class="ident">AsyncCbHandlerFuture</span><span class="op">&lt;</span><span class="lifetime">&#39;fut</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span><span class="op">&gt;</span>;
 

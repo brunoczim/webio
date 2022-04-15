@@ -203,6 +203,8 @@
 <span id="198">198</span>
 <span id="199">199</span>
 <span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module implements time-related utilities.</span>
 
 <span class="kw">mod</span> <span class="ident">instant</span>;
@@ -393,13 +395,15 @@
 }
 
 <span class="kw">fn</span> <span class="ident">interval_ms</span>(<span class="ident">milliseconds</span>: <span class="ident">i32</span>) -&gt; <span class="ident">IntervalHandle</span> {
-    <span class="kw">let</span> <span class="ident">register</span> <span class="op">=</span> <span class="ident">callback::multi::SyncRegister::new</span>(<span class="op">|</span><span class="ident">callback</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">closure</span> <span class="op">=</span> <span class="ident">Closure::wrap</span>(<span class="ident">callback</span>).<span class="ident">into_js_value</span>();
+    <span class="kw">let</span> <span class="ident">register</span> <span class="op">=</span> <span class="ident">callback::multi::SyncRegister::new</span>(<span class="op">|</span><span class="kw-2">mut</span> <span class="ident">callback</span><span class="op">|</span> {
+        <span class="kw">let</span> <span class="ident">boxed_callback</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> <span class="ident">callback</span>(()));
+        <span class="kw">let</span> <span class="ident">closure</span> <span class="op">=</span>
+            <span class="ident">Closure::wrap</span>(<span class="ident">boxed_callback</span> <span class="kw">as</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">FnMut</span>()<span class="op">&gt;</span>).<span class="ident">into_js_value</span>();
         <span class="kw">let</span> <span class="ident">timeout_id</span> <span class="op">=</span> <span class="ident">set_interval</span>(<span class="ident">closure</span>.<span class="ident">dyn_ref</span>().<span class="ident">unwrap</span>(), <span class="ident">milliseconds</span>);
         (<span class="ident">timeout_id</span>, <span class="ident">closure</span>)
     });
 
-    <span class="kw">let</span> ((<span class="ident">id</span>, <span class="ident">closure</span>), <span class="ident">listener</span>) <span class="op">=</span> <span class="ident">register</span>.<span class="ident">listen_returning</span>(<span class="op">|</span><span class="op">|</span> ());
+    <span class="kw">let</span> ((<span class="ident">id</span>, <span class="ident">closure</span>), <span class="ident">listener</span>) <span class="op">=</span> <span class="ident">register</span>.<span class="ident">listen_returning</span>(<span class="op">|</span>()<span class="op">|</span> ());
 
     <span class="ident">IntervalHandle::new</span>(<span class="ident">listener</span>, <span class="ident">id</span>, <span class="ident">closure</span>)
 }
