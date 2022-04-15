@@ -46,7 +46,7 @@ macro_rules! async_once {
 }
 
 /// The type of synchronous, oneshot callback handlers (i.e. the handler that
-/// calls callbacks): a boxed function.
+/// calls callbacks): a boxed function, i.e. a wrapper over the actual callback.
 pub type SyncCbHandler<'cb, T> = Box<dyn FnOnce(T) + 'cb>;
 
 /// The type of futures used in asynchronous, oneshot callback handlers (i.e.
@@ -54,7 +54,8 @@ pub type SyncCbHandler<'cb, T> = Box<dyn FnOnce(T) + 'cb>;
 pub type AsyncCbHandlerFuture<'fut> = Pin<Box<dyn Future<Output = ()> + 'fut>>;
 
 /// The type of asynchronous, oneshot callback handlers (i.e. the handler that
-/// calls callbacks): a boxed future.
+/// calls callbacks): a boxed function that returns a boxed future, i.e. a
+/// wrapper over the actual callback.
 pub type AsyncCbHandler<'cb, 'fut, T> =
     Box<dyn FnOnce(T) -> AsyncCbHandlerFuture<'fut> + 'cb>;
 

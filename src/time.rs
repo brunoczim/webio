@@ -188,13 +188,15 @@ pub fn interval(duration: Duration) -> IntervalHandle {
 }
 
 fn interval_ms(milliseconds: i32) -> IntervalHandle {
-    let register = callback::multi::SyncRegister::new(|callback| {
-        let closure = Closure::wrap(callback).into_js_value();
+    let register = callback::multi::SyncRegister::new(|mut callback| {
+        let boxed_callback = Box::new(move || callback(()));
+        let closure =
+            Closure::wrap(boxed_callback as Box<dyn FnMut()>).into_js_value();
         let timeout_id = set_interval(closure.dyn_ref().unwrap(), milliseconds);
         (timeout_id, closure)
     });
 
-    let ((id, closure), listener) = register.listen_returning(|| ());
+    let ((id, closure), listener) = register.listen_returning(|()| ());
 
     IntervalHandle::new(listener, id, closure)
 }
