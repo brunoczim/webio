@@ -298,12 +298,12 @@
 
 <span class="kw">fn</span> <span class="ident">timeout_ms</span>(<span class="ident">milliseconds</span>: <span class="ident">i32</span>) -&gt; <span class="ident">TimeoutHandle</span> {
     <span class="kw">let</span> <span class="ident">register</span> <span class="op">=</span> <span class="ident">callback::once::SyncRegister::new</span>(<span class="op">|</span><span class="ident">callback</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">closure</span> <span class="op">=</span> <span class="ident">Closure::once_into_js</span>(<span class="ident">callback</span>);
+        <span class="kw">let</span> <span class="ident">closure</span> <span class="op">=</span> <span class="ident">Closure::once_into_js</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> <span class="ident">callback</span>(()));
         <span class="kw">let</span> <span class="ident">timeout_id</span> <span class="op">=</span> <span class="ident">set_timeout</span>(<span class="ident">closure</span>.<span class="ident">dyn_ref</span>().<span class="ident">unwrap</span>(), <span class="ident">milliseconds</span>);
         (<span class="ident">timeout_id</span>, <span class="ident">closure</span>)
     });
 
-    <span class="kw">let</span> ((<span class="ident">id</span>, <span class="ident">closure</span>), <span class="ident">listener</span>) <span class="op">=</span> <span class="ident">register</span>.<span class="ident">listen_returning</span>(<span class="op">|</span><span class="op">|</span> ());
+    <span class="kw">let</span> ((<span class="ident">id</span>, <span class="ident">closure</span>), <span class="ident">listener</span>) <span class="op">=</span> <span class="ident">register</span>.<span class="ident">listen_returning</span>(<span class="op">|</span>()<span class="op">|</span> ());
 
     <span class="ident">TimeoutHandle::new</span>(<span class="ident">listener</span>, <span class="ident">id</span>, <span class="ident">closure</span>)
 }

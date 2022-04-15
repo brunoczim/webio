@@ -160,6 +160,8 @@
 <span id="155">155</span>
 <span id="156">156</span>
 <span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module exports items related to task spawning.</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">callback</span>, <span class="ident">panic::Payload</span>};
@@ -187,8 +189,10 @@
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">Future</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 {
-    <span class="kw">let</span> <span class="ident">register</span> <span class="op">=</span> <span class="ident">callback::once::AsyncRegister::new</span>(<span class="ident">spawn_local</span>);
-    <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">register</span>.<span class="ident">listen</span>(<span class="ident">future</span>);
+    <span class="kw">let</span> <span class="ident">register</span> <span class="op">=</span> <span class="ident">callback::once::AsyncRegister::new</span>(<span class="op">|</span><span class="ident">callback</span><span class="op">|</span> {
+        <span class="ident">spawn_local</span>(<span class="ident">callback</span>(()))
+    });
+    <span class="kw">let</span> <span class="ident">callback_handle</span> <span class="op">=</span> <span class="ident">register</span>.<span class="ident">listen</span>(<span class="op">|</span>()<span class="op">|</span> <span class="ident">future</span>);
     <span class="ident">JoinHandle::new</span>(<span class="ident">callback_handle</span>)
 }
 
