@@ -8,15 +8,17 @@ macro_rules! sync_once {
     ($self:expr, $callback:expr) => {{
         let (notifier, inner_listener) = callback::shared::channel();
 
-        let handler = Box::new(move || {
+        let handler = Box::new(move |event_data| {
             let result =
-                panic::catch_unwind(panic::AssertUnwindSafe($callback));
+                panic::catch_unwind(panic::AssertUnwindSafe(move || {
+                    $callback(event_data)
+                }));
             match result {
                 Ok(data) => notifier.success(data),
                 Err(payload) => notifier.panicked(payload),
             }
         });
-        let ret = ($self.register_fn)(handler as SyncCbHandler);
+        let ret = ($self.register_fn)(handler as SyncCbHandler<_>);
 
         (ret, Listener::new(inner_listener))
     }};
@@ -26,14 +28,18 @@ macro_rules! async_once {
     ($self:expr, $callback:expr) => {{
         let (notifier, inner_listener) = callback::shared::channel();
 
-        let handler = Box::pin(async move {
-            let result = FutureCatchUnwind::new($callback).await;
-            match result {
-                Ok(data) => notifier.success(data),
-                Err(payload) => notifier.panicked(payload),
-            }
+        let handler = Box::new(move |event_data| {
+            let callback_future = $callback(event_data);
+            let handler_future = Box::pin(async move {
+                let result = FutureCatchUnwind::new(callback_future).await;
+                match result {
+                    Ok(data) => notifier.success(data),
+                    Err(payload) => notifier.panicked(payload),
+                }
+            });
+            handler_future as AsyncCbHandlerFuture
         });
-        let ret = ($self.register_fn)(handler as AsyncCbHandler);
+        let ret = ($self.register_fn)(handler as AsyncCbHandler<_>);
 
         (ret, Listener::new(inner_listener))
     }};
@@ -41,11 +47,16 @@ macro_rules! async_once {
 
 /// The type of synchronous, oneshot callback handlers (i.e. the handler that
 /// calls callbacks): a boxed function.
-pub type SyncCbHandler<'cb> = Box<dyn FnOnce() + 'cb>;
+pub type SyncCbHandler<'cb, T> = Box<dyn FnOnce(T) + 'cb>;
 
 /// The type of asynchronous, oneshot callback handlers (i.e. the handler that
 /// calls callbacks): a boxed future.
-pub type AsyncCbHandler<'cb> = Pin<Box<dyn Future<Output = ()> + 'cb>>;
+pub type AsyncCbHandlerFuture<'fut> = Pin<Box<dyn Future<Output = ()> + 'fut>>;
+
+/// The type of asynchronous, oneshot callback handlers (i.e. the handler that
+/// calls callbacks): a boxed future.
+pub type AsyncCbHandler<'cb, 'fut, T> =
+    Box<dyn FnOnce(T) -> AsyncCbHandlerFuture<'fut> + 'cb>;
 
 /// Register of oneshot callbacks into an event, where the callback is
 /// syncrhonous (though waiting for the callback to complete is still
@@ -61,9 +72,9 @@ impl<F> SyncRegister<F> {
     /// them. Callback handlers are register-internal functions that are called
     /// when the event completes, and then, they call the actual callbacks, i.e.
     /// a wrapper for the actual callback.
-    pub fn new<'cb, T>(register_fn: F) -> Self
+    pub fn new<'cb, T, U>(register_fn: F) -> Self
     where
-        F: FnOnce(SyncCbHandler<'cb>) -> T,
+        F: FnOnce(SyncCbHandler<'cb, T>) -> U,
     {
         Self { register_fn }
     }
@@ -74,9 +85,9 @@ impl<F> SyncRegister<F> {
     /// register-internal functions that are called when the event completes,
     /// and then, they call the actual callbacks, i.e. a wrapper for the actual
     /// callback.
-    pub fn new_mut<'cb, T>(register_fn: F) -> Self
+    pub fn new_mut<'cb, T, U>(register_fn: F) -> Self
     where
-        F: FnMut(SyncCbHandler<'cb>) -> T,
+        F: FnMut(SyncCbHandler<'cb, T>) -> U,
     {
         Self { register_fn }
     }
@@ -86,9 +97,9 @@ impl<F> SyncRegister<F> {
     /// and register them. Callback handlers are register-internal functions
     /// that are called when the event completes, and then, they call the
     /// actual callbacks, i.e. a wrapper for the actual callback.
-    pub fn new_ref<'cb, T>(register_fn: F) -> Self
+    pub fn new_ref<'cb, T, U>(register_fn: F) -> Self
     where
-        F: Fn(SyncCbHandler<'cb>) -> T,
+        F: Fn(SyncCbHandler<'cb, T>) -> U,
     {
         Self { register_fn }
     }
@@ -110,18 +121,18 @@ impl<F> SyncRegister<F> {
     /// # fn main() {
     /// # task::detach(async {
     /// let register = callback::once::SyncRegister::new(|callback| {
-    ///     callback();
+    ///     callback(40);
     /// });
-    /// let result = register.listen(|| 42).await;
+    /// let result = register.listen(|event_data| event_data + 2).await;
     /// assert_eq!(result.unwrap(), 42);
     /// # });
     /// # }
     /// ```
-    pub fn listen<'cb, C, U>(self, callback: C) -> Listener<U>
+    pub fn listen<'cb, C, T, V>(self, callback: C) -> Listener<V>
     where
-        F: FnOnce(SyncCbHandler<'cb>),
-        C: FnOnce() -> U + 'cb,
-        U: 'cb,
+        F: FnOnce(SyncCbHandler<'cb, T>),
+        C: FnOnce(T) -> V + 'cb,
+        V: 'cb,
     {
         let (_, listener) = self.listen_returning(callback);
         listener
@@ -133,11 +144,11 @@ impl<F> SyncRegister<F> {
     ///
     /// This method does not consume the register, requiring mutability,
     /// however.
-    pub fn listen_mut<'cb, C, U>(&mut self, callback: C) -> Listener<U>
+    pub fn listen_mut<'cb, C, T, U, V>(&mut self, callback: C) -> Listener<V>
     where
-        F: FnMut(SyncCbHandler<'cb>),
-        C: FnOnce() -> U + 'cb,
-        U: 'cb,
+        F: FnMut(SyncCbHandler<'cb, T>),
+        C: FnOnce(T) -> V + 'cb,
+        V: 'cb,
     {
         let (_, listener) = self.listen_mut_returning(callback);
         listener
@@ -149,11 +160,11 @@ impl<F> SyncRegister<F> {
     ///
     /// This method does not consume the register and does not require
     /// mutability.
-    pub fn listen_ref<'cb, C, U>(&self, callback: C) -> Listener<U>
+    pub fn listen_ref<'cb, C, T, U, V>(&self, callback: C) -> Listener<V>
     where
-        F: Fn(SyncCbHandler<'cb>),
-        C: FnOnce() -> U + 'cb,
-        U: 'cb,
+        F: Fn(SyncCbHandler<'cb, T>),
+        C: FnOnce(T) -> V + 'cb,
+        V: 'cb,
     {
         let (_, listener) = self.listen_ref_returning(callback);
         listener
@@ -178,21 +189,24 @@ impl<F> SyncRegister<F> {
     /// # fn main() {
     /// # task::detach(async {
     /// let register = callback::once::SyncRegister::new(|callback| {
-    ///     callback();
-    ///     "my-ret-value"
+    ///     callback(40);
+    ///     "my-return-abc"
     /// });
-    /// let (ret_value, future) = register.listen_returning(|| 42);
-    /// assert_eq!(ret_value, "my-ret-value");
+    /// let (ret, future) = register.listen_returning(|event_data| event_data + 2);
+    /// assert_eq!(ret, "my-return-abc");
     /// let result = future.await;
     /// assert_eq!(result.unwrap(), 42);
     /// # });
     /// # }
     /// ```
-    pub fn listen_returning<'cb, C, T, U>(self, callback: C) -> (T, Listener<U>)
+    pub fn listen_returning<'cb, C, T, U, V>(
+        self,
+        callback: C,
+    ) -> (U, Listener<V>)
     where
-        F: FnOnce(SyncCbHandler<'cb>) -> T,
-        C: FnOnce() -> U + 'cb,
-        U: 'cb,
+        F: FnOnce(SyncCbHandler<'cb, T>) -> U,
+        C: FnOnce(T) -> V + 'cb,
+        V: 'cb,
     {
         sync_once!(self, callback)
     }
@@ -205,14 +219,14 @@ impl<F> SyncRegister<F> {
     ///
     /// This method does not consume the register, requiring mutability,
     /// however.
-    pub fn listen_mut_returning<'cb, C, T, U>(
+    pub fn listen_mut_returning<'cb, C, T, U, V>(
         &mut self,
         callback: C,
-    ) -> (T, Listener<U>)
+    ) -> (U, Listener<V>)
     where
-        F: FnMut(SyncCbHandler<'cb>) -> T,
-        C: FnOnce() -> U + 'cb,
-        U: 'cb,
+        F: FnMut(SyncCbHandler<'cb, T>) -> U,
+        C: FnOnce(T) -> V + 'cb,
+        V: 'cb,
     {
         sync_once!(self, callback)
     }
@@ -225,14 +239,14 @@ impl<F> SyncRegister<F> {
     ///
     /// This method does not consume the register and does not require
     /// mutability.
-    pub fn listen_ref_returning<'cb, C, T, U>(
+    pub fn listen_ref_returning<'cb, C, T, U, V>(
         &self,
         callback: C,
-    ) -> (T, Listener<U>)
+    ) -> (U, Listener<V>)
     where
-        F: Fn(SyncCbHandler<'cb>) -> T,
-        C: FnOnce() -> U + 'cb,
-        U: 'cb,
+        F: Fn(SyncCbHandler<'cb, T>) -> U,
+        C: FnOnce(T) -> V + 'cb,
+        V: 'cb,
     {
         sync_once!(self, callback)
     }
@@ -251,9 +265,10 @@ impl<F> AsyncRegister<F> {
     /// them. Callback handlers are register-internal futures that are awaited
     /// for the event's completion, and that then await the actual callbacks,
     /// i.e. a wrapper for the actual callback.
-    pub fn new<'cb, T>(register_fn: F) -> Self
+    pub fn new<'cb, 'fut, T, U>(register_fn: F) -> Self
     where
-        F: FnOnce(AsyncCbHandler<'cb>) -> T,
+        'fut: 'cb,
+        F: FnOnce(AsyncCbHandler<'cb, 'fut, T>) -> U,
     {
         Self { register_fn }
     }
@@ -264,9 +279,10 @@ impl<F> AsyncRegister<F> {
     /// register-internal futures that are awaited for the event's
     /// completion, and that then await the actual callbacks,
     /// i.e. a wrapper for the actual callback.
-    pub fn new_mut<'cb, T>(register_fn: F) -> Self
+    pub fn new_mut<'cb, 'fut, T, U>(register_fn: F) -> Self
     where
-        F: FnMut(AsyncCbHandler<'cb>) -> T,
+        'fut: 'cb,
+        F: FnMut(AsyncCbHandler<'cb, 'fut, T>) -> U,
     {
         Self { register_fn }
     }
@@ -277,9 +293,10 @@ impl<F> AsyncRegister<F> {
     /// register-internal futures that are awaited for the event's
     /// completion, and that then await the actual callbacks,
     /// i.e. a wrapper for the actual callback.
-    pub fn new_ref<'cb, T>(register_fn: F) -> Self
+    pub fn new_ref<'cb, 'fut, T, U>(register_fn: F) -> Self
     where
-        F: Fn(AsyncCbHandler<'cb>) -> T,
+        'fut: 'cb,
+        F: Fn(AsyncCbHandler<'cb, 'fut, T>) -> U,
     {
         Self { register_fn }
     }
@@ -300,17 +317,19 @@ impl<F> AsyncRegister<F> {
     /// # fn main() {
     /// # task::detach(async {
     /// let register = callback::once::AsyncRegister::new(|callback| {
-    ///     task::detach(callback);
+    ///     task::detach(callback(40));
     /// });
-    /// let result = register.listen(async { 42 }).await;
+    /// let result = register.listen(|event_data| async move { event_data + 2 }).await;
     /// assert_eq!(result.unwrap(), 42);
     /// # });
     /// # }
     /// ```
-    pub fn listen<'cb, A>(self, callback: A) -> Listener<A::Output>
+    pub fn listen<'cb, 'fut, C, T, A>(self, callback: C) -> Listener<A::Output>
     where
-        F: FnOnce(AsyncCbHandler<'cb>),
-        A: Future + 'cb,
+        'fut: 'cb,
+        F: FnOnce(AsyncCbHandler<'cb, 'fut, T>),
+        C: FnOnce(T) -> A + 'cb,
+        A: Future + 'fut,
     {
         let (_, listener) = self.listen_returning(callback);
         listener
@@ -322,10 +341,15 @@ impl<F> AsyncRegister<F> {
     ///
     /// This method does not consume the register, requiring mutability,
     /// however.
-    pub fn listen_mut<'cb, A>(&mut self, callback: A) -> Listener<A::Output>
+    pub fn listen_mut<'cb, 'fut, C, T, A>(
+        &mut self,
+        callback: C,
+    ) -> Listener<A::Output>
     where
-        F: FnMut(AsyncCbHandler<'cb>),
-        A: Future + 'cb,
+        'fut: 'cb,
+        F: FnMut(AsyncCbHandler<'cb, 'fut, T>),
+        C: FnOnce(T) -> A + 'cb,
+        A: Future + 'fut,
     {
         let (_, listener) = self.listen_mut_returning(callback);
         listener
@@ -337,10 +361,15 @@ impl<F> AsyncRegister<F> {
     ///
     /// This method does not consume the register and does not require
     /// mutability.
-    pub fn listen_ref<'cb, A>(&self, callback: A) -> Listener<A::Output>
+    pub fn listen_ref<'cb, 'fut, C, T, A>(
+        &mut self,
+        callback: C,
+    ) -> Listener<A::Output>
     where
-        F: Fn(AsyncCbHandler<'cb>),
-        A: Future + 'cb,
+        'fut: 'cb,
+        F: Fn(AsyncCbHandler<'cb, 'fut, T>),
+        C: FnOnce(T) -> A + 'cb,
+        A: Future + 'fut,
     {
         let (_, listener) = self.listen_ref_returning(callback);
         listener
@@ -364,23 +393,26 @@ impl<F> AsyncRegister<F> {
     /// # fn main() {
     /// # task::detach(async {
     /// let register = callback::once::AsyncRegister::new(|callback| {
-    ///     task::detach(callback);
-    ///     "my-ret-value"
+    ///     task::detach(callback(40));
+    ///     "my-return-abc"
     /// });
-    /// let (ret_value, future) = register.listen_returning(async { 42 });
-    /// assert_eq!(ret_value, "my-ret-value");
+    /// let (ret, future) =
+    ///     register.listen_returning(|event_data| async move { event_data + 2 });
+    /// assert_eq!(ret, "my-return-abc");
     /// let result = future.await;
     /// assert_eq!(result.unwrap(), 42);
     /// # });
     /// # }
     /// ```
-    pub fn listen_returning<'cb, A, T>(
+    pub fn listen_returning<'cb, 'fut, C, T, A, U>(
         self,
-        callback: A,
-    ) -> (T, Listener<A::Output>)
+        callback: C,
+    ) -> (U, Listener<A::Output>)
     where
-        F: FnOnce(AsyncCbHandler<'cb>) -> T,
-        A: Future + 'cb,
+        'fut: 'cb,
+        F: FnOnce(AsyncCbHandler<'cb, 'fut, T>) -> U,
+        C: FnOnce(T) -> A + 'cb,
+        A: Future + 'fut,
     {
         async_once!(self, callback)
     }
@@ -393,13 +425,15 @@ impl<F> AsyncRegister<F> {
     ///
     /// This method does not consume the register, requiring mutability,
     /// however.
-    pub fn listen_mut_returning<'cb, A, T>(
+    pub fn listen_mut_returning<'cb, 'fut, C, T, A, U>(
         &mut self,
-        callback: A,
-    ) -> (T, Listener<A::Output>)
+        callback: C,
+    ) -> (U, Listener<A::Output>)
     where
-        F: FnMut(AsyncCbHandler<'cb>) -> T,
-        A: Future + 'cb,
+        'fut: 'cb,
+        F: FnMut(AsyncCbHandler<'cb, 'fut, T>) -> U,
+        C: FnOnce(T) -> A + 'cb,
+        A: Future + 'fut,
     {
         async_once!(self, callback)
     }
@@ -412,13 +446,15 @@ impl<F> AsyncRegister<F> {
     ///
     /// This method does not consume the register and does not require
     /// mutability.
-    pub fn listen_ref_returning<'cb, A, T>(
+    pub fn listen_ref_returning<'cb, 'fut, C, T, A, U>(
         &self,
-        callback: A,
-    ) -> (T, Listener<A::Output>)
+        callback: C,
+    ) -> (U, Listener<A::Output>)
     where
-        F: Fn(AsyncCbHandler<'cb>) -> T,
-        A: Future + 'cb,
+        'fut: 'cb,
+        F: Fn(AsyncCbHandler<'cb, 'fut, T>) -> U,
+        C: FnOnce(T) -> A + 'cb,
+        A: Future + 'fut,
     {
         async_once!(self, callback)
     }

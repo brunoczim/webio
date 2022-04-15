@@ -9,19 +9,19 @@ use webio::{callback, task};
 #[webio::test]
 async fn sync_once() {
     let register = callback::once::SyncRegister::new(|callback| {
-        callback();
+        callback(40);
     });
-    let result = register.listen(|| 42).await;
+    let result = register.listen(|event_data| event_data + 2).await;
     assert_eq!(result.unwrap(), 42);
 }
 
 #[webio::test]
 async fn sync_once_with_ret() {
     let register = callback::once::SyncRegister::new(|callback| {
-        callback();
+        callback(40);
         "my-return-abc"
     });
-    let (ret, future) = register.listen_returning(|| 42);
+    let (ret, future) = register.listen_returning(|event_data| event_data + 2);
     assert_eq!(ret, "my-return-abc");
     let result = future.await;
     assert_eq!(result.unwrap(), 42);
@@ -30,19 +30,21 @@ async fn sync_once_with_ret() {
 #[webio::test]
 async fn async_once() {
     let register = callback::once::AsyncRegister::new(|callback| {
-        task::detach(callback);
+        task::detach(callback(40));
     });
-    let result = register.listen(async { 42 }).await;
+    let result =
+        register.listen(|event_data| async move { event_data + 2 }).await;
     assert_eq!(result.unwrap(), 42);
 }
 
 #[webio::test]
 async fn async_once_with_ret() {
     let register = callback::once::AsyncRegister::new(|callback| {
-        task::detach(callback);
+        task::detach(callback(40));
         "my-return-abc"
     });
-    let (ret, future) = register.listen_returning(async { 42 });
+    let (ret, future) =
+        register.listen_returning(|event_data| async move { event_data + 2 });
     assert_eq!(ret, "my-return-abc");
     let result = future.await;
     assert_eq!(result.unwrap(), 42);

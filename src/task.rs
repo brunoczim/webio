@@ -25,8 +25,10 @@ pub fn spawn<A>(future: A) -> JoinHandle<A::Output>
 where
     A: Future + 'static,
 {
-    let register = callback::once::AsyncRegister::new(spawn_local);
-    let callback_handle = register.listen(future);
+    let register = callback::once::AsyncRegister::new(|callback| {
+        spawn_local(callback(()))
+    });
+    let callback_handle = register.listen(|()| future);
     JoinHandle::new(callback_handle)
 }
 

@@ -93,12 +93,12 @@ pub fn timeout(duration: Duration) -> TimeoutHandle {
 
 fn timeout_ms(milliseconds: i32) -> TimeoutHandle {
     let register = callback::once::SyncRegister::new(|callback| {
-        let closure = Closure::once_into_js(callback);
+        let closure = Closure::once_into_js(move || callback(()));
         let timeout_id = set_timeout(closure.dyn_ref().unwrap(), milliseconds);
         (timeout_id, closure)
     });
 
-    let ((id, closure), listener) = register.listen_returning(|| ());
+    let ((id, closure), listener) = register.listen_returning(|()| ());
 
     TimeoutHandle::new(listener, id, closure)
 }
