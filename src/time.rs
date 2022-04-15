@@ -3,8 +3,9 @@
 mod instant;
 
 use crate::callback;
+use futures::stream::Stream;
 use js_sys::Function;
-use std::{future::Future, task, time::Duration};
+use std::{future::Future, pin::Pin, task, time::Duration};
 use wasm_bindgen::{
     prelude::{wasm_bindgen, Closure},
     JsCast,
@@ -130,6 +131,19 @@ impl IntervalHandle {
 impl Drop for IntervalHandle {
     fn drop(&mut self) {
         clear_interval(&self.interval_id);
+    }
+}
+
+impl Stream for IntervalHandle {
+    type Item = ();
+
+    fn poll_next(
+        self: Pin<&mut Self>,
+        ctx: &mut task::Context<'_>,
+    ) -> task::Poll<Option<Self::Item>> {
+        unsafe { self.map_unchecked_mut(|this| &mut this.listener) }
+            .poll_next(ctx)
+            .map(|option| option.map(|result| result.unwrap()))
     }
 }
 
