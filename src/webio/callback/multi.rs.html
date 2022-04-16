@@ -751,9 +751,9 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// let listener = register.listen(|exp| 2u32.pow(exp));</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(listener.next().await.unwrap(), 4);</span>
-    <span class="doccomment">/// assert_eq!(listener.next().await.unwrap(), 2);</span>
-    <span class="doccomment">/// assert_eq!(listener.next().await.unwrap(), 1);</span>
+    <span class="doccomment">/// assert_eq!(listener.listen_next().await.unwrap(), 4);</span>
+    <span class="doccomment">/// assert_eq!(listener.listen_next().await.unwrap(), 2);</span>
+    <span class="doccomment">/// assert_eq!(listener.listen_next().await.unwrap(), 1);</span>
     <span class="doccomment">/// # });</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
@@ -836,9 +836,9 @@
     <span class="doccomment">/// let (ret, listener) = register.listen_returning(|exp| 2u32.pow(exp));</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// assert_eq!(ret, &quot;my-return-abc&quot;);</span>
-    <span class="doccomment">/// assert_eq!(listener.next().await.unwrap(), 4);</span>
-    <span class="doccomment">/// assert_eq!(listener.next().await.unwrap(), 2);</span>
-    <span class="doccomment">/// assert_eq!(listener.next().await.unwrap(), 1);</span>
+    <span class="doccomment">/// assert_eq!(listener.listen_next().await.unwrap(), 4);</span>
+    <span class="doccomment">/// assert_eq!(listener.listen_next().await.unwrap(), 2);</span>
+    <span class="doccomment">/// assert_eq!(listener.listen_next().await.unwrap(), 1);</span>
     <span class="doccomment">/// # });</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
@@ -981,9 +981,9 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// let listener = register.listen(|exp| async move { 2u32.pow(exp) });</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(listener.next().await.unwrap(), 4);</span>
-    <span class="doccomment">/// assert_eq!(listener.next().await.unwrap(), 2);</span>
-    <span class="doccomment">/// assert_eq!(listener.next().await.unwrap(), 1);</span>
+    <span class="doccomment">/// assert_eq!(listener.listen_next().await.unwrap(), 4);</span>
+    <span class="doccomment">/// assert_eq!(listener.listen_next().await.unwrap(), 2);</span>
+    <span class="doccomment">/// assert_eq!(listener.listen_next().await.unwrap(), 1);</span>
     <span class="doccomment">/// # });</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
@@ -1078,9 +1078,9 @@
     <span class="doccomment">///     register.listen_returning(|exp| async move { 2u32.pow(exp) });</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// assert_eq!(ret, &quot;my-return-abc&quot;);</span>
-    <span class="doccomment">/// assert_eq!(listener.next().await.unwrap(), 4);</span>
-    <span class="doccomment">/// assert_eq!(listener.next().await.unwrap(), 2);</span>
-    <span class="doccomment">/// assert_eq!(listener.next().await.unwrap(), 1);</span>
+    <span class="doccomment">/// assert_eq!(listener.listen_next().await.unwrap(), 4);</span>
+    <span class="doccomment">/// assert_eq!(listener.listen_next().await.unwrap(), 2);</span>
+    <span class="doccomment">/// assert_eq!(listener.listen_next().await.unwrap(), 1);</span>
     <span class="doccomment">/// # });</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
@@ -1154,7 +1154,7 @@
     }
 
     <span class="doccomment">/// Creates a future that waits for the next occurence of the event.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">next</span><span class="op">&lt;</span><span class="lifetime">&#39;this</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;this</span> <span class="self">self</span>) -&gt; <span class="ident">ListenNext</span><span class="op">&lt;</span><span class="lifetime">&#39;this</span>, <span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_next</span><span class="op">&lt;</span><span class="lifetime">&#39;this</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;this</span> <span class="self">self</span>) -&gt; <span class="ident">ListenNext</span><span class="op">&lt;</span><span class="lifetime">&#39;this</span>, <span class="ident">T</span><span class="op">&gt;</span> {
         <span class="ident">ListenNext::new</span>(<span class="self">self</span>)
     }
 }

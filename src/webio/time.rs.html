@@ -345,7 +345,7 @@
 
     <span class="doccomment">/// Ticks for the next interval. This is an asynchronous function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">tick</span><span class="op">&lt;</span><span class="lifetime">&#39;this</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;this</span> <span class="self">self</span>) -&gt; <span class="ident">IntervalTick</span><span class="op">&lt;</span><span class="lifetime">&#39;this</span><span class="op">&gt;</span> {
-        <span class="ident">IntervalTick</span> { <span class="ident">listener</span>: <span class="self">self</span>.<span class="ident">listener</span>.<span class="ident">next</span>() }
+        <span class="ident">IntervalTick</span> { <span class="ident">listener</span>: <span class="self">self</span>.<span class="ident">listener</span>.<span class="ident">listen_next</span>() }
     }
 }
 
