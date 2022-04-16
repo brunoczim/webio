@@ -143,9 +143,9 @@ impl<F> SyncRegister<F> {
     ///
     /// let listener = register.listen(|exp| 2u32.pow(exp));
     ///
-    /// assert_eq!(listener.next().await.unwrap(), 4);
-    /// assert_eq!(listener.next().await.unwrap(), 2);
-    /// assert_eq!(listener.next().await.unwrap(), 1);
+    /// assert_eq!(listener.listen_next().await.unwrap(), 4);
+    /// assert_eq!(listener.listen_next().await.unwrap(), 2);
+    /// assert_eq!(listener.listen_next().await.unwrap(), 1);
     /// # });
     /// # }
     /// ```
@@ -228,9 +228,9 @@ impl<F> SyncRegister<F> {
     /// let (ret, listener) = register.listen_returning(|exp| 2u32.pow(exp));
     ///
     /// assert_eq!(ret, "my-return-abc");
-    /// assert_eq!(listener.next().await.unwrap(), 4);
-    /// assert_eq!(listener.next().await.unwrap(), 2);
-    /// assert_eq!(listener.next().await.unwrap(), 1);
+    /// assert_eq!(listener.listen_next().await.unwrap(), 4);
+    /// assert_eq!(listener.listen_next().await.unwrap(), 2);
+    /// assert_eq!(listener.listen_next().await.unwrap(), 1);
     /// # });
     /// # }
     /// ```
@@ -373,9 +373,9 @@ impl<F> AsyncRegister<F> {
     ///
     /// let listener = register.listen(|exp| async move { 2u32.pow(exp) });
     ///
-    /// assert_eq!(listener.next().await.unwrap(), 4);
-    /// assert_eq!(listener.next().await.unwrap(), 2);
-    /// assert_eq!(listener.next().await.unwrap(), 1);
+    /// assert_eq!(listener.listen_next().await.unwrap(), 4);
+    /// assert_eq!(listener.listen_next().await.unwrap(), 2);
+    /// assert_eq!(listener.listen_next().await.unwrap(), 1);
     /// # });
     /// # }
     /// ```
@@ -470,9 +470,9 @@ impl<F> AsyncRegister<F> {
     ///     register.listen_returning(|exp| async move { 2u32.pow(exp) });
     ///
     /// assert_eq!(ret, "my-return-abc");
-    /// assert_eq!(listener.next().await.unwrap(), 4);
-    /// assert_eq!(listener.next().await.unwrap(), 2);
-    /// assert_eq!(listener.next().await.unwrap(), 1);
+    /// assert_eq!(listener.listen_next().await.unwrap(), 4);
+    /// assert_eq!(listener.listen_next().await.unwrap(), 2);
+    /// assert_eq!(listener.listen_next().await.unwrap(), 1);
     /// # });
     /// # }
     /// ```
@@ -546,7 +546,7 @@ impl<T> Listener<T> {
     }
 
     /// Creates a future that waits for the next occurence of the event.
-    pub fn next<'this>(&'this self) -> ListenNext<'this, T> {
+    pub fn listen_next<'this>(&'this self) -> ListenNext<'this, T> {
         ListenNext::new(self)
     }
 }

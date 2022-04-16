@@ -124,7 +124,7 @@ impl IntervalHandle {
 
     /// Ticks for the next interval. This is an asynchronous function.
     pub fn tick<'this>(&'this self) -> IntervalTick<'this> {
-        IntervalTick { listener: self.listener.next() }
+        IntervalTick { listener: self.listener.listen_next() }
     }
 }
 

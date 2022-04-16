@@ -80,9 +80,9 @@ async fn sync_multi() {
 
     let listener = register.listen(|exp| 2u32.pow(exp));
 
-    assert_eq!(listener.next().await.unwrap(), 4);
-    assert_eq!(listener.next().await.unwrap(), 2);
-    assert_eq!(listener.next().await.unwrap(), 1);
+    assert_eq!(listener.listen_next().await.unwrap(), 4);
+    assert_eq!(listener.listen_next().await.unwrap(), 2);
+    assert_eq!(listener.listen_next().await.unwrap(), 1);
 }
 
 #[webio::test]
@@ -95,9 +95,9 @@ async fn sync_multi_with_ret() {
     let (ret, listener) = register.listen_returning(|exp| 2u32.pow(exp));
 
     assert_eq!(ret, "my-return-abc");
-    assert_eq!(listener.next().await.unwrap(), 4);
-    assert_eq!(listener.next().await.unwrap(), 2);
-    assert_eq!(listener.next().await.unwrap(), 1);
+    assert_eq!(listener.listen_next().await.unwrap(), 4);
+    assert_eq!(listener.listen_next().await.unwrap(), 2);
+    assert_eq!(listener.listen_next().await.unwrap(), 1);
 }
 
 #[webio::test]
@@ -108,9 +108,9 @@ async fn async_multi() {
 
     let listener = register.listen(|exp| async move { 2u32.pow(exp) });
 
-    assert_eq!(listener.next().await.unwrap(), 4);
-    assert_eq!(listener.next().await.unwrap(), 2);
-    assert_eq!(listener.next().await.unwrap(), 1);
+    assert_eq!(listener.listen_next().await.unwrap(), 4);
+    assert_eq!(listener.listen_next().await.unwrap(), 2);
+    assert_eq!(listener.listen_next().await.unwrap(), 1);
 }
 
 #[webio::test]
@@ -124,7 +124,7 @@ async fn async_multi_with_ret() {
         register.listen_returning(|exp| async move { 2u32.pow(exp) });
 
     assert_eq!(ret, "my-return-abc");
-    assert_eq!(listener.next().await.unwrap(), 4);
-    assert_eq!(listener.next().await.unwrap(), 2);
-    assert_eq!(listener.next().await.unwrap(), 1);
+    assert_eq!(listener.listen_next().await.unwrap(), 4);
+    assert_eq!(listener.listen_next().await.unwrap(), 2);
+    assert_eq!(listener.listen_next().await.unwrap(), 1);
 }
