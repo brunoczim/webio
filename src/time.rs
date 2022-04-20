@@ -3,9 +3,12 @@
 mod instant;
 
 use crate::callback;
+#[cfg(feature = "stream")]
 use futures::stream::Stream;
 use js_sys::Function;
-use std::{future::Future, pin::Pin, task, time::Duration};
+#[cfg(feature = "stream")]
+use std::pin::Pin;
+use std::{future::Future, task, time::Duration};
 use wasm_bindgen::{closure::Closure, prelude::wasm_bindgen, JsCast, JsValue};
 
 pub use instant::Instant;
@@ -130,6 +133,7 @@ impl Drop for IntervalHandle {
     }
 }
 
+#[cfg(feature = "stream")]
 impl Stream for IntervalHandle {
     type Item = ();
 

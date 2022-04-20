@@ -2,11 +2,13 @@
 //! that are called multiple times, i.e. callbacks of events that occur more
 //! than once per callback.
 
-use crate::{
-    callback,
-    panic::{FutureCatchUnwind, Payload},
-};
+use crate::{callback, panic::FutureCatchUnwind};
+
+#[cfg(feature = "stream")]
+use crate::panic::Payload;
+#[cfg(feature = "stream")]
 use futures::stream::Stream;
+
 use std::{future::Future, panic, pin::Pin, task};
 
 macro_rules! sync_multi {
@@ -551,6 +553,7 @@ impl<T> Listener<T> {
     }
 }
 
+#[cfg(feature = "stream")]
 impl<T> Stream for Listener<T> {
     type Item = Result<T, Payload>;
 

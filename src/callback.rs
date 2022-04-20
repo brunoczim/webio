@@ -3,7 +3,7 @@
 
 mod shared;
 
-pub mod multi;
 pub mod once;
+pub mod multi;
 
 pub use shared::Error;
