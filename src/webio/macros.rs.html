@@ -113,6 +113,11 @@
 <span id="108">108</span>
 <span id="109">109</span>
 <span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module defines macros.</span>
 
 <span class="doccomment">/// Logs to the JavaScript/browser/node console using a given method. Syntax:</span>
@@ -130,6 +135,7 @@
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="macro">macro_rules!</span> <span class="ident">console_log</span> {
     ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro">crate::console!</span>(<span class="macro-nonterminal">log</span>; $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>)<span class="kw-2">*</span>)
@@ -151,6 +157,7 @@
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="macro">macro_rules!</span> <span class="ident">console_debug</span> {
     ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro">crate::console!</span>(<span class="macro-nonterminal">debug</span>; $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>)<span class="kw-2">*</span>)
@@ -174,6 +181,7 @@
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="macro">macro_rules!</span> <span class="ident">console_info</span> {
     ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro">crate::console!</span>(<span class="macro-nonterminal">info</span>; $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>)<span class="kw-2">*</span>)
@@ -195,6 +203,7 @@
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="macro">macro_rules!</span> <span class="ident">console_warn</span> {
     ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro">crate::console!</span>(<span class="macro-nonterminal">warn</span>; $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>)<span class="kw-2">*</span>)
@@ -218,6 +227,7 @@
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="macro">macro_rules!</span> <span class="ident">console_error</span> {
     ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro">crate::console!</span>(<span class="macro-nonterminal">error</span>; $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>)<span class="kw-2">*</span>)

@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["window","Getter for the `Window` object"]],"mod":[["console",""]],"struct":[["Event","The `Event` class."],["EventTarget","The `EventTarget` class."],["KeyEvent","The `KeyEvent` class."],["MouseEvent","The `MouseEvent` class."],["UiEvent","The `UiEvent` class."],["Window","The `Window` class."]]});
+initSidebarItems({"mod":[["console",""]],"struct":[["Event","The `Event` class."],["EventTarget","The `EventTarget` class."],["KeyEvent","The `KeyEvent` class."],["MouseEvent","The `MouseEvent` class."],["UiEvent","The `UiEvent` class."]]});

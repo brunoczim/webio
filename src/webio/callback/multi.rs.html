@@ -606,15 +606,20 @@
 <span id="601">601</span>
 <span id="602">602</span>
 <span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module implements conversion from callbacks to futures for callbacks</span>
 <span class="doccomment">//! that are called multiple times, i.e. callbacks of events that occur more</span>
 <span class="doccomment">//! than once per callback.</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">callback</span>,
-    <span class="ident">panic</span>::{<span class="ident">FutureCatchUnwind</span>, <span class="ident">Payload</span>},
-};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">callback</span>, <span class="ident">panic::FutureCatchUnwind</span>};
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;stream&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::panic::Payload</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;stream&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">futures::stream::Stream</span>;
+
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">future::Future</span>, <span class="ident">panic</span>, <span class="ident">pin::Pin</span>, <span class="ident">task</span>};
 
 <span class="macro">macro_rules!</span> <span class="ident">sync_multi</span> {
@@ -1159,6 +1164,7 @@
     }
 }
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;stream&quot;</span>)]</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Stream</span> <span class="kw">for</span> <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Payload</span><span class="op">&gt;</span>;
 

@@ -35,24 +35,40 @@
 <span id="30">30</span>
 <span id="31">31</span>
 <span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is an experimental implementation of a web-based async runtime. Web as</span>
 <span class="doccomment">//! in &quot;browser&quot;.</span>
 
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
 
+<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="self">self</span> <span class="kw">as</span> <span class="ident">webio</span>;
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">webio_macros</span>::{<span class="ident">console</span>, <span class="ident">join</span>, <span class="ident">main</span>, <span class="ident">select</span>, <span class="ident">test</span>, <span class="ident">try_join</span>};
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">js_sys</span>;
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">wasm_bindgen</span>;
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">wasm_bindgen_futures</span>;
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">wasm_bindgen_test</span>;
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">web_sys</span>;
 
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
@@ -64,9 +80,11 @@
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">callback</span>;
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">event</span>;
-
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;time&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">time</span>;
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;event&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">event</span>;
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
 </body></html>
