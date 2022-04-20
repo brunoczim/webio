@@ -673,7 +673,7 @@
     <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="ident">T</span>) -&gt; <span class="ident">AsyncCbHandlerFuture</span><span class="op">&lt;</span><span class="lifetime">&#39;fut</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;cb</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// Register of multi-call callbacks into an event, where the callback is</span>
-<span class="doccomment">/// syncrhonous (though waiting for the callback to complete is still</span>
+<span class="doccomment">/// synchronous (though waiting for the callback to complete is still</span>
 <span class="doccomment">/// asynchronous).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SyncRegister</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
@@ -719,8 +719,8 @@
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. A listener</span>
-    <span class="doccomment">/// is returned, and calling `[Listener::next]` yields a future that waits</span>
-    <span class="doccomment">/// for an occurence of the event.</span>
+    <span class="doccomment">/// is returned, and calling `[Listener::listen_next]` yields a future that</span>
+    <span class="doccomment">/// waits for an occurence of the event.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This method consumes the register.</span>
     <span class="doccomment">///</span>
@@ -768,8 +768,8 @@
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. A listener</span>
-    <span class="doccomment">/// is returned, and calling `[Listener::next]` yields a future that waits</span>
-    <span class="doccomment">/// for an occurence of the event.</span>
+    <span class="doccomment">/// is returned, and calling `[Listener::listen_next]` yields a future that</span>
+    <span class="doccomment">/// waits for an occurence of the event.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This method does not consume the register, requiring mutability,</span>
     <span class="doccomment">/// however.</span>
@@ -784,8 +784,8 @@
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. A listener</span>
-    <span class="doccomment">/// is returned, and calling `[Listener::next]` yields a future that waits</span>
-    <span class="doccomment">/// for an occurence of the event.</span>
+    <span class="doccomment">/// is returned, and calling `[Listener::listen_next]` yields a future that</span>
+    <span class="doccomment">/// waits for an occurence of the event.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This method does not consume the register and does not require</span>
     <span class="doccomment">/// mutability.</span>
@@ -800,10 +800,10 @@
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. A listener</span>
-    <span class="doccomment">/// is returned, and calling `[Listener::next]` yields a future that waits</span>
-    <span class="doccomment">/// for an occurence of the event. The register can also return a value, and</span>
-    <span class="doccomment">/// so, this method returns both the register&#39;s return value and the</span>
-    <span class="doccomment">/// listener.</span>
+    <span class="doccomment">/// is returned, and calling `[Listener::listen_next]` yields a future that</span>
+    <span class="doccomment">/// waits for an occurence of the event. The register can also return a</span>
+    <span class="doccomment">/// value, and so, this method returns both the register&#39;s return value</span>
+    <span class="doccomment">/// and the listener.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This method consumes the register.</span>
     <span class="doccomment">///</span>
@@ -855,10 +855,10 @@
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. A listener</span>
-    <span class="doccomment">/// is returned, and calling `[Listener::next]` yields a future that waits</span>
-    <span class="doccomment">/// for an occurence of the event. The register can also return a value, and</span>
-    <span class="doccomment">/// so, this method returns both the register&#39;s return value and the</span>
-    <span class="doccomment">/// listener.</span>
+    <span class="doccomment">/// is returned, and calling `[Listener::listen_next]` yields a future that</span>
+    <span class="doccomment">/// waits for an occurence of the event. The register can also return a</span>
+    <span class="doccomment">/// value, and so, this method returns both the register&#39;s return value</span>
+    <span class="doccomment">/// and the listener.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This method does not consume the register, requiring mutability,</span>
     <span class="doccomment">/// however.</span>
@@ -875,10 +875,10 @@
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. A listener</span>
-    <span class="doccomment">/// is returned, and calling `[Listener::next]` yields a future that waits</span>
-    <span class="doccomment">/// for an occurence of the event. The register can also return a value, and</span>
-    <span class="doccomment">/// so, this method returns both the register&#39;s return value and the</span>
-    <span class="doccomment">/// listener.</span>
+    <span class="doccomment">/// is returned, and calling `[Listener::listen_next]` yields a future that</span>
+    <span class="doccomment">/// waits for an occurence of the event. The register can also return a</span>
+    <span class="doccomment">/// value, and so, this method returns both the register&#39;s return value</span>
+    <span class="doccomment">/// and the listener.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This method does not consume the register and does not require</span>
     <span class="doccomment">/// mutability.</span>
@@ -896,7 +896,7 @@
 }
 
 <span class="doccomment">/// Register of multi-call callbacks into an event, where the callback is</span>
-<span class="doccomment">/// asyncrhonous (waiting for the callback to complete is also asynchronous).</span>
+<span class="doccomment">/// asynchronous (waiting for the callback to complete is also asynchronous).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AsyncRegister</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
     <span class="ident">register_fn</span>: <span class="ident">F</span>,
@@ -947,8 +947,8 @@
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. A listener</span>
-    <span class="doccomment">/// is returned, and calling `[Listener::next]` yields a future that waits</span>
-    <span class="doccomment">/// for an occurence of the event.</span>
+    <span class="doccomment">/// is returned, and calling `[Listener::listen_next]` yields a future that</span>
+    <span class="doccomment">/// waits for an occurence of the event.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This method consumes the register.</span>
     <span class="doccomment">///</span>
@@ -999,8 +999,8 @@
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. A listener</span>
-    <span class="doccomment">/// is returned, and calling `[Listener::next]` yields a future that waits</span>
-    <span class="doccomment">/// for an occurence of the event.</span>
+    <span class="doccomment">/// is returned, and calling `[Listener::listen_next]` yields a future that</span>
+    <span class="doccomment">/// waits for an occurence of the event.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This method does not consume the register, requiring mutability,</span>
     <span class="doccomment">/// however.</span>
@@ -1019,8 +1019,8 @@
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. A listener</span>
-    <span class="doccomment">/// is returned, and calling `[Listener::next]` yields a future that waits</span>
-    <span class="doccomment">/// for an occurence of the event.</span>
+    <span class="doccomment">/// is returned, and calling `[Listener::listen_next]` yields a future that</span>
+    <span class="doccomment">/// waits for an occurence of the event.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This method does not consume the register and does not require</span>
     <span class="doccomment">/// mutability.</span>
@@ -1039,8 +1039,8 @@
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. A listener</span>
-    <span class="doccomment">/// is returned, and calling `[Listener::next]` yields a future that waits</span>
-    <span class="doccomment">/// for an occurence of the event. The register can also return a</span>
+    <span class="doccomment">/// is returned, and calling `[Listener::listen_next]` yields a future that</span>
+    <span class="doccomment">/// waits for an occurence of the event. The register can also return a</span>
     <span class="doccomment">/// value, and so, this method returns both the register&#39;s return value</span>
     <span class="doccomment">/// and the listener.</span>
     <span class="doccomment">///</span>
@@ -1098,8 +1098,8 @@
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. A listener</span>
-    <span class="doccomment">/// is returned, and calling `[Listener::next]` yields a future that waits</span>
-    <span class="doccomment">/// for an occurence of the event. The register can also return a</span>
+    <span class="doccomment">/// is returned, and calling `[Listener::listen_next]` yields a future that</span>
+    <span class="doccomment">/// waits for an occurence of the event. The register can also return a</span>
     <span class="doccomment">/// value, and so, this method returns both the register&#39;s return value</span>
     <span class="doccomment">/// and the listener.</span>
     <span class="doccomment">///</span>
@@ -1119,8 +1119,8 @@
     }
 
     <span class="doccomment">/// Registers a callback and lets it listen for the target event. A listener</span>
-    <span class="doccomment">/// is returned, and calling `[Listener::next]` yields a future that waits</span>
-    <span class="doccomment">/// for an occurence of the event. The register can also return a</span>
+    <span class="doccomment">/// is returned, and calling `[Listener::listen_next]` yields a future that</span>
+    <span class="doccomment">/// waits for an occurence of the event. The register can also return a</span>
     <span class="doccomment">/// value, and so, this method returns both the register&#39;s return value</span>
     <span class="doccomment">/// and the listener.</span>
     <span class="doccomment">///</span>
@@ -1141,8 +1141,8 @@
 }
 
 <span class="doccomment">/// A handle to a multi-call callback registered in an event. Typically, the</span>
-<span class="doccomment">/// [`Listener`] is used with the [`Listener::next`] method for awaiting next</span>
-<span class="doccomment">/// occurences of an event, but it can also be used as a stream.</span>
+<span class="doccomment">/// [`Listener`] is used with the [`Listener::listen_next`] method for awaiting</span>
+<span class="doccomment">/// next occurences of an event, but it can also be used as a stream.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">inner</span>: <span class="ident">callback::shared::Listener</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,

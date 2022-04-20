@@ -9,14 +9,14 @@ that are called multiple times, i.e. callbacks of events that occur more
 than once per callback.</p>
 </div></details><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2>
 <div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.AsyncRegister.html" title="webio::callback::multi::AsyncRegister struct">AsyncRegister</a></div><div class="item-right docblock-short"><p>Register of multi-call callbacks into an event, where the callback is
-asyncrhonous (waiting for the callback to complete is also asynchronous).</p>
+asynchronous (waiting for the callback to complete is also asynchronous).</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.ListenNext.html" title="webio::callback::multi::ListenNext struct">ListenNext</a></div><div class="item-right docblock-short"><p>A handle to wait for the single next occurence of an event and a registered
 callback.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Listener.html" title="webio::callback::multi::Listener struct">Listener</a></div><div class="item-right docblock-short"><p>A handle to a multi-call callback registered in an event. Typically, the
-<a href="struct.Listener.html" title="Listener"><code>Listener</code></a> is used with the [<code>Listener::next</code>] method for awaiting next
-occurences of an event, but it can also be used as a stream.</p>
+<a href="struct.Listener.html" title="Listener"><code>Listener</code></a> is used with the <a href="struct.Listener.html#method.listen_next" title="Listener::listen_next"><code>Listener::listen_next</code></a> method for awaiting
+next occurences of an event, but it can also be used as a stream.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SyncRegister.html" title="webio::callback::multi::SyncRegister struct">SyncRegister</a></div><div class="item-right docblock-short"><p>Register of multi-call callbacks into an event, where the callback is
-syncrhonous (though waiting for the callback to complete is still
+synchronous (though waiting for the callback to complete is still
 asynchronous).</p>
 </div></div></div><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2>
 <div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="type" href="type.AsyncCbHandler.html" title="webio::callback::multi::AsyncCbHandler type">AsyncCbHandler</a></div><div class="item-right docblock-short"><p>The type of asynchronous, multi-call callback handlers (i.e. the handler

@@ -215,10 +215,6 @@
 <span id="210">210</span>
 <span id="211">211</span>
 <span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module implements time-related utilities.</span>
 
 <span class="kw">mod</span> <span class="ident">instant</span>;
@@ -227,11 +223,7 @@
 <span class="kw">use</span> <span class="ident">futures::stream::Stream</span>;
 <span class="kw">use</span> <span class="ident">js_sys::Function</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">future::Future</span>, <span class="ident">pin::Pin</span>, <span class="ident">task</span>, <span class="ident">time::Duration</span>};
-<span class="kw">use</span> <span class="ident">wasm_bindgen</span>::{
-    <span class="ident">prelude</span>::{<span class="ident">wasm_bindgen</span>, <span class="ident">Closure</span>},
-    <span class="ident">JsCast</span>,
-    <span class="ident">JsValue</span>,
-};
+<span class="kw">use</span> <span class="ident">wasm_bindgen</span>::{<span class="ident">closure::Closure</span>, <span class="ident">prelude::wasm_bindgen</span>, <span class="ident">JsCast</span>, <span class="ident">JsValue</span>};
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">instant::Instant</span>;
 
