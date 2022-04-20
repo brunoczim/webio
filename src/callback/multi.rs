@@ -65,7 +65,7 @@ pub type AsyncCbHandler<'cb, 'fut, T> =
     Box<dyn FnMut(T) -> AsyncCbHandlerFuture<'fut> + 'cb>;
 
 /// Register of multi-call callbacks into an event, where the callback is
-/// syncrhonous (though waiting for the callback to complete is still
+/// synchronous (though waiting for the callback to complete is still
 /// asynchronous).
 #[derive(Debug, Clone, Copy)]
 pub struct SyncRegister<F> {
@@ -111,8 +111,8 @@ impl<F> SyncRegister<F> {
     }
 
     /// Registers a callback and lets it listen for the target event. A listener
-    /// is returned, and calling `[Listener::next]` yields a future that waits
-    /// for an occurence of the event.
+    /// is returned, and calling `[Listener::listen_next]` yields a future that
+    /// waits for an occurence of the event.
     ///
     /// This method consumes the register.
     ///
@@ -160,8 +160,8 @@ impl<F> SyncRegister<F> {
     }
 
     /// Registers a callback and lets it listen for the target event. A listener
-    /// is returned, and calling `[Listener::next]` yields a future that waits
-    /// for an occurence of the event.
+    /// is returned, and calling `[Listener::listen_next]` yields a future that
+    /// waits for an occurence of the event.
     ///
     /// This method does not consume the register, requiring mutability,
     /// however.
@@ -176,8 +176,8 @@ impl<F> SyncRegister<F> {
     }
 
     /// Registers a callback and lets it listen for the target event. A listener
-    /// is returned, and calling `[Listener::next]` yields a future that waits
-    /// for an occurence of the event.
+    /// is returned, and calling `[Listener::listen_next]` yields a future that
+    /// waits for an occurence of the event.
     ///
     /// This method does not consume the register and does not require
     /// mutability.
@@ -192,10 +192,10 @@ impl<F> SyncRegister<F> {
     }
 
     /// Registers a callback and lets it listen for the target event. A listener
-    /// is returned, and calling `[Listener::next]` yields a future that waits
-    /// for an occurence of the event. The register can also return a value, and
-    /// so, this method returns both the register's return value and the
-    /// listener.
+    /// is returned, and calling `[Listener::listen_next]` yields a future that
+    /// waits for an occurence of the event. The register can also return a
+    /// value, and so, this method returns both the register's return value
+    /// and the listener.
     ///
     /// This method consumes the register.
     ///
@@ -247,10 +247,10 @@ impl<F> SyncRegister<F> {
     }
 
     /// Registers a callback and lets it listen for the target event. A listener
-    /// is returned, and calling `[Listener::next]` yields a future that waits
-    /// for an occurence of the event. The register can also return a value, and
-    /// so, this method returns both the register's return value and the
-    /// listener.
+    /// is returned, and calling `[Listener::listen_next]` yields a future that
+    /// waits for an occurence of the event. The register can also return a
+    /// value, and so, this method returns both the register's return value
+    /// and the listener.
     ///
     /// This method does not consume the register, requiring mutability,
     /// however.
@@ -267,10 +267,10 @@ impl<F> SyncRegister<F> {
     }
 
     /// Registers a callback and lets it listen for the target event. A listener
-    /// is returned, and calling `[Listener::next]` yields a future that waits
-    /// for an occurence of the event. The register can also return a value, and
-    /// so, this method returns both the register's return value and the
-    /// listener.
+    /// is returned, and calling `[Listener::listen_next]` yields a future that
+    /// waits for an occurence of the event. The register can also return a
+    /// value, and so, this method returns both the register's return value
+    /// and the listener.
     ///
     /// This method does not consume the register and does not require
     /// mutability.
@@ -288,7 +288,7 @@ impl<F> SyncRegister<F> {
 }
 
 /// Register of multi-call callbacks into an event, where the callback is
-/// asyncrhonous (waiting for the callback to complete is also asynchronous).
+/// asynchronous (waiting for the callback to complete is also asynchronous).
 #[derive(Debug, Clone, Copy)]
 pub struct AsyncRegister<F> {
     register_fn: F,
@@ -339,8 +339,8 @@ impl<F> AsyncRegister<F> {
     }
 
     /// Registers a callback and lets it listen for the target event. A listener
-    /// is returned, and calling `[Listener::next]` yields a future that waits
-    /// for an occurence of the event.
+    /// is returned, and calling `[Listener::listen_next]` yields a future that
+    /// waits for an occurence of the event.
     ///
     /// This method consumes the register.
     ///
@@ -391,8 +391,8 @@ impl<F> AsyncRegister<F> {
     }
 
     /// Registers a callback and lets it listen for the target event. A listener
-    /// is returned, and calling `[Listener::next]` yields a future that waits
-    /// for an occurence of the event.
+    /// is returned, and calling `[Listener::listen_next]` yields a future that
+    /// waits for an occurence of the event.
     ///
     /// This method does not consume the register, requiring mutability,
     /// however.
@@ -411,8 +411,8 @@ impl<F> AsyncRegister<F> {
     }
 
     /// Registers a callback and lets it listen for the target event. A listener
-    /// is returned, and calling `[Listener::next]` yields a future that waits
-    /// for an occurence of the event.
+    /// is returned, and calling `[Listener::listen_next]` yields a future that
+    /// waits for an occurence of the event.
     ///
     /// This method does not consume the register and does not require
     /// mutability.
@@ -431,8 +431,8 @@ impl<F> AsyncRegister<F> {
     }
 
     /// Registers a callback and lets it listen for the target event. A listener
-    /// is returned, and calling `[Listener::next]` yields a future that waits
-    /// for an occurence of the event. The register can also return a
+    /// is returned, and calling `[Listener::listen_next]` yields a future that
+    /// waits for an occurence of the event. The register can also return a
     /// value, and so, this method returns both the register's return value
     /// and the listener.
     ///
@@ -490,8 +490,8 @@ impl<F> AsyncRegister<F> {
     }
 
     /// Registers a callback and lets it listen for the target event. A listener
-    /// is returned, and calling `[Listener::next]` yields a future that waits
-    /// for an occurence of the event. The register can also return a
+    /// is returned, and calling `[Listener::listen_next]` yields a future that
+    /// waits for an occurence of the event. The register can also return a
     /// value, and so, this method returns both the register's return value
     /// and the listener.
     ///
@@ -511,8 +511,8 @@ impl<F> AsyncRegister<F> {
     }
 
     /// Registers a callback and lets it listen for the target event. A listener
-    /// is returned, and calling `[Listener::next]` yields a future that waits
-    /// for an occurence of the event. The register can also return a
+    /// is returned, and calling `[Listener::listen_next]` yields a future that
+    /// waits for an occurence of the event. The register can also return a
     /// value, and so, this method returns both the register's return value
     /// and the listener.
     ///
@@ -533,8 +533,8 @@ impl<F> AsyncRegister<F> {
 }
 
 /// A handle to a multi-call callback registered in an event. Typically, the
-/// [`Listener`] is used with the [`Listener::next`] method for awaiting next
-/// occurences of an event, but it can also be used as a stream.
+/// [`Listener`] is used with the [`Listener::listen_next`] method for awaiting
+/// next occurences of an event, but it can also be used as a stream.
 #[derive(Debug)]
 pub struct Listener<T> {
     inner: callback::shared::Listener<T>,

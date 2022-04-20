@@ -27,4 +27,6 @@ pub mod task;
 
 pub mod callback;
 
+pub mod event;
+
 pub mod time;

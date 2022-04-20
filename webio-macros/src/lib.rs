@@ -37,6 +37,9 @@ impl Parse for JoinInput {
 /// ```ignore
 /// use std::time::Duration;
 /// use webio::{join, time::timeout};
+///  
+/// # fn main() {
+/// # task::detach(async {
 ///
 /// // Create some tasks
 /// let first_handle = async {

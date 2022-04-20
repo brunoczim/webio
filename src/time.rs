@@ -6,11 +6,7 @@ use crate::callback;
 use futures::stream::Stream;
 use js_sys::Function;
 use std::{future::Future, pin::Pin, task, time::Duration};
-use wasm_bindgen::{
-    prelude::{wasm_bindgen, Closure},
-    JsCast,
-    JsValue,
-};
+use wasm_bindgen::{closure::Closure, prelude::wasm_bindgen, JsCast, JsValue};
 
 pub use instant::Instant;
 
