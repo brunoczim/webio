@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["console",""]],"struct":[["Event","The `Event` class."],["EventTarget","The `EventTarget` class."],["KeyEvent","The `KeyEvent` class."],["MouseEvent","The `MouseEvent` class."],["UiEvent","The `UiEvent` class."]]});
+initSidebarItems({"mod":[["console",""]],"struct":[["DragEvent","The `DragEvent` class."],["Event","The `Event` class."],["EventTarget","The `EventTarget` class."],["KeyEvent","The `KeyEvent` class."],["MouseEvent","The `MouseEvent` class."],["TouchEvent","The `TouchEvent` class."],["UiEvent","The `UiEvent` class."]]});
