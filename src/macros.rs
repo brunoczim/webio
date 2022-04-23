@@ -16,6 +16,7 @@
 /// ```
 #[macro_export]
 #[cfg(feature = "macros")]
+#[cfg_attr(feature = "feature-tags", doc(cfg(feature = "macros")))]
 macro_rules! console_log {
     ($($arguments:tt)*) => {
         $crate::console!(log; $($arguments)*)
@@ -38,6 +39,7 @@ macro_rules! console_log {
 /// ```
 #[macro_export]
 #[cfg(feature = "macros")]
+#[cfg_attr(feature = "feature-tags", doc(cfg(feature = "macros")))]
 macro_rules! console_debug {
     ($($arguments:tt)*) => {
         $crate::console!(debug; $($arguments)*)
@@ -62,6 +64,7 @@ macro_rules! console_debug {
 /// ```
 #[macro_export]
 #[cfg(feature = "macros")]
+#[cfg_attr(feature = "feature-tags", doc(cfg(feature = "macros")))]
 macro_rules! console_info {
     ($($arguments:tt)*) => {
         $crate::console!(info; $($arguments)*)
@@ -84,6 +87,7 @@ macro_rules! console_info {
 /// ```
 #[macro_export]
 #[cfg(feature = "macros")]
+#[cfg_attr(feature = "feature-tags", doc(cfg(feature = "macros")))]
 macro_rules! console_warn {
     ($($arguments:tt)*) => {
         $crate::console!(warn; $($arguments)*)
@@ -108,6 +112,7 @@ macro_rules! console_warn {
 /// ```
 #[macro_export]
 #[cfg(feature = "macros")]
+#[cfg_attr(feature = "feature-tags", doc(cfg(feature = "macros")))]
 macro_rules! console_error {
     ($($arguments:tt)*) => {
         $crate::console!(error; $($arguments)*)

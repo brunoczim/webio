@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   check:
-    name: Check
+    name: Check Stable
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -16,14 +16,69 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Run cargo check
+      - name: Run cargo check no features
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --all-targets --no-default-features
+
+      - name: Run cargo check default features
         uses: actions-rs/cargo@v1
         with:
           command: check
           args: --all-targets
 
+      - name: Run cargo check stream feature only
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --all-targets --no-default-features --features=stream
+
+      - name: Run cargo check time feature only
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --all-targets --no-default-features --features=time
+
+      - name: Run cargo check macros feature only
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --all-targets --no-default-features --features=macros
+
+      - name: Run cargo check event feature only
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --all-targets --no-default-features --features=event
+
+      - name: Run cargo check all features for stable
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --all-targets --features=stream,time,macros.event
+
+    name: Check Nightly
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Run cargo check all features even the ones requiring nightly
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --all-targets --all-features
+
   test:
-    name: Test Suite
+    name: Test Suite On Stable
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -44,10 +99,36 @@ jobs:
       - name: Run cargo test
         uses: actions-rs/cargo@v1
         with:
-          command: test
+          command: test --all-features
 
       - name: Run wasm-pack test
-        run: wasm-pack test --node
+        run: wasm-pack test  --all-features --node
+
+    name: Test Suite On Nightly
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly 
+          override: true
+
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.3.0
+        with:
+          version: 'latest'
+
+      - name: Run cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test --all-features
+
+      - name: Run wasm-pack test
+        run: wasm-pack test  --all-features --node
 
   lints:
     name: Lints

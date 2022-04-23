@@ -141,6 +141,24 @@ pub trait Type {
     }
 }
 
-event_type!(OnClick, "click", web_sys::MouseEvent);
 event_type!(KeyUp, "keyup", web_sys::KeyEvent);
 event_type!(KeyDown, "keydown", web_sys::KeyEvent);
+event_type!(Click, "click", web_sys::MouseEvent);
+event_type!(MouseDown, "mousedown", web_sys::MouseEvent);
+event_type!(MouseUp, "mouseup", web_sys::MouseEvent);
+event_type!(MouseEnter, "mouseenter", web_sys::MouseEvent);
+event_type!(MouseLeave, "mouseleave", web_sys::MouseEvent);
+event_type!(MouseMove, "mousemove", web_sys::MouseEvent);
+event_type!(MouseOver, "mouseover", web_sys::MouseEvent);
+event_type!(MouseOut, "mouseout", web_sys::MouseEvent);
+event_type!(Drag, "drag", web_sys::DragEvent);
+event_type!(DragStart, "dragstart", web_sys::DragEvent);
+event_type!(DragEnd, "dragend", web_sys::DragEvent);
+event_type!(DragEnter, "dragenter", web_sys::DragEvent);
+event_type!(DragLeave, "dragleave", web_sys::DragEvent);
+event_type!(DragOver, "dragover", web_sys::DragEvent);
+event_type!(DragDrop, "drop", web_sys::DragEvent);
+event_type!(TouchStart, "touchstart", web_sys::TouchEvent);
+event_type!(TouchEnd, "touchend", web_sys::TouchEvent);
+event_type!(TouchMove, "touchmove", web_sys::TouchEvent);
+event_type!(TouchCancel, "touchcancel", web_sys::TouchEvent);

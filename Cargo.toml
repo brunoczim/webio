@@ -52,4 +52,7 @@ event = [
     "web-sys/EventTarget",
     "web-sys/MouseEvent",
     "web-sys/KeyEvent",
+    "web-sys/DragEvent",
+    "web-sys/TouchEvent",
 ]
+feature-doc-cfg = []
