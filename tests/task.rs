@@ -26,4 +26,6 @@ async fn triple_spawn_join_with_test_macro() {
     assert_eq!((first.unwrap(), second.unwrap(), third.unwrap()), (3, 5, 7));
 }
 
-const _ASSERT_TEST_MACRO: fn() -> () = triple_spawn_join_with_test_macro;
+async fn _assert_test_macro() {
+    let (): () = triple_spawn_join_with_test_macro().await;
+}

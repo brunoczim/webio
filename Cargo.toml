@@ -36,9 +36,21 @@ optional = true
 [dev-dependencies.wasm-bindgen-test]
 version = "^0.3.30"
 
+[dev-dependencies.web-sys]
+version = "^0.3.57"
+features = [
+    "Window",
+    "Document",
+    "Element",
+    "HtmlElement",
+]
+
+[dev-dependencies.webio]
+path = "."
+features = ["time", "macros", "stream", "macros", "event"]
+
 [features]
 default = ["time", "macros"]
-stream = ["futures"]
 time = ["wasm-bindgen", "js-sys"]
 macros = [
     "webio-macros",
@@ -47,6 +59,7 @@ macros = [
     "js-sys",
     "web-sys/console",
 ]
+stream = ["futures"]
 event = [
     "wasm-bindgen",
     "web-sys/EventTarget",

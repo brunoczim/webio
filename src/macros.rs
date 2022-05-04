@@ -118,3 +118,35 @@ macro_rules! console_error {
         $crate::console!(error; $($arguments)*)
     };
 }
+
+/// Flags a test file as running in the browser instead of node.
+///
+/// Syntax:
+/// ```
+/// run_tests_in_browser! {}
+/// ```
+///
+/// # Example
+/// ```no_run
+/// webio::run_tests_in_browser! {}
+///
+/// // Runs in the browser
+/// #[webio::test]
+/// fn my_test() {
+///     assert!(true);
+/// }
+///
+/// // Also runs in the browser
+/// #[webio::test]
+/// fn another_test() {
+///     assert!(true & true);
+/// }
+/// ```
+#[macro_export]
+#[cfg(feature = "macros")]
+#[cfg_attr(feature = "feature-tags", doc(cfg(feature = "macros")))]
+macro_rules! run_tests_in_browser {
+    {} => {
+        $crate::wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+    };
+}

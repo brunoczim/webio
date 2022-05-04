@@ -5,3 +5,7 @@ use webio::time::timeout;
 pub async fn main2() {
     timeout(Duration::from_millis(200)).await;
 }
+
+async fn _assert_main_macro() {
+    let (): () = main2().await;
+}

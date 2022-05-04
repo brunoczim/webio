@@ -127,8 +127,17 @@ jobs:
         with:
           command: test --all-features
 
-      - name: Run wasm-pack test
-        run: wasm-pack test  --all-features --node
+      - name: Run wasm-pack test on Node
+        run: wasm-pack test  --all-features --node --headless
+
+      - name: Run wasm-pack test on Firefox
+        run: wasm-pack test  --all-features --firefox --headless
+
+      - name: Run wasm-pack test on Chrome
+        run: wasm-pack test  --all-features --chrome --headless
+
+      - name: Run wasm-pack test on Safari
+        run: wasm-pack test  --all-features --safari --headless
 
   lints:
     name: Lints

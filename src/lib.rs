@@ -37,7 +37,8 @@ pub use web_sys;
 #[macro_use]
 mod macros;
 
-mod panic;
+#[doc(hidden)]
+pub mod panic;
 
 pub mod task;
 
