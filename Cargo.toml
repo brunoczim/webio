@@ -64,7 +64,7 @@ event = [
     "wasm-bindgen",
     "web-sys/EventTarget",
     "web-sys/MouseEvent",
-    "web-sys/KeyEvent",
+    "web-sys/KeyboardEvent",
     "web-sys/DragEvent",
     "web-sys/TouchEvent",
 ]

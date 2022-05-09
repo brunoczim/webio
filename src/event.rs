@@ -141,8 +141,8 @@ pub trait Type {
     }
 }
 
-event_type!(KeyUp, "keyup", web_sys::KeyEvent);
-event_type!(KeyDown, "keydown", web_sys::KeyEvent);
+event_type!(KeyUp, "keyup", web_sys::KeyboardEvent);
+event_type!(KeyDown, "keydown", web_sys::KeyboardEvent);
 event_type!(Click, "click", web_sys::MouseEvent);
 event_type!(MouseDown, "mousedown", web_sys::MouseEvent);
 event_type!(MouseUp, "mouseup", web_sys::MouseEvent);
