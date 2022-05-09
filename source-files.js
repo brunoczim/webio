@@ -31,7 +31,7 @@ sourcesIndex["wasm_bindgen_macro_support"] = {"name":"","files":["lib.rs","parse
 sourcesIndex["wasm_bindgen_shared"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["wasm_bindgen_test"] = {"name":"","dirs":[{"name":"rt","files":["browser.rs","detect.rs","mod.rs","node.rs"]}],"files":["lib.rs"]};
 sourcesIndex["wasm_bindgen_test_macro"] = {"name":"","files":["lib.rs"]};
-sourcesIndex["web_sys"] = {"name":"","dirs":[{"name":"features","files":["gen_DragEvent.rs","gen_Event.rs","gen_EventTarget.rs","gen_KeyEvent.rs","gen_MouseEvent.rs","gen_TouchEvent.rs","gen_UiEvent.rs","gen_console.rs","mod.rs"]}],"files":["lib.rs"]};
+sourcesIndex["web_sys"] = {"name":"","dirs":[{"name":"features","files":["gen_DragEvent.rs","gen_Event.rs","gen_EventTarget.rs","gen_KeyboardEvent.rs","gen_MouseEvent.rs","gen_TouchEvent.rs","gen_UiEvent.rs","gen_console.rs","mod.rs"]}],"files":["lib.rs"]};
 sourcesIndex["webio"] = {"name":"","dirs":[{"name":"callback","files":["multi.rs","once.rs","shared.rs"]},{"name":"time","files":["instant.rs"]}],"files":["callback.rs","event.rs","lib.rs","macros.rs","panic.rs","task.rs","time.rs"]};
 sourcesIndex["webio_macros"] = {"name":"","files":["lib.rs"]};
 createSourceSidebar();
