@@ -97,10 +97,58 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Run cargo test
+      - name: Run cargo test (no features)
         uses: actions-rs/cargo@v1
         with:
-          command: test --all-features
+          command: test
+          args: --no-default-features
+
+      - name: Run cargo test (default features)
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+
+      - name: Run cargo test (all features)
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all-features
+
+      - name: Run wasm-pack test on Node (no features)
+        run: wasm-pack test --no-default-features --node --headless
+
+      - name: Run wasm-pack test on Firefox (no features)
+        run: wasm-pack test --no-default-features --firefox --headless
+
+      - name: Run wasm-pack test on Chrome (no features)
+        run: wasm-pack test --no-default-features --chrome --headless
+
+      - name: Run wasm-pack test on Safari (no features)
+        run: wasm-pack test --no-default-features --safari --headless
+
+      - name: Run wasm-pack test on Node (default features)
+        run: wasm-pack test --node --headless
+
+      - name: Run wasm-pack test on Firefox (default features)
+        run: wasm-pack test --firefox --headless
+
+      - name: Run wasm-pack test on Chrome (default features)
+        run: wasm-pack test --chrome --headless
+
+      - name: Run wasm-pack test on Safari (default features)
+        run: wasm-pack test --safari --headless
+
+      - name: Run wasm-pack test on Node (all features)
+        run: wasm-pack test --all-features --node --headless
+
+      - name: Run wasm-pack test on Firefox (all features)
+        run: wasm-pack test --all-features --firefox --headless
+
+      - name: Run wasm-pack test on Chrome (all features)
+        run: wasm-pack test --all-features --chrome --headless
+
+      - name: Run wasm-pack test on Safari (all features)
+        run: wasm-pack test --all-features --safari --headless
 
   test-nightly:
     name: Test Suite On Nightly
@@ -124,7 +172,8 @@ jobs:
       - name: Run cargo test (no features)
         uses: actions-rs/cargo@v1
         with:
-          command: test --no-default-features
+          command: test
+          args: --no-default-features
 
       - name: Run cargo test (default features)
         uses: actions-rs/cargo@v1
@@ -134,7 +183,8 @@ jobs:
       - name: Run cargo test (all features)
         uses: actions-rs/cargo@v1
         with:
-          command: test --all-features
+          command: test
+          args: --all-features
 
       - name: Run wasm-pack test on Node (no features)
         run: wasm-pack test --no-default-features --node --headless
