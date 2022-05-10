@@ -115,16 +115,16 @@ jobs:
           args: --features=time,macros,stream,event
 
       - name: Run wasm-pack test on Node (no features)
-        run: wasm-pack test --no-default-features --node --headless
+        run: wasm-pack test --node --headless --no-default-features
 
       - name: Run wasm-pack test on Firefox (no features)
-        run: wasm-pack test --no-default-features --firefox --headless
+        run: wasm-pack test --firefox --headless --no-default-features
 
       - name: Run wasm-pack test on Chrome (no features)
-        run: wasm-pack test --no-default-features --chrome --headless
+        run: wasm-pack test --chrome --headless --no-default-features
 
       - name: Run wasm-pack test on Safari (no features)
-        run: wasm-pack test --no-default-features --safari --headless
+        run: wasm-pack test --safari --headless --no-default-features
 
       - name: Run wasm-pack test on Node (default features)
         run: wasm-pack test --node --headless
@@ -139,16 +139,16 @@ jobs:
         run: wasm-pack test --safari --headless
 
       - name: Run wasm-pack test on Node (all features)
-        run: wasm-pack test --features=time,macros,stream,event --node --headless
+        run: wasm-pack test --node --headless --features=time,macros,stream,event
 
       - name: Run wasm-pack test on Firefox (all features)
-        run: wasm-pack test --features=time,macros,stream,event --firefox --headless
+        run: wasm-pack test --firefox --headless --features=time,macros,stream,event
 
       - name: Run wasm-pack test on Chrome (all features)
-        run: wasm-pack test --features=time,macros,stream,event --chrome --headless
+        run: wasm-pack test --chrome --headless --features=time,macros,stream,event
 
       - name: Run wasm-pack test on Safari (all features)
-        run: wasm-pack test --features=time,macros,stream,event --safari --headless
+        run: wasm-pack test --safari --headless --features=time,macros,stream,event
 
   test-nightly:
     name: Test Suite On Nightly
@@ -187,16 +187,16 @@ jobs:
           args: --all-features
 
       - name: Run wasm-pack test on Node (no features)
-        run: wasm-pack test --no-default-features --node --headless
+        run: wasm-pack test --node --headless --no-default-features
 
       - name: Run wasm-pack test on Firefox (no features)
-        run: wasm-pack test --no-default-features --firefox --headless
+        run: wasm-pack test --firefox --headless --no-default-features
 
       - name: Run wasm-pack test on Chrome (no features)
-        run: wasm-pack test --no-default-features --chrome --headless
+        run: wasm-pack test --chrome --headless --no-default-features
 
       - name: Run wasm-pack test on Safari (no features)
-        run: wasm-pack test --no-default-features --safari --headless
+        run: wasm-pack test --safari --headless --no-default-features
 
       - name: Run wasm-pack test on Node (default features)
         run: wasm-pack test --node --headless
@@ -211,16 +211,16 @@ jobs:
         run: wasm-pack test --safari --headless
 
       - name: Run wasm-pack test on Node (all features)
-        run: wasm-pack test --all-features --node --headless
+        run: wasm-pack test --node --headless --all-features
 
       - name: Run wasm-pack test on Firefox (all features)
-        run: wasm-pack test --all-features --firefox --headless
+        run: wasm-pack test --firefox --headless --all-features
 
       - name: Run wasm-pack test on Chrome (all features)
-        run: wasm-pack test --all-features --chrome --headless
+        run: wasm-pack test --chrome --headless --all-features
 
       - name: Run wasm-pack test on Safari (all features)
-        run: wasm-pack test --all-features --safari --headless
+        run: wasm-pack test --safari --headless --all-features
 
   lints:
     name: Lints
