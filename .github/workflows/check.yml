@@ -59,7 +59,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --all-targets --features=$STABLE_FEATURES
+          args: --all-targets --features=${{ env.STABLE_FEATURES }}
 
   check-nightly:
     name: Check Nightly
@@ -115,7 +115,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --features=$STABLE_FEATURES
+          args: --features=${{ env.STABLE_FEATURES }}
 
       - name: Run wasm-pack test on Node (no features)
         run: wasm-pack test --node --no-default-features
@@ -136,13 +136,13 @@ jobs:
         run: wasm-pack test --chrome --headless
 
       - name: Run wasm-pack test on Node (all features)
-        run: wasm-pack test --node --features=$STABLE_FEATURES
+        run: wasm-pack test --node --features=${{ env.STABLE_FEATURES }}
 
       - name: Run wasm-pack test on Firefox (all features)
-        run: wasm-pack test --firefox --headless --features=$STABLE_FEATURES
+        run: wasm-pack test --firefox --headless --features=${{ env.STABLE_FEATURES }}
 
       - name: Run wasm-pack test on Chrome (all features)
-        run: wasm-pack test --chrome --headless --features=$STABLE_FEATURES
+        run: wasm-pack test --chrome --headless --features=${{ env.STABLE_FEATURES }}
 
   test-stable-macos:
     name: Test Suite On Stable (MacOS)
@@ -170,7 +170,7 @@ jobs:
         run: wasm-pack test --safari --headless
 
       - name: Run wasm-pack test on Safari (all features)
-        run: wasm-pack test --safari --headless --features=$STABLE_FEATURES
+        run: wasm-pack test --safari --headless --features=${{ env.STABLE_FEATURES }}
 
   test-nightly:
     name: Test Suite On Nightly
