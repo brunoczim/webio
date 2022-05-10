@@ -171,9 +171,9 @@
 <span class="doccomment">/// console_log!(&quot;Hello number&quot;, 5u8, &quot;you&#39;re welcome!&quot;);</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feature-tags&quot;</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)))]</span>
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules!</span> <span class="ident">console_log</span> {
     ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro">crate::console!</span>(<span class="macro-nonterminal">log</span>; $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>)<span class="kw-2">*</span>)
@@ -194,9 +194,9 @@
 <span class="doccomment">/// console_debug!(&quot;Hello number&quot;, 5u8, &quot;you&#39;re welcome!&quot;);</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feature-tags&quot;</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)))]</span>
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules!</span> <span class="ident">console_debug</span> {
     ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro">crate::console!</span>(<span class="macro-nonterminal">debug</span>; $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>)<span class="kw-2">*</span>)
@@ -219,9 +219,9 @@
 <span class="doccomment">/// console_info!(&quot;Hello number&quot;, 5u8, &quot;you&#39;re welcome!&quot;);</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feature-tags&quot;</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)))]</span>
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules!</span> <span class="ident">console_info</span> {
     ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro">crate::console!</span>(<span class="macro-nonterminal">info</span>; $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>)<span class="kw-2">*</span>)
@@ -242,9 +242,9 @@
 <span class="doccomment">/// console_warn!(&quot;Something bad might happen&quot;);</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feature-tags&quot;</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)))]</span>
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules!</span> <span class="ident">console_warn</span> {
     ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro">crate::console!</span>(<span class="macro-nonterminal">warn</span>; $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>)<span class="kw-2">*</span>)
@@ -267,9 +267,9 @@
 <span class="doccomment">/// console_error!(&quot;Very bad things happened&quot;);</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feature-tags&quot;</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)))]</span>
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules!</span> <span class="ident">console_error</span> {
     ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro">crate::console!</span>(<span class="macro-nonterminal">error</span>; $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arguments</span>)<span class="kw-2">*</span>)
@@ -279,7 +279,7 @@
 <span class="doccomment">/// Flags a test file as running in the browser instead of node.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Syntax:</span>
-<span class="doccomment">/// ```</span>
+<span class="doccomment">/// ```ignore</span>
 <span class="doccomment">/// run_tests_in_browser! {}</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
@@ -289,24 +289,24 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// // Runs in the browser</span>
 <span class="doccomment">/// #[webio::test]</span>
-<span class="doccomment">/// fn my_test() {</span>
+<span class="doccomment">/// async fn my_test() {</span>
 <span class="doccomment">///     assert!(true);</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// // Also runs in the browser</span>
 <span class="doccomment">/// #[webio::test]</span>
-<span class="doccomment">/// fn another_test() {</span>
+<span class="doccomment">/// async fn another_test() {</span>
 <span class="doccomment">///     assert!(true &amp; true);</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)]</span>
 <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;feature-tags&quot;</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macros&quot;</span>)))]</span>
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules!</span> <span class="ident">run_tests_in_browser</span> {
     {} =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro">crate::wasm_bindgen_test::wasm_bindgen_test_configure!</span>(<span class="macro-nonterminal">run_in_browser</span>);
     };
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (cb1219871 2022-05-08)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (88860d547 2022-05-09)" ></div>
 </body></html>

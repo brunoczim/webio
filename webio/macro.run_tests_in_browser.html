@@ -10,20 +10,20 @@
 </div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Flags a test file as running in the browser instead of node.</p>
 <p>Syntax:</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="macro">run_tests_in_browser!</span> {}</code></pre></div>
+<div class='information'><div class='tooltip ignore'>ⓘ</div></div><div class="example-wrap"><pre class="rust rust-example-rendered ignore"><code><span class="macro">run_tests_in_browser!</span> {}</code></pre></div>
 <h2 id="example"><a href="#example">Example</a></h2>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="macro">webio::run_tests_in_browser!</span> {}
 
 <span class="comment">// Runs in the browser</span>
 <span class="attribute">#[<span class="ident">webio::test</span>]</span>
-<span class="kw">fn</span> <span class="ident">my_test</span>() {
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">my_test</span>() {
     <span class="macro">assert!</span>(<span class="bool-val">true</span>);
 }
 
 <span class="comment">// Also runs in the browser</span>
 <span class="attribute">#[<span class="ident">webio::test</span>]</span>
-<span class="kw">fn</span> <span class="ident">another_test</span>() {
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">another_test</span>() {
     <span class="macro">assert!</span>(<span class="bool-val">true</span> <span class="op">&amp;</span> <span class="bool-val">true</span>);
 }</code></pre></div>
-</div></details></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (cb1219871 2022-05-08)" ></div>
+</div></details></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (88860d547 2022-05-09)" ></div>
 </body></html>

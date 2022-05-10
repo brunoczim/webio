@@ -167,7 +167,87 @@
 <span id="162">162</span>
 <span id="163">163</span>
 <span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for listening and handling JS events from Rust.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! # Examples</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## On Click</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```no_run</span>
+<span class="doccomment">//! use webio::event::Type;</span>
+<span class="doccomment">//! use webio::event::Click;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! # fn main() {</span>
+<span class="doccomment">//! # webio::task::detach(async {</span>
+<span class="doccomment">//! let document =</span>
+<span class="doccomment">//!     web_sys::window().expect(&quot;only browser supported&quot;).document().unwrap();</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! let element = document.create_element(&quot;button&quot;).unwrap();</span>
+<span class="doccomment">//! document.body().unwrap().append_child(&amp;element).unwrap();</span>
+<span class="doccomment">//! let mut count = 0;</span>
+<span class="doccomment">//! let listener = Click.add_sync_listener(</span>
+<span class="doccomment">//!     &amp;element,</span>
+<span class="doccomment">//!     move |_| {</span>
+<span class="doccomment">//!         eprintln!(&quot;Event onclick called&quot;);</span>
+<span class="doccomment">//!         assert!(true);</span>
+<span class="doccomment">//!         let event_id = count;</span>
+<span class="doccomment">//!         count += 1;</span>
+<span class="doccomment">//!         event_id</span>
+<span class="doccomment">//!     },</span>
+<span class="doccomment">//! );</span>
+<span class="doccomment">//! element.dispatch_event(&amp;web_sys::MouseEvent::new(&quot;click&quot;).unwrap()).unwrap();</span>
+<span class="doccomment">//! assert_eq!(listener.listen_next().await.unwrap(), 0);</span>
+<span class="doccomment">//! element.dispatch_event(&amp;web_sys::MouseEvent::new(&quot;click&quot;).unwrap()).unwrap();</span>
+<span class="doccomment">//! assert_eq!(listener.listen_next().await.unwrap(), 1);</span>
+<span class="doccomment">//! element.dispatch_event(&amp;web_sys::MouseEvent::new(&quot;click&quot;).unwrap()).unwrap();</span>
+<span class="doccomment">//! assert_eq!(listener.listen_next().await.unwrap(), 2);</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! document.remove_child(&amp;element).unwrap();</span>
+<span class="doccomment">//! # });</span>
+<span class="doccomment">//! # }</span>
+<span class="doccomment">//! ```</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::callback</span>;
 <span class="kw">use</span> <span class="ident">std::future::Future</span>;
@@ -327,10 +407,14 @@
 <span class="macro">event_type!</span>(<span class="ident">DragLeave</span>, <span class="string">&quot;dragleave&quot;</span>, <span class="ident">web_sys::DragEvent</span>);
 <span class="macro">event_type!</span>(<span class="ident">DragOver</span>, <span class="string">&quot;dragover&quot;</span>, <span class="ident">web_sys::DragEvent</span>);
 <span class="macro">event_type!</span>(<span class="ident">DragDrop</span>, <span class="string">&quot;drop&quot;</span>, <span class="ident">web_sys::DragEvent</span>);
-<span class="macro">event_type!</span>(<span class="ident">TouchStart</span>, <span class="string">&quot;touchstart&quot;</span>, <span class="ident">web_sys::TouchEvent</span>);
-<span class="macro">event_type!</span>(<span class="ident">TouchEnd</span>, <span class="string">&quot;touchend&quot;</span>, <span class="ident">web_sys::TouchEvent</span>);
-<span class="macro">event_type!</span>(<span class="ident">TouchMove</span>, <span class="string">&quot;touchmove&quot;</span>, <span class="ident">web_sys::TouchEvent</span>);
-<span class="macro">event_type!</span>(<span class="ident">TouchCancel</span>, <span class="string">&quot;touchcancel&quot;</span>, <span class="ident">web_sys::TouchEvent</span>);
+<span class="macro">event_type!</span>(<span class="ident">TouchStart</span>, <span class="string">&quot;touchstart&quot;</span>, <span class="ident">web_sys::Event</span>);
+<span class="macro">event_type!</span>(<span class="ident">TouchEnd</span>, <span class="string">&quot;touchend&quot;</span>, <span class="ident">web_sys::Event</span>);
+<span class="macro">event_type!</span>(<span class="ident">TouchMove</span>, <span class="string">&quot;touchmove&quot;</span>, <span class="ident">web_sys::Event</span>);
+<span class="macro">event_type!</span>(<span class="ident">TouchCancel</span>, <span class="string">&quot;touchcancel&quot;</span>, <span class="ident">web_sys::Event</span>);
+<span class="macro">event_type!</span>(<span class="ident">Blur</span>, <span class="string">&quot;blur&quot;</span>, <span class="ident">web_sys::FocusEvent</span>);
+<span class="macro">event_type!</span>(<span class="ident">Focus</span>, <span class="string">&quot;focus&quot;</span>, <span class="ident">web_sys::FocusEvent</span>);
+<span class="macro">event_type!</span>(<span class="ident">FocusOut</span>, <span class="string">&quot;focusout&quot;</span>, <span class="ident">web_sys::FocusEvent</span>);
+<span class="macro">event_type!</span>(<span class="ident">FocusIn</span>, <span class="string">&quot;focusin&quot;</span>, <span class="ident">web_sys::FocusEvent</span>);
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (cb1219871 2022-05-08)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (88860d547 2022-05-09)" ></div>
 </body></html>
