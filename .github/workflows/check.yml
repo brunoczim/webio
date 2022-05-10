@@ -56,7 +56,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --all-targets --features=stream,time,macros.event
+          args: --all-targets --features=stream,time,macros,event
 
   check-nightly:
     name: Check Nightly
@@ -112,7 +112,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --all-features
+          args: --features=time,macros,stream,event
 
       - name: Run wasm-pack test on Node (no features)
         run: wasm-pack test --no-default-features --node --headless
@@ -139,16 +139,16 @@ jobs:
         run: wasm-pack test --safari --headless
 
       - name: Run wasm-pack test on Node (all features)
-        run: wasm-pack test --all-features --node --headless
+        run: wasm-pack test --features=time,macros,stream,event --node --headless
 
       - name: Run wasm-pack test on Firefox (all features)
-        run: wasm-pack test --all-features --firefox --headless
+        run: wasm-pack test --features=time,macros,stream,event --firefox --headless
 
       - name: Run wasm-pack test on Chrome (all features)
-        run: wasm-pack test --all-features --chrome --headless
+        run: wasm-pack test --features=time,macros,stream,event --chrome --headless
 
       - name: Run wasm-pack test on Safari (all features)
-        run: wasm-pack test --all-features --safari --headless
+        run: wasm-pack test --features=time,macros,stream,event --safari --headless
 
   test-nightly:
     name: Test Suite On Nightly
