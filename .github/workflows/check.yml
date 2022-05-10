@@ -1,6 +1,9 @@
 name: Webio CI - Check
 on: [push, pull_request]
 
+env:
+  STABLE_FEATURES: stream,time,macros,event
+
 jobs:
   check-stable:
     name: Check Stable
@@ -56,7 +59,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --all-targets --features=stream,time,macros,event
+          args: --all-targets --features=$STABLE_FEATURES
 
   check-nightly:
     name: Check Nightly
@@ -112,7 +115,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --features=time,macros,stream,event
+          args: --features=$STABLE_FEATURES
 
       - name: Run wasm-pack test on Node (no features)
         run: wasm-pack test --node --no-default-features
@@ -133,13 +136,13 @@ jobs:
         run: wasm-pack test --chrome --headless
 
       - name: Run wasm-pack test on Node (all features)
-        run: wasm-pack test --node --features=time,macros,stream,event
+        run: wasm-pack test --node --features=$STABLE_FEATURES
 
       - name: Run wasm-pack test on Firefox (all features)
-        run: wasm-pack test --firefox --headless --features=time,macros,stream,event
+        run: wasm-pack test --firefox --headless --features=$STABLE_FEATURES
 
       - name: Run wasm-pack test on Chrome (all features)
-        run: wasm-pack test --chrome --headless --features=time,macros,stream,event
+        run: wasm-pack test --chrome --headless --features=$STABLE_FEATURES
 
   test-stable-macos:
     name: Test Suite On Stable (MacOS)
@@ -167,7 +170,7 @@ jobs:
         run: wasm-pack test --safari --headless
 
       - name: Run wasm-pack test on Safari (all features)
-        run: wasm-pack test --safari --headless --features=time,macros,stream,event
+        run: wasm-pack test --safari --headless --features=$STABLE_FEATURES
 
   test-nightly:
     name: Test Suite On Nightly
