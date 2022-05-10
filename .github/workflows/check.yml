@@ -115,7 +115,7 @@ jobs:
           args: --features=time,macros,stream,event
 
       - name: Run wasm-pack test on Node (no features)
-        run: wasm-pack test --node --headless --no-default-features
+        run: wasm-pack test --node --no-default-features
 
       - name: Run wasm-pack test on Firefox (no features)
         run: wasm-pack test --firefox --headless --no-default-features
@@ -127,7 +127,7 @@ jobs:
         run: wasm-pack test --safari --headless --no-default-features
 
       - name: Run wasm-pack test on Node (default features)
-        run: wasm-pack test --node --headless
+        run: wasm-pack test --node
 
       - name: Run wasm-pack test on Firefox (default features)
         run: wasm-pack test --firefox --headless
@@ -139,7 +139,7 @@ jobs:
         run: wasm-pack test --safari --headless
 
       - name: Run wasm-pack test on Node (all features)
-        run: wasm-pack test --node --headless --features=time,macros,stream,event
+        run: wasm-pack test --node --features=time,macros,stream,event
 
       - name: Run wasm-pack test on Firefox (all features)
         run: wasm-pack test --firefox --headless --features=time,macros,stream,event
@@ -187,7 +187,7 @@ jobs:
           args: --all-features
 
       - name: Run wasm-pack test on Node (no features)
-        run: wasm-pack test --node --headless --no-default-features
+        run: wasm-pack test --node --no-default-features
 
       - name: Run wasm-pack test on Firefox (no features)
         run: wasm-pack test --firefox --headless --no-default-features
@@ -199,7 +199,7 @@ jobs:
         run: wasm-pack test --safari --headless --no-default-features
 
       - name: Run wasm-pack test on Node (default features)
-        run: wasm-pack test --node --headless
+        run: wasm-pack test --node
 
       - name: Run wasm-pack test on Firefox (default features)
         run: wasm-pack test --firefox --headless
@@ -211,7 +211,7 @@ jobs:
         run: wasm-pack test --safari --headless
 
       - name: Run wasm-pack test on Node (all features)
-        run: wasm-pack test --node --headless --all-features
+        run: wasm-pack test --node --all-features
 
       - name: Run wasm-pack test on Firefox (all features)
         run: wasm-pack test --firefox --headless --all-features
