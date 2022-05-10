@@ -59,35 +59,35 @@ impl Drop for TempElement {
 
 make_event! {
     keyup,
-    "p",
+    "input",
     KeyUp,
     web_sys::KeyboardEvent::new("keyup").unwrap(),
 }
 
 make_event! {
     keydown,
-    "p",
+    "input",
     KeyDown,
     web_sys::KeyboardEvent::new("keydown").unwrap(),
 }
 
 make_event! {
     click,
-    "p",
+    "button",
     Click,
     web_sys::MouseEvent::new("click").unwrap(),
 }
 
 make_event! {
     mousedown,
-    "p",
+    "button",
     MouseDown,
     web_sys::MouseEvent::new("mousedown").unwrap(),
 }
 
 make_event! {
     mouseup,
-    "p",
+    "button",
     MouseUp,
     web_sys::MouseEvent::new("mouseup").unwrap(),
 }
@@ -202,4 +202,32 @@ make_event! {
     "p",
     TouchCancel,
     web_sys::Event::new("touchcancel").unwrap(),
+}
+
+make_event! {
+    blur,
+    "p",
+    Blur,
+    web_sys::FocusEvent::new("blur").unwrap(),
+}
+
+make_event! {
+    focus,
+    "p",
+    Focus,
+    web_sys::FocusEvent::new("focus").unwrap(),
+}
+
+make_event! {
+    focusout,
+    "p",
+    FocusOut,
+    web_sys::FocusEvent::new("focusout").unwrap(),
+}
+
+make_event! {
+    focusin,
+    "p",
+    FocusIn,
+    web_sys::FocusEvent::new("focusin").unwrap(),
 }

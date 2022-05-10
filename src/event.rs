@@ -1,4 +1,42 @@
 //! Module for listening and handling JS events from Rust.
+//!
+//! # Examples
+//!
+//! ## On Click
+//!
+//! ```no_run
+//! use webio::event::Type;
+//! use webio::event::Click;
+//!
+//! # fn main() {
+//! # webio::task::detach(async {
+//! let document =
+//!     web_sys::window().expect("only browser supported").document().unwrap();
+//!
+//! let element = document.create_element("button").unwrap();
+//! document.body().unwrap().append_child(&element).unwrap();
+//! let mut count = 0;
+//! let listener = Click.add_sync_listener(
+//!     &element,
+//!     move |_| {
+//!         eprintln!("Event onclick called");
+//!         assert!(true);
+//!         let event_id = count;
+//!         count += 1;
+//!         event_id
+//!     },
+//! );
+//! element.dispatch_event(&web_sys::MouseEvent::new("click").unwrap()).unwrap();
+//! assert_eq!(listener.listen_next().await.unwrap(), 0);
+//! element.dispatch_event(&web_sys::MouseEvent::new("click").unwrap()).unwrap();
+//! assert_eq!(listener.listen_next().await.unwrap(), 1);
+//! element.dispatch_event(&web_sys::MouseEvent::new("click").unwrap()).unwrap();
+//! assert_eq!(listener.listen_next().await.unwrap(), 2);
+//!
+//! document.remove_child(&element).unwrap();
+//! # });
+//! # }
+//! ```
 
 use crate::callback;
 use std::future::Future;
@@ -158,7 +196,11 @@ event_type!(DragEnter, "dragenter", web_sys::DragEvent);
 event_type!(DragLeave, "dragleave", web_sys::DragEvent);
 event_type!(DragOver, "dragover", web_sys::DragEvent);
 event_type!(DragDrop, "drop", web_sys::DragEvent);
-event_type!(TouchStart, "touchstart", web_sys::TouchEvent);
-event_type!(TouchEnd, "touchend", web_sys::TouchEvent);
-event_type!(TouchMove, "touchmove", web_sys::TouchEvent);
-event_type!(TouchCancel, "touchcancel", web_sys::TouchEvent);
+event_type!(TouchStart, "touchstart", web_sys::Event);
+event_type!(TouchEnd, "touchend", web_sys::Event);
+event_type!(TouchMove, "touchmove", web_sys::Event);
+event_type!(TouchCancel, "touchcancel", web_sys::Event);
+event_type!(Blur, "blur", web_sys::FocusEvent);
+event_type!(Focus, "focus", web_sys::FocusEvent);
+event_type!(FocusOut, "focusout", web_sys::FocusEvent);
+event_type!(FocusIn, "focusin", web_sys::FocusEvent);
