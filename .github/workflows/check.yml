@@ -118,13 +118,13 @@ jobs:
           args: --features=${{ env.STABLE_FEATURES }}
 
       - name: Run wasm-pack test on Node (no features)
-        run: wasm-pack test --node --no-default-features
+        run: wasm-pack test --node -- --no-default-features
 
       - name: Run wasm-pack test on Firefox (no features)
-        run: wasm-pack test --firefox --headless --no-default-features
+        run: wasm-pack test --firefox --headless -- --no-default-features
 
       - name: Run wasm-pack test on Chrome (no features)
-        run: wasm-pack test --chrome --headless --no-default-features
+        run: wasm-pack test --chrome --headless -- --no-default-features
 
       - name: Run wasm-pack test on Node (default features)
         run: wasm-pack test --node
@@ -136,13 +136,13 @@ jobs:
         run: wasm-pack test --chrome --headless
 
       - name: Run wasm-pack test on Node (all features)
-        run: wasm-pack test --node --features=${{ env.STABLE_FEATURES }}
+        run: wasm-pack test --node -- --features=${{ env.STABLE_FEATURES }}
 
       - name: Run wasm-pack test on Firefox (all features)
-        run: wasm-pack test --firefox --headless --features=${{ env.STABLE_FEATURES }}
+        run: wasm-pack test --firefox --headless -- --features=${{ env.STABLE_FEATURES }}
 
       - name: Run wasm-pack test on Chrome (all features)
-        run: wasm-pack test --chrome --headless --features=${{ env.STABLE_FEATURES }}
+        run: wasm-pack test --chrome --headless -- --features=${{ env.STABLE_FEATURES }}
 
   test-stable-macos:
     name: Test Suite On Stable (MacOS)
@@ -164,13 +164,13 @@ jobs:
           version: 'latest'
 
       - name: Run wasm-pack test on Safari (no features)
-        run: wasm-pack test --safari --headless --no-default-features
+        run: wasm-pack test --safari --headless -- --no-default-features
 
       - name: Run wasm-pack test on Safari (default features)
         run: wasm-pack test --safari --headless
 
       - name: Run wasm-pack test on Safari (all features)
-        run: wasm-pack test --safari --headless --features=${{ env.STABLE_FEATURES }}
+        run: wasm-pack test --safari --headless -- --features=${{ env.STABLE_FEATURES }}
 
   test-nightly:
     name: Test Suite On Nightly
@@ -209,13 +209,13 @@ jobs:
           args: --all-features
 
       - name: Run wasm-pack test on Node (no features)
-        run: wasm-pack test --node --no-default-features
+        run: wasm-pack test --node -- --no-default-features
 
       - name: Run wasm-pack test on Firefox (no features)
-        run: wasm-pack test --firefox --headless --no-default-features
+        run: wasm-pack test --firefox --headless -- --no-default-features
 
       - name: Run wasm-pack test on Chrome (no features)
-        run: wasm-pack test --chrome --headless --no-default-features
+        run: wasm-pack test --chrome --headless -- --no-default-features
 
       - name: Run wasm-pack test on Node (default features)
         run: wasm-pack test --node
@@ -227,13 +227,13 @@ jobs:
         run: wasm-pack test --chrome --headless
 
       - name: Run wasm-pack test on Node (all features)
-        run: wasm-pack test --node --all-features
+        run: wasm-pack test --node -- --all-features
 
       - name: Run wasm-pack test on Firefox (all features)
-        run: wasm-pack test --firefox --headless --all-features
+        run: wasm-pack test --firefox --headless -- --all-features
 
       - name: Run wasm-pack test on Chrome (all features)
-        run: wasm-pack test --chrome --headless --all-features
+        run: wasm-pack test --chrome --headless -- --all-features
 
   test-nightly-macos:
     name: Test Suite On Nightly (MacOS)
@@ -255,13 +255,13 @@ jobs:
           version: 'latest'
 
       - name: Run wasm-pack test on Safari (no features)
-        run: wasm-pack test --safari --headless --no-default-features
+        run: wasm-pack test --safari --headless -- --no-default-features
 
       - name: Run wasm-pack test on Safari (default features)
         run: wasm-pack test --safari --headless
 
       - name: Run wasm-pack test on Safari (all features)
-        run: wasm-pack test --safari --headless --all-features
+        run: wasm-pack test --safari --headless -- --all-features
 
   lints:
     name: Lints
