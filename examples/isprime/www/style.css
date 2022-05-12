@@ -1,0 +1,36 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-size: 1rem;
+    padding: 20px;
+    font-family: 'sans-serif';
+}
+
+h1 {
+    padding-bottom: 10px;
+    font-size: 2rem;
+}
+
+button, input {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.output-section {
+    margin-top: 20px;
+}
+
+.output-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.output-label {
+    font-weight: bold;
+    padding-right: 10px;
+}

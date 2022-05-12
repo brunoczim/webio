@@ -1,0 +1,40 @@
+{
+  "name": "isprime",
+  "version": "0.1.0",
+  "description": "web app to test whether a number is prime",
+  "main": "index.js",
+  "bin": {
+    "create-wasm-app": ".bin/create-wasm-app.js"
+  },
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "start": "webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brunoczim/webio.git"
+  },
+  "keywords": [
+    "webassembly",
+    "wasm",
+    "rust",
+    "webpack"
+  ],
+  "author": "brunoczim",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/brunoczim/webio/issues"
+  },
+  "homepage": "https://github.com/brunoczim/webio/#README.md",
+  "devDependencies": {
+    "copy-webpack-plugin": "^9.0.1",
+    "css-loader": "^6.4.0",
+    "style-loader": "^3.3.0",
+    "webpack": "^5.59.0",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.3.1"
+  },
+  "dependencies": {
+    "isprime-wasm": "file:../pkg"
+  }
+}

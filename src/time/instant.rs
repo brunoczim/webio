@@ -6,7 +6,26 @@ use std::{
     ops::{Add, AddAssign, Sub, SubAssign},
     time::Duration,
 };
-use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::{prelude::wasm_bindgen, JsCast};
+
+// I cannot simply declare `fn performance_now()` with
+// `(j́s_name = "now", namespace = "performance")` because wasm-pack generates
+// code that webpack does not handle correctly, probably because of hoisting.
+// And so, I need this workaround.
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(extends = ::js_sys::Object, js_name = Object)]
+    type Global;
+
+    #[wasm_bindgen(method, structural, getter)]
+    fn performance(this: &Global) -> Performance;
+
+    #[wasm_bindgen(extends = ::js_sys::Object, js_name = Performance)]
+    type Performance;
+
+    #[wasm_bindgen(method, structural)]
+    fn now(this: &Performance) -> f64;
+}
 
 #[wasm_bindgen]
 extern "C" {
@@ -39,7 +58,9 @@ impl Instant {
     /// Gets the clock measurement for this right moment. This uses JS
     /// `performance_now`, so there might an overhead calling this method.
     pub fn now() -> Self {
-        Self { millis: performance_now() }
+        let global = js_sys::global().dyn_into::<Global>().unwrap();
+        let millis = global.performance().now();
+        Self { millis }
     }
 
     /// Returns the duration of time that passed from an earlier instant into

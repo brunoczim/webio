@@ -13,6 +13,6 @@ wasm-pack test --firefox --headless -- --all-features
 wasm-pack test --chrome --headless -- --no-default-features
 wasm-pack test --chrome --headless
 wasm-pack test --chrome --headless -- --all-features
-wasm-pack test --safari --headless -- --no-default-features
+# wasm-pack test --safari --headless -- --no-default-features
 # wasm-pack test --safari --headless
 # wasm-pack test --safari --headless -- --all-features

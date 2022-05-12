@@ -61,35 +61,7 @@ where
 /// # }
 /// ```
 pub async fn yield_now() {
-    YieldNow::new().await
-}
-
-#[derive(Debug)]
-struct YieldNow {
-    done: bool,
-}
-
-impl YieldNow {
-    fn new() -> Self {
-        Self { done: false }
-    }
-}
-
-impl Future for YieldNow {
-    type Output = ();
-
-    fn poll(
-        mut self: Pin<&mut Self>,
-        ctx: &mut task::Context<'_>,
-    ) -> task::Poll<Self::Output> {
-        if self.done {
-            task::Poll::Ready(())
-        } else {
-            ctx.waker().wake_by_ref();
-            self.done = true;
-            task::Poll::Pending
-        }
-    }
+    spawn(async {}).await.unwrap()
 }
 
 /// An error that might happen when waiting for a task.
