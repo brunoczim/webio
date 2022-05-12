@@ -107,7 +107,7 @@ pub async fn main() {
             Ok(number) => number,
             Err(_) => {
                 answer_elem.set_text_content(Some("Invalid input!"));
-                return;
+                continue;
             },
         };
 
