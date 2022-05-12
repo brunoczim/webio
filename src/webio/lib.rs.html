@@ -170,14 +170,6 @@
 <span id="165">165</span>
 <span id="166">166</span>
 <span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
-<span id="174">174</span>
-<span id="175">175</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is an experimental implementation of a web-based async runtime. Web as</span>
 <span class="doccomment">//! in &quot;browser&quot;.</span>
 <span class="doccomment">//!</span>
@@ -265,33 +257,7 @@
 <span class="doccomment">//!     let answer_elem = document.get_element_by_id(&quot;answer&quot;).unwrap();</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!     // Sets a listener for the click event on the button.</span>
-<span class="doccomment">//!     let listener = event::Click.add_async_listener(&amp;button, move |_| {</span>
-<span class="doccomment">//!         // Clone elements because this closure cannot let captured variables</span>
-<span class="doccomment">//!         // escape in the asynchronous task below.</span>
-<span class="doccomment">//!         let input = input.clone();</span>
-<span class="doccomment">//!         let answer_elem = answer_elem.clone();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!         // Asynchronous event handler.</span>
-<span class="doccomment">//!         async move {</span>
-<span class="doccomment">//!             // Cleans up previous message.</span>
-<span class="doccomment">//!             answer_elem.set_text_content(Some(&quot;Loading...&quot;));</span>
-<span class="doccomment">//!             // Gets and validates input.</span>
-<span class="doccomment">//!             let number: BigUint = match input.value().parse() {</span>
-<span class="doccomment">//!                 Ok(number) =&gt; number,</span>
-<span class="doccomment">//!                 Err(_) =&gt; {</span>
-<span class="doccomment">//!                     answer_elem.set_text_content(Some(&quot;Invalid input!&quot;));</span>
-<span class="doccomment">//!                     return;</span>
-<span class="doccomment">//!                 },</span>
-<span class="doccomment">//!             };</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!             // Runs and tells the user the correct answer.</span>
-<span class="doccomment">//!             if is_prime(&amp;number).await {</span>
-<span class="doccomment">//!                 answer_elem.set_text_content(Some(&quot;Yes&quot;));</span>
-<span class="doccomment">//!             } else {</span>
-<span class="doccomment">//!                 answer_elem.set_text_content(Some(&quot;No&quot;));</span>
-<span class="doccomment">//!             }</span>
-<span class="doccomment">//!         }</span>
-<span class="doccomment">//!     });</span>
+<span class="doccomment">//!     let listener = event::Click.add_listener(&amp;button);</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!     loop {</span>
 <span class="doccomment">//!         // No problem being an infinite loop because it is asynchronous.</span>
@@ -299,6 +265,24 @@
 <span class="doccomment">//!         //</span>
 <span class="doccomment">//!         // This will sleep until the user press a button.</span>
 <span class="doccomment">//!         listener.listen_next().await.unwrap();</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!         // Cleans up previous message.</span>
+<span class="doccomment">//!         answer_elem.set_text_content(Some(&quot;Loading...&quot;));</span>
+<span class="doccomment">//!         // Gets and validates input.</span>
+<span class="doccomment">//!         let number: BigUint = match input.value().parse() {</span>
+<span class="doccomment">//!             Ok(number) =&gt; number,</span>
+<span class="doccomment">//!             Err(_) =&gt; {</span>
+<span class="doccomment">//!                 answer_elem.set_text_content(Some(&quot;Invalid input!&quot;));</span>
+<span class="doccomment">//!                 return;</span>
+<span class="doccomment">//!             },</span>
+<span class="doccomment">//!         };</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!         // Runs and tells the user the correct answer.</span>
+<span class="doccomment">//!         if is_prime(&amp;number).await {</span>
+<span class="doccomment">//!             answer_elem.set_text_content(Some(&quot;Yes&quot;));</span>
+<span class="doccomment">//!         } else {</span>
+<span class="doccomment">//!             answer_elem.set_text_content(Some(&quot;No&quot;));</span>
+<span class="doccomment">//!         }</span>
 <span class="doccomment">//!     }</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//! ```</span>

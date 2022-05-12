@@ -4,7 +4,7 @@
     </nav>
     <nav class="sidebar"><a class="sidebar-logo" href="../../webio/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
         </a><h2 class="location"><a href="#">Module event</a></h2><div class="sidebar-elems"><section><div class="block"><ul><li><a href="#structs">Structs</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li></ul></div></section><div id="sidebar-vars" data-name="event" data-ty="mod" data-relpath="./"></div><script defer src="./sidebar-items.js"></script></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../webio/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="main-heading">
-    <h1 class="fqn"><span class="in-band">Module <a href="../index.html">webio</a>::<wbr><a class="mod" href="#">event</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../../src/webio/event.rs.html#1-206">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><span class="item-info"><div class="stab portability">Available on <strong>crate feature <code>event</code></strong> only.</div></span><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Module for listening and handling JS events from Rust.</p>
+    <h1 class="fqn"><span class="in-band">Module <a href="../index.html">webio</a>::<wbr><a class="mod" href="#">event</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../../src/webio/event.rs.html#1-129">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><span class="item-info"><div class="stab portability">Available on <strong>crate feature <code>event</code></strong> only.</div></span><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Module for listening and handling JS events from Rust.</p>
 <h2 id="examples"><a href="#examples">Examples</a></h2><h3 id="on-click"><a href="#on-click">On Click</a></h3>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">webio::event::Type</span>;
 <span class="kw">use</span> <span class="ident">webio::event::Click</span>;
@@ -15,22 +15,13 @@
 <span class="kw">let</span> <span class="ident">element</span> <span class="op">=</span> <span class="ident">document</span>.<span class="ident">create_element</span>(<span class="string">&quot;button&quot;</span>).<span class="ident">unwrap</span>();
 <span class="ident">document</span>.<span class="ident">body</span>().<span class="ident">unwrap</span>().<span class="ident">append_child</span>(<span class="kw-2">&amp;</span><span class="ident">element</span>).<span class="ident">unwrap</span>();
 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
-<span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">Click</span>.<span class="ident">add_sync_listener</span>(
-    <span class="kw-2">&amp;</span><span class="ident">element</span>,
-    <span class="kw">move</span> <span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
-        <span class="macro">eprintln!</span>(<span class="string">&quot;Event onclick called&quot;</span>);
-        <span class="macro">assert!</span>(<span class="bool-val">true</span>);
-        <span class="kw">let</span> <span class="ident">event_id</span> <span class="op">=</span> <span class="ident">count</span>;
-        <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-        <span class="ident">event_id</span>
-    },
-);
+<span class="kw">let</span> <span class="ident">listener</span> <span class="op">=</span> <span class="ident">Click</span>.<span class="ident">add_listener</span>(<span class="kw-2">&amp;</span><span class="ident">element</span>);
 <span class="ident">element</span>.<span class="ident">dispatch_event</span>(<span class="kw-2">&amp;</span><span class="ident">web_sys::MouseEvent::new</span>(<span class="string">&quot;click&quot;</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
-<span class="macro">assert_eq!</span>(<span class="ident">listener</span>.<span class="ident">listen_next</span>().<span class="kw">await</span>.<span class="ident">unwrap</span>(), <span class="number">0</span>);
+<span class="ident">listener</span>.<span class="ident">listen_next</span>().<span class="kw">await</span>.<span class="ident">unwrap</span>();
 <span class="ident">element</span>.<span class="ident">dispatch_event</span>(<span class="kw-2">&amp;</span><span class="ident">web_sys::MouseEvent::new</span>(<span class="string">&quot;click&quot;</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
-<span class="macro">assert_eq!</span>(<span class="ident">listener</span>.<span class="ident">listen_next</span>().<span class="kw">await</span>.<span class="ident">unwrap</span>(), <span class="number">1</span>);
+<span class="ident">listener</span>.<span class="ident">listen_next</span>().<span class="kw">await</span>.<span class="ident">unwrap</span>();
 <span class="ident">element</span>.<span class="ident">dispatch_event</span>(<span class="kw-2">&amp;</span><span class="ident">web_sys::MouseEvent::new</span>(<span class="string">&quot;click&quot;</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
-<span class="macro">assert_eq!</span>(<span class="ident">listener</span>.<span class="ident">listen_next</span>().<span class="kw">await</span>.<span class="ident">unwrap</span>(), <span class="number">2</span>);
+<span class="ident">listener</span>.<span class="ident">listen_next</span>().<span class="kw">await</span>.<span class="ident">unwrap</span>();
 
 <span class="ident">document</span>.<span class="ident">remove_child</span>(<span class="kw-2">&amp;</span><span class="ident">element</span>).<span class="ident">unwrap</span>();</code></pre></div>
 </div></details><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2>
@@ -62,11 +53,7 @@
 </div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2>
 <div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.Type.html" title="webio::event::Type trait">Type</a></div><div class="item-right docblock-short"><p>Trait for safe wrappers over JS event types and JS event listening.</p>
 </div></div></div><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2>
-<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.add_async_listener_raw.html" title="webio::event::add_async_listener_raw fn">add_async_listener_raw</a></div><div class="item-right docblock-short"><p>Raw function for adding event listeners to JS’s event targets, using
-asynchronous event listeners. This function is asynchronous and a future is
-returned.</p>
-</div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.add_sync_listener_raw.html" title="webio::event::add_sync_listener_raw fn">add_sync_listener_raw</a></div><div class="item-right docblock-short"><p>Raw function for adding event listeners to JS’s event targets, using
-synchronous event listeners. However, this function is asynchronous and a
-future is returned.</p>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.add_listener_raw.html" title="webio::event::add_listener_raw fn">add_listener_raw</a></div><div class="item-right docblock-short"><p>Raw function for adding event listeners to JS’s event targets. This function
+is asynchronous and a future is returned.</p>
 </div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (6dd68402c 2022-05-11)" ></div>
 </body></html>
