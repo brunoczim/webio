@@ -10,23 +10,14 @@ macro_rules! make_event {
         #[webio::test]
         async fn $fn_name() {
             let element = TempElement::create($elem_name);
-            let mut count = 0;
-            let listener = webio::event::$evt_name.add_sync_listener(
-                &element.js_object,
-                move |_| {
-                    eprintln!("Event {} called", stringify!($evt_name));
-                    assert!(true);
-                    let event_id = count;
-                    count += 1;
-                    event_id
-                },
-            );
+            let listener =
+                webio::event::$evt_name.add_listener(&element.js_object);
             element.js_object.dispatch_event(&$create_evt).unwrap();
-            assert_eq!(listener.listen_next().await.unwrap(), 0);
+            listener.listen_next().await.unwrap();
             element.js_object.dispatch_event(&$create_evt).unwrap();
-            assert_eq!(listener.listen_next().await.unwrap(), 1);
+            listener.listen_next().await.unwrap();
             element.js_object.dispatch_event(&$create_evt).unwrap();
-            assert_eq!(listener.listen_next().await.unwrap(), 2);
+            listener.listen_next().await.unwrap();
         }
     };
 }

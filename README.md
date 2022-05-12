@@ -91,33 +91,7 @@ pub async fn main() {
     let answer_elem = document.get_element_by_id("answer").unwrap();
 
     // Sets a listener for the click event on the button.
-    let listener = event::Click.add_async_listener(&button, move |_| {
-        // Clone elements because this closure cannot let captured variables
-        // escape in the asynchronous task below.
-        let input = input.clone();
-        let answer_elem = answer_elem.clone();
-
-        // Asynchronous event handler.
-        async move {
-            // Cleans up previous message.
-            answer_elem.set_text_content(Some("Loading..."));
-            // Gets and validates input.
-            let number: BigUint = match input.value().parse() {
-                Ok(number) => number,
-                Err(_) => {
-                    answer_elem.set_text_content(Some("Invalid input!"));
-                    return;
-                },
-            };
-
-            // Runs and tells the user the correct answer.
-            if is_prime(&number).await {
-                answer_elem.set_text_content(Some("Yes"));
-            } else {
-                answer_elem.set_text_content(Some("No"));
-            }
-        }
-    });
+    let listener = event::Click.add_listener(&button);
 
     loop {
         // No problem being an infinite loop because it is asynchronous.
@@ -125,6 +99,24 @@ pub async fn main() {
         //
         // This will sleep until the user press a button.
         listener.listen_next().await.unwrap();
+
+        // Cleans up previous message.
+        answer_elem.set_text_content(Some("Loading..."));
+        // Gets and validates input.
+        let number: BigUint = match input.value().parse() {
+            Ok(number) => number,
+            Err(_) => {
+                answer_elem.set_text_content(Some("Invalid input!"));
+                return;
+            },
+        };
+
+        // Runs and tells the user the correct answer.
+        if is_prime(&number).await {
+            answer_elem.set_text_content(Some("Yes"));
+        } else {
+            answer_elem.set_text_content(Some("No"));
+        }
     }
 }
 ```

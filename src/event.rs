@@ -16,22 +16,13 @@
 //! let element = document.create_element("button").unwrap();
 //! document.body().unwrap().append_child(&element).unwrap();
 //! let mut count = 0;
-//! let listener = Click.add_sync_listener(
-//!     &element,
-//!     move |_| {
-//!         eprintln!("Event onclick called");
-//!         assert!(true);
-//!         let event_id = count;
-//!         count += 1;
-//!         event_id
-//!     },
-//! );
+//! let listener = Click.add_listener(&element);
 //! element.dispatch_event(&web_sys::MouseEvent::new("click").unwrap()).unwrap();
-//! assert_eq!(listener.listen_next().await.unwrap(), 0);
+//! listener.listen_next().await.unwrap();
 //! element.dispatch_event(&web_sys::MouseEvent::new("click").unwrap()).unwrap();
-//! assert_eq!(listener.listen_next().await.unwrap(), 1);
+//! listener.listen_next().await.unwrap();
 //! element.dispatch_event(&web_sys::MouseEvent::new("click").unwrap()).unwrap();
-//! assert_eq!(listener.listen_next().await.unwrap(), 2);
+//! listener.listen_next().await.unwrap();
 //!
 //! document.remove_child(&element).unwrap();
 //! # });
@@ -39,9 +30,7 @@
 //! ```
 
 use crate::callback;
-use std::future::Future;
-use wasm_bindgen::{closure::Closure, convert::FromWasmAbi, JsCast, JsValue};
-use wasm_bindgen_futures::future_to_promise;
+use wasm_bindgen::{closure::Closure, convert::FromWasmAbi, JsCast};
 
 macro_rules! event_type {
     ($ident:ident, $name:literal, $data:ty) => {
@@ -63,22 +52,18 @@ macro_rules! event_type {
     };
 }
 
-/// Raw function for adding event listeners to JS's event targets, using
-/// synchronous event listeners. However, this function is asynchronous and a
-/// future is returned.
+/// Raw function for adding event listeners to JS's event targets. This function
+/// is asynchronous and a future is returned.
 ///
 /// It is up to the caller to ensure that the `event_type` is correct and
 /// generic parameter `E` matches the `event_type`, as well to ensure the
 /// `target` supports such `event_type`.
-pub fn add_sync_listener_raw<F, E, T>(
+pub fn add_listener_raw<E>(
     target: &web_sys::EventTarget,
     event_type: &str,
-    callback: F,
-) -> callback::multi::Listener<T>
+) -> callback::multi::Listener<E>
 where
-    F: FnMut(E) -> T + 'static,
     E: FromWasmAbi + 'static,
-    T: 'static,
 {
     let register = callback::multi::SyncRegister::new(|callback| {
         let boxed_callback = Box::new(callback);
@@ -91,46 +76,7 @@ where
             )
             .unwrap();
     });
-    register.listen(callback)
-}
-
-/// Raw function for adding event listeners to JS's event targets, using
-/// asynchronous event listeners. This function is asynchronous and a future is
-/// returned.
-///
-/// It is up to the caller to ensure that the `event_type` is correct and
-/// generic parameter `E` matches the `event_type`, as well to ensure the
-/// `target` supports such `event_type`.
-pub fn add_async_listener_raw<F, E, A>(
-    target: &web_sys::EventTarget,
-    event_type: &str,
-    callback: F,
-) -> callback::multi::Listener<A::Output>
-where
-    F: FnMut(E) -> A + 'static,
-    E: FromWasmAbi + 'static,
-    A: Future + 'static,
-{
-    let register = callback::multi::AsyncRegister::new(|mut callback| {
-        let boxed_callback = Box::new(move |event_data| {
-            let future = callback(event_data);
-            let promise = future_to_promise(async move {
-                future.await;
-                Ok(JsValue::UNDEFINED)
-            });
-            JsValue::from(promise)
-        });
-        let closure =
-            Closure::wrap(boxed_callback as Box<dyn FnMut(E) -> JsValue>)
-                .into_js_value();
-        target
-            .add_event_listener_with_callback(
-                event_type,
-                closure.dyn_ref().unwrap(),
-            )
-            .unwrap();
-    });
-    register.listen(callback)
+    register.listen(|evt| evt)
 }
 
 /// Trait for safe wrappers over JS event types and JS event listening.
@@ -145,37 +91,14 @@ pub trait Type {
     fn name(&self) -> &str;
 
     /// Adds event listeners to JS's event targets, where events are of this
-    /// event type, using synchronous event listeners. However, this function is
-    /// asynchronous and a future is returned.
+    /// event type. This function is asynchronous and a future is returned.
     ///
     /// It is up to the caller to ensure the `target` supports this event type.
-    fn add_sync_listener<F, T>(
+    fn add_listener(
         &self,
         target: &web_sys::EventTarget,
-        callback: F,
-    ) -> callback::multi::Listener<T>
-    where
-        F: FnMut(Self::Data) -> T + 'static,
-        T: 'static,
-    {
-        add_sync_listener_raw(target, self.name(), callback)
-    }
-
-    /// Adds event listeners to JS's event targets, where events are of this
-    /// event type, using asynchronous event listeners. This function is
-    /// asynchronous and a future is returned.
-    ///
-    /// It is up to the caller to ensure the `target` supports this event type.
-    fn add_async_listener<F, A>(
-        &self,
-        target: &web_sys::EventTarget,
-        callback: F,
-    ) -> callback::multi::Listener<A::Output>
-    where
-        F: FnMut(Self::Data) -> A + 'static,
-        A: Future + 'static,
-    {
-        add_async_listener_raw(target, self.name(), callback)
+    ) -> callback::multi::Listener<Self::Data> where {
+        add_listener_raw(target, self.name())
     }
 }
 
