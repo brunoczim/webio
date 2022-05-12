@@ -159,6 +159,27 @@
 <span id="154">154</span>
 <span id="155">155</span>
 <span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Implementation mimicking [`std::time::Instant`].</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::{
@@ -167,7 +188,26 @@
     <span class="ident">ops</span>::{<span class="ident">Add</span>, <span class="ident">AddAssign</span>, <span class="ident">Sub</span>, <span class="ident">SubAssign</span>},
     <span class="ident">time::Duration</span>,
 };
-<span class="kw">use</span> <span class="ident">wasm_bindgen::prelude::wasm_bindgen</span>;
+<span class="kw">use</span> <span class="ident">wasm_bindgen</span>::{<span class="ident">prelude::wasm_bindgen</span>, <span class="ident">JsCast</span>};
+
+<span class="comment">// I cannot simply declare `fn performance_now()` with</span>
+<span class="comment">// `(j́s_name = &quot;now&quot;, namespace = &quot;performance&quot;)` because wasm-pack generates</span>
+<span class="comment">// code that webpack does not handle correctly, probably because of hoisting.</span>
+<span class="comment">// And so, I need this workaround.</span>
+<span class="attribute">#[<span class="ident">wasm_bindgen</span>]</span>
+<span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
+    <span class="attribute">#[<span class="ident">wasm_bindgen</span>(<span class="ident">extends</span> <span class="op">=</span> <span class="ident">::js_sys::Object</span>, <span class="ident">js_name</span> <span class="op">=</span> <span class="ident">Object</span>)]</span>
+    <span class="kw">type</span> <span class="ident">Global</span>;
+
+    <span class="attribute">#[<span class="ident">wasm_bindgen</span>(<span class="ident">method</span>, <span class="ident">structural</span>, <span class="ident">getter</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">performance</span>(<span class="ident">this</span>: <span class="kw-2">&amp;</span><span class="ident">Global</span>) -&gt; <span class="ident">Performance</span>;
+
+    <span class="attribute">#[<span class="ident">wasm_bindgen</span>(<span class="ident">extends</span> <span class="op">=</span> <span class="ident">::js_sys::Object</span>, <span class="ident">js_name</span> <span class="op">=</span> <span class="ident">Performance</span>)]</span>
+    <span class="kw">type</span> <span class="ident">Performance</span>;
+
+    <span class="attribute">#[<span class="ident">wasm_bindgen</span>(<span class="ident">method</span>, <span class="ident">structural</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">now</span>(<span class="ident">this</span>: <span class="kw-2">&amp;</span><span class="ident">Performance</span>) -&gt; <span class="ident">f64</span>;
+}
 
 <span class="attribute">#[<span class="ident">wasm_bindgen</span>]</span>
 <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
@@ -200,7 +240,9 @@
     <span class="doccomment">/// Gets the clock measurement for this right moment. This uses JS</span>
     <span class="doccomment">/// `performance_now`, so there might an overhead calling this method.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">now</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">millis</span>: <span class="ident">performance_now</span>() }
+        <span class="kw">let</span> <span class="ident">global</span> <span class="op">=</span> <span class="ident">js_sys::global</span>().<span class="ident">dyn_into</span>::<span class="op">&lt;</span><span class="ident">Global</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">millis</span> <span class="op">=</span> <span class="ident">global</span>.<span class="ident">performance</span>().<span class="ident">now</span>();
+        <span class="self">Self</span> { <span class="ident">millis</span> }
     }
 
     <span class="doccomment">/// Returns the duration of time that passed from an earlier instant into</span>
@@ -316,5 +358,5 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (ecd44958e 2022-05-10)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (6dd68402c 2022-05-11)" ></div>
 </body></html>
