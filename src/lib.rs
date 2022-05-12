@@ -42,7 +42,7 @@
 //! ///
 //! /// However, note that this applies only when a number is being tested,
 //! /// otherwise WASM sleeps and won't wake up until the button is pressed.
-//! const YIELD_STEPS: u16 = 4096;
+//! const YIELD_STEPS: u16 = 20000;
 //!
 //! /// Tests if the given number is prime, asynchronous because it will pause the
 //! /// execution after some steps.
