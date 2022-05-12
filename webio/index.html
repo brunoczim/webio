@@ -36,7 +36,7 @@ control back to browser by a few milliseconds.</p>
 <span class="doccomment">///</span>
 <span class="doccomment">/// However, note that this applies only when a number is being tested,</span>
 <span class="doccomment">/// otherwise WASM sleeps and won&#39;t wake up until the button is pressed.</span>
-<span class="kw">const</span> <span class="ident">YIELD_STEPS</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">4096</span>;
+<span class="kw">const</span> <span class="ident">YIELD_STEPS</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">20000</span>;
 
 <span class="doccomment">/// Tests if the given number is prime, asynchronous because it will pause the</span>
 <span class="doccomment">/// execution after some steps.</span>
