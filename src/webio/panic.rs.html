@@ -254,6 +254,15 @@
 <span id="249">249</span>
 <span id="250">250</span>
 <span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Utilities for panic recovering.</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::select</span>;
@@ -315,11 +324,11 @@
     }
 }
 
-<span class="doccomment">/// A guard of hook disabling. While this struct lives, produced by</span>
+<span class="doccomment">/// A guard of hook disabling. By default, even when recovering a panic, the</span>
+<span class="doccomment">/// hook previously used is still called. While this struct lives, produced by</span>
 <span class="doccomment">/// [`disable_hook_during_recovery`] function, and while there is a recovery in</span>
 <span class="doccomment">/// action, the previously used panic hook won&#39;t be called. However, whenever</span>
-<span class="doccomment">/// this struct is dropped, it enables the previous hook again. Whether or not</span>
-<span class="doccomment">/// the hook is enabled, the recovery will happen.</span>
+<span class="doccomment">/// this struct is dropped, it enables the previous hook again.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DisableHookGuard</span> {
     <span class="ident">_priv</span>: (),
@@ -331,12 +340,17 @@
     }
 }
 
+<span class="doccomment">/// By default, even when recovering a panic, the hook previously used is still</span>
+<span class="doccomment">/// called. This function disables that hook while the returned RAII guard is</span>
+<span class="doccomment">/// not dropped.</span>
 <span class="attribute">#[<span class="ident">must_use</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">disable_hook_during_recovery</span>() -&gt; <span class="ident">DisableHookGuard</span> {
     <span class="ident">HOOK_DURING_RECOVERY_DISABLE_COUNT</span>.<span class="ident">fetch_add</span>(<span class="number">1</span>, <span class="ident">Release</span>);
     <span class="ident">DisableHookGuard</span> { <span class="ident">_priv</span>: () }
 }
 
+<span class="doccomment">/// Returns whether the previous hook should still be called during a recovery.</span>
+<span class="doccomment">/// This can be customized via [`disable_hook_during_recovery`].</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">hook_during_recovery_enabled</span>() -&gt; <span class="ident">bool</span> {
     <span class="ident">HOOK_DURING_RECOVERY_DISABLE_COUNT</span>.<span class="ident">load</span>(<span class="ident">Acquire</span>) <span class="op">==</span> <span class="number">0</span>
 }
@@ -430,12 +444,16 @@
     }
 }
 
+<span class="doccomment">/// An attempt to recover a future panic. This is a future that can be awaited</span>
+<span class="doccomment">/// for the next panic.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Recovery</span> {
     <span class="ident">channel</span>: <span class="ident">RecoveryChannel</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Recovery</span> {
+    <span class="doccomment">/// Starts the recovery. This means that while this struct lives, the next</span>
+    <span class="doccomment">/// panic will be caught.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">start</span>() -&gt; <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">guard</span> <span class="op">=</span> <span class="ident">access_recoverer_state</span>().<span class="ident">lock</span>().<span class="ident">unwrap</span>();
         <span class="kw">match</span> <span class="kw-2">&amp;mut</span> <span class="kw-2">*</span><span class="ident">guard</span> {
