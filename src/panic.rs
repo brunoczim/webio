@@ -59,11 +59,11 @@ where
     }
 }
 
-/// A guard of hook disabling. While this struct lives, produced by
+/// A guard of hook disabling. By default, even when recovering a panic, the
+/// hook previously used is still called. While this struct lives, produced by
 /// [`disable_hook_during_recovery`] function, and while there is a recovery in
 /// action, the previously used panic hook won't be called. However, whenever
-/// this struct is dropped, it enables the previous hook again. Whether or not
-/// the hook is enabled, the recovery will happen.
+/// this struct is dropped, it enables the previous hook again.
 #[derive(Debug)]
 pub struct DisableHookGuard {
     _priv: (),
@@ -75,12 +75,17 @@ impl Drop for DisableHookGuard {
     }
 }
 
+/// By default, even when recovering a panic, the hook previously used is still
+/// called. This function disables that hook while the returned RAII guard is
+/// not dropped.
 #[must_use]
 pub fn disable_hook_during_recovery() -> DisableHookGuard {
     HOOK_DURING_RECOVERY_DISABLE_COUNT.fetch_add(1, Release);
     DisableHookGuard { _priv: () }
 }
 
+/// Returns whether the previous hook should still be called during a recovery.
+/// This can be customized via [`disable_hook_during_recovery`].
 pub fn hook_during_recovery_enabled() -> bool {
     HOOK_DURING_RECOVERY_DISABLE_COUNT.load(Acquire) == 0
 }
@@ -174,12 +179,16 @@ impl RecoveryChannel {
     }
 }
 
+/// An attempt to recover a future panic. This is a future that can be awaited
+/// for the next panic.
 #[derive(Debug)]
 pub struct Recovery {
     channel: RecoveryChannel,
 }
 
 impl Recovery {
+    /// Starts the recovery. This means that while this struct lives, the next
+    /// panic will be caught.
     pub fn start() -> Self {
         let mut guard = access_recoverer_state().lock().unwrap();
         match &mut *guard {
