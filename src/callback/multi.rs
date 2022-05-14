@@ -2,27 +2,19 @@
 //! that are called multiple times, i.e. callbacks of events that occur more
 //! than once per callback.
 
-use crate::{callback, panic::FutureCatchUnwind};
+use crate::callback;
+use std::{future::Future, pin::Pin, task};
 
-#[cfg(feature = "stream")]
-use crate::panic::Payload;
 #[cfg(feature = "stream")]
 use futures::stream::Stream;
-
-use std::{future::Future, panic, pin::Pin, task};
 
 macro_rules! sync_multi {
     ($self:expr, $callback:expr) => {{
         let (notifier, inner_listener) = callback::shared::channel();
 
         let handler = Box::new(move |event_data| {
-            let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-                $callback(event_data)
-            }));
-            match result {
-                Ok(data) => notifier.success(data),
-                Err(payload) => notifier.panicked(payload),
-            }
+            let data = $callback(event_data);
+            notifier.send(data);
         });
         let ret = ($self.register_fn)(handler as SyncCbHandler<_>);
 
@@ -38,11 +30,8 @@ macro_rules! async_multi {
             let future = $callback(event_data);
             let notifier = notifier.clone();
             let handler_future = Box::pin(async move {
-                let result = FutureCatchUnwind::new(future).await;
-                match result {
-                    Ok(data) => notifier.success(data),
-                    Err(payload) => notifier.panicked(payload),
-                }
+                let data = future.await;
+                notifier.send(data);
             });
             handler_future as AsyncCbHandlerFuture
         });
@@ -551,27 +540,30 @@ impl<T> Listener<T> {
     pub fn listen_next<'this>(&'this self) -> ListenNext<'this, T> {
         ListenNext::new(self)
     }
-}
 
-#[cfg(feature = "stream")]
-impl<T> Stream for Listener<T> {
-    type Item = Result<T, Payload>;
-
-    fn poll_next(
-        self: Pin<&mut Self>,
+    fn generic_poll(
+        &self,
         ctx: &mut task::Context<'_>,
-    ) -> task::Poll<Option<Self::Item>> {
+    ) -> task::Poll<Result<T, callback::Cancelled>> {
         match self.inner.receive() {
-            Some(Ok(output)) => task::Poll::Ready(Some(Ok(output))),
-            Some(Err(callback::Error::Panicked(payload))) => {
-                task::Poll::Ready(Some(Err(payload)))
-            },
-            Some(Err(callback::Error::Cancelled)) => task::Poll::Ready(None),
+            Some(output) => task::Poll::Ready(output),
             None => {
                 self.inner.subscribe(ctx.waker());
                 task::Poll::Pending
             },
         }
+    }
+}
+
+#[cfg(feature = "stream")]
+impl<T> Stream for Listener<T> {
+    type Item = T;
+
+    fn poll_next(
+        self: Pin<&mut Self>,
+        ctx: &mut task::Context<'_>,
+    ) -> task::Poll<Option<Self::Item>> {
+        self.generic_poll(ctx).map(Result::ok)
     }
 }
 
@@ -589,18 +581,12 @@ impl<'list, T> ListenNext<'list, T> {
 }
 
 impl<'list, T> Future for ListenNext<'list, T> {
-    type Output = Result<T, callback::Error>;
+    type Output = Result<T, callback::Cancelled>;
 
     fn poll(
         self: Pin<&mut Self>,
         ctx: &mut task::Context<'_>,
     ) -> task::Poll<Self::Output> {
-        match self.listener.inner.receive() {
-            Some(output) => task::Poll::Ready(output),
-            None => {
-                self.listener.inner.subscribe(ctx.waker());
-                task::Poll::Pending
-            },
-        }
+        self.listener.generic_poll(ctx)
     }
 }

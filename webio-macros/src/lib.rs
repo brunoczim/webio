@@ -363,10 +363,12 @@ pub fn select(raw_input: TokenStream) -> TokenStream {
                     let #output_var_name = #output_var_name.clone();
                     async move {
                         let output_val = #future.await;
-                        if #output_var_name.get().is_none() {
+                        let mut stored_output = #output_var_name.take();
+                        if stored_output.is_none() {
                             let #pat = output_val;
-                            #output_var_name.set(Some(#final_output));
+                            stored_output = Some(#final_output);
                         }
+                        #output_var_name.set(stored_output);
                         Ok(::webio::wasm_bindgen::JsValue::UNDEFINED)
                     }
                 };
@@ -591,7 +593,22 @@ pub fn main(raw_attribute: TokenStream, raw_input: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro_attribute]
 pub fn test(raw_attribute: TokenStream, raw_input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(raw_input as ItemFn);
+    let mut input = parse_macro_input!(raw_input as ItemFn);
+
+    let should_panic_attr_pos = input.attrs.iter().position(|attr| {
+        matches!(attr.style, syn::AttrStyle::Outer)
+            && attr.path.segments.len() == 1
+            && attr.path.segments[0].ident == "should_panic"
+            && attr.path.segments[0].arguments.is_empty()
+            && attr.tokens.is_empty()
+    });
+    let should_panic = match should_panic_attr_pos {
+        Some(pos) => {
+            input.attrs.remove(pos);
+            true
+        },
+        None => false,
+    };
 
     let mut errors: Option<syn::Error> = None;
     let mut append_error = |error| match errors.as_mut() {
@@ -643,11 +660,31 @@ pub fn test(raw_attribute: TokenStream, raw_input: TokenStream) -> TokenStream {
             let ident = input.sig.ident;
             let body = input.block;
             let attrs = input.attrs;
-            let expanded = quote! {
-                #[::webio::wasm_bindgen_test::wasm_bindgen_test]
-                #(#attrs)*
-                #visibility async #fn_token #ident() {
-                    let (): () = #body;
+            let expanded = if should_panic {
+                quote! {
+                    #[::webio::wasm_bindgen_test::wasm_bindgen_test]
+                    #(#attrs)*
+                    #visibility async #fn_token #ident() {
+                        let result = {
+                            let _guard =
+                                ::webio::panic::disable_hook_during_recovery();
+                            ::webio::panic::catch(async {
+                                let (): () = #body;
+                            })
+                            .await
+                        };
+                        if result.is_ok() {
+                            panic!("Task should have panicked but didn't");
+                        }
+                    }
+                }
+            } else {
+                quote! {
+                    #[::webio::wasm_bindgen_test::wasm_bindgen_test]
+                    #(#attrs)*
+                    #visibility async #fn_token #ident() {
+                        let (): () = #body;
+                    }
                 }
             };
             expanded.into_token_stream().into()

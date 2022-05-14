@@ -1,22 +1,16 @@
 //! This module implements conversion from callbacks to futures for callbacks
 //! that are called only once.
 
-use crate::{callback, panic::FutureCatchUnwind};
-use std::{future::Future, panic, pin::Pin, task};
+use crate::callback;
+use std::{future::Future, pin::Pin, task};
 
 macro_rules! sync_once {
     ($self:expr, $callback:expr) => {{
         let (notifier, inner_listener) = callback::shared::channel();
 
         let handler = Box::new(move |event_data| {
-            let result =
-                panic::catch_unwind(panic::AssertUnwindSafe(move || {
-                    $callback(event_data)
-                }));
-            match result {
-                Ok(data) => notifier.success(data),
-                Err(payload) => notifier.panicked(payload),
-            }
+            let data = $callback(event_data);
+            notifier.send(data);
         });
         let ret = ($self.register_fn)(handler as SyncCbHandler<_>);
 
@@ -31,11 +25,8 @@ macro_rules! async_once {
         let handler = Box::new(move |event_data| {
             let callback_future = $callback(event_data);
             let handler_future = Box::pin(async move {
-                let result = FutureCatchUnwind::new(callback_future).await;
-                match result {
-                    Ok(data) => notifier.success(data),
-                    Err(payload) => notifier.panicked(payload),
-                }
+                let data = callback_future.await;
+                notifier.send(data);
             });
             handler_future as AsyncCbHandlerFuture
         });
@@ -474,7 +465,7 @@ impl<T> Listener<T> {
 }
 
 impl<T> Future for Listener<T> {
-    type Output = Result<T, callback::Error>;
+    type Output = Result<T, callback::Cancelled>;
 
     fn poll(
         self: Pin<&mut Self>,

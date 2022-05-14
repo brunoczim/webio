@@ -1,7 +1,7 @@
 //! This module exports items related to task spawning.
 
-use crate::{callback, panic::Payload};
-use std::{fmt, future::Future, pin::Pin, task};
+use crate::callback;
+use std::{error::Error, fmt, future::Future, pin::Pin, task};
 use wasm_bindgen_futures::spawn_local;
 
 /// Spawns an asynchronous task in JS event loop.
@@ -64,45 +64,22 @@ pub async fn yield_now() {
     spawn(async {}).await.unwrap()
 }
 
-/// An error that might happen when waiting for a task.
+/// An error that might happen when waiting for a task, typically caused because
+/// the task was cancelled.
 #[derive(Debug)]
 pub struct JoinError {
-    kind: callback::Error,
+    cause: callback::Cancelled,
 }
 
 impl fmt::Display for JoinError {
     fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
-        write!(fmtr, "{}", self.kind)
+        write!(fmtr, "{}", self.cause)
     }
 }
 
-impl JoinError {
-    /// Tests whether the target task was cancelled.
-    pub fn is_cancelled(&self) -> bool {
-        matches!(&self.kind, callback::Error::Cancelled)
-    }
-
-    /// Tests whether the target task panicked.
-    pub fn is_panic(&self) -> bool {
-        matches!(&self.kind, callback::Error::Panicked(_))
-    }
-
-    /// Attempts to convert this error into a panic payload. Fails if the target
-    /// task didn't panicked.
-    pub fn try_into_panic(self) -> Result<Payload, Self> {
-        match self.kind {
-            callback::Error::Panicked(payload) => Ok(payload),
-            kind => Err(Self { kind }),
-        }
-    }
-
-    /// Converts this error into a panic payload.
-    ///
-    /// # Panics
-    /// Panics if this error was not caused by panic (e.g. the task was
-    /// cancelled).
-    pub fn into_panic(self) -> Payload {
-        self.try_into_panic().unwrap()
+impl Error for JoinError {
+    fn cause(&self) -> Option<&dyn Error> {
+        Some(&self.cause)
     }
 }
 
@@ -126,6 +103,6 @@ impl<T> Future for JoinHandle<T> {
     ) -> task::Poll<Self::Output> {
         unsafe { self.map_unchecked_mut(|pinned| &mut pinned.inner) }
             .poll(ctx)
-            .map(|result| result.map_err(|kind| JoinError { kind }))
+            .map(|result| result.map_err(|cause| JoinError { cause }))
     }
 }

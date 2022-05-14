@@ -3,13 +3,12 @@
 mod instant;
 
 use crate::callback;
+use js_sys::Function;
+use std::{future::Future, pin::Pin, task, time::Duration};
+use wasm_bindgen::{closure::Closure, prelude::wasm_bindgen, JsCast, JsValue};
+
 #[cfg(feature = "stream")]
 use futures::stream::Stream;
-use js_sys::Function;
-#[cfg(feature = "stream")]
-use std::pin::Pin;
-use std::{future::Future, task, time::Duration};
-use wasm_bindgen::{closure::Closure, prelude::wasm_bindgen, JsCast, JsValue};
 
 pub use instant::Instant;
 
@@ -138,12 +137,10 @@ impl Stream for IntervalHandle {
     type Item = ();
 
     fn poll_next(
-        self: Pin<&mut Self>,
+        mut self: Pin<&mut Self>,
         ctx: &mut task::Context<'_>,
     ) -> task::Poll<Option<Self::Item>> {
-        unsafe { self.map_unchecked_mut(|this| &mut this.listener) }
-            .poll_next(ctx)
-            .map(|option| option.map(|result| result.unwrap()))
+        Pin::new(&mut self.listener).poll_next(ctx)
     }
 }
 
@@ -156,12 +153,10 @@ impl<'handle> Future for IntervalTick<'handle> {
     type Output = ();
 
     fn poll(
-        self: std::pin::Pin<&mut Self>,
+        mut self: std::pin::Pin<&mut Self>,
         ctx: &mut task::Context<'_>,
     ) -> task::Poll<Self::Output> {
-        unsafe { self.map_unchecked_mut(|this| &mut this.listener) }
-            .poll(ctx)
-            .map(|result| result.unwrap())
+        Pin::new(&mut self.listener).poll(ctx).map(Result::unwrap)
     }
 }
 

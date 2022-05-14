@@ -151,12 +151,13 @@ pub use web_sys;
 #[macro_use]
 mod macros;
 
-#[doc(hidden)]
-pub mod panic;
-
 pub mod task;
 
 pub mod callback;
+
+#[cfg(feature = "panic")]
+#[cfg_attr(feature = "feature-doc-cfg", doc(cfg(feature = "panic")))]
+pub mod panic;
 
 #[cfg(feature = "time")]
 #[cfg_attr(feature = "feature-doc-cfg", doc(cfg(feature = "time")))]

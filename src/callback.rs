@@ -6,4 +6,4 @@ mod shared;
 pub mod once;
 pub mod multi;
 
-pub use shared::Error;
+pub use shared::Cancelled;

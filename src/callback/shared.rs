@@ -1,25 +1,16 @@
-use crate::panic::Payload;
-use std::{cell::Cell, fmt, rc::Rc, task};
+use std::{cell::Cell, error::Error, fmt, rc::Rc, task};
 
-/// An error that might happen when the event completes.
+/// An error that might happen when the callback's future is cancelled.
 #[derive(Debug)]
-pub enum Error {
-    /// The callback panicked! And here is panic's payload.
-    Panicked(Payload),
-    /// The callback's future was cancelled.
-    Cancelled,
-}
+pub struct Cancelled;
 
-impl fmt::Display for Error {
+impl fmt::Display for Cancelled {
     fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Error::Panicked(payload) => {
-                write!(fmtr, "task panicked: {:?}", payload)
-            },
-            Error::Cancelled => write!(fmtr, "task cancelled"),
-        }
+        write!(fmtr, "task cancelled")
     }
 }
+
+impl Error for Cancelled {}
 
 pub fn channel<T>() -> (Notifier<T>, Listener<T>) {
     let channel = Channel::init_connected();
@@ -29,7 +20,7 @@ pub fn channel<T>() -> (Notifier<T>, Listener<T>) {
 struct ChannelInner<T> {
     connected: Cell<bool>,
     waker: Cell<Option<task::Waker>>,
-    data: Cell<Option<Result<T, Payload>>>,
+    data: Cell<Option<T>>,
 }
 
 impl<T> fmt::Debug for ChannelInner<T>
@@ -96,13 +87,8 @@ impl<T> Notifier<T> {
         Self { channel }
     }
 
-    pub fn panicked(&self, payload: Payload) {
-        self.channel.inner.data.set(Some(Err(payload)));
-        self.notify();
-    }
-
-    pub fn success(&self, data: T) {
-        self.channel.inner.data.set(Some(Ok(data)));
+    pub fn send(&self, data: T) {
+        self.channel.inner.data.set(Some(data));
         self.notify();
     }
 
@@ -138,12 +124,11 @@ impl<T> Listener<T> {
         Self { channel }
     }
 
-    pub fn receive(&self) -> Option<Result<T, Error>> {
+    pub fn receive(&self) -> Option<Result<T, Cancelled>> {
         match self.channel.inner.data.take() {
-            Some(Ok(data)) => Some(Ok(data)),
-            Some(Err(payload)) => Some(Err(Error::Panicked(payload))),
+            Some(data) => Some(Ok(data)),
             None if self.channel.is_connected() => None,
-            None => Some(Err(Error::Cancelled)),
+            None => Some(Err(Cancelled)),
         }
     }
 
