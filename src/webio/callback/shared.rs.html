@@ -151,43 +151,19 @@
 <span id="146">146</span>
 <span id="147">147</span>
 <span id="148">148</span>
-<span id="149">149</span>
-<span id="150">150</span>
-<span id="151">151</span>
-<span id="152">152</span>
-<span id="153">153</span>
-<span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-<span id="160">160</span>
-<span id="161">161</span>
-<span id="162">162</span>
-<span id="163">163</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::panic::Payload</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cell::Cell</span>, <span class="ident">fmt</span>, <span class="ident">rc::Rc</span>, <span class="ident">task</span>};
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cell::Cell</span>, <span class="ident">error::Error</span>, <span class="ident">fmt</span>, <span class="ident">rc::Rc</span>, <span class="ident">task</span>};
 
-<span class="doccomment">/// An error that might happen when the event completes.</span>
+<span class="doccomment">/// An error that might happen when the callback&#39;s future is cancelled.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Error</span> {
-    <span class="doccomment">/// The callback panicked! And here is panic&#39;s payload.</span>
-    <span class="ident">Panicked</span>(<span class="ident">Payload</span>),
-    <span class="doccomment">/// The callback&#39;s future was cancelled.</span>
-    <span class="ident">Cancelled</span>,
-}
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Cancelled</span>;
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Error</span> {
+<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Cancelled</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmtr</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Error::Panicked</span>(<span class="ident">payload</span>) =&gt; {
-                <span class="macro">write!</span>(<span class="ident">fmtr</span>, <span class="string">&quot;task panicked: {:?}&quot;</span>, <span class="ident">payload</span>)
-            },
-            <span class="ident">Error::Cancelled</span> =&gt; <span class="macro">write!</span>(<span class="ident">fmtr</span>, <span class="string">&quot;task cancelled&quot;</span>),
-        }
+        <span class="macro">write!</span>(<span class="ident">fmtr</span>, <span class="string">&quot;task cancelled&quot;</span>)
     }
 }
+
+<span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">Cancelled</span> {}
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">channel</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() -&gt; (<span class="ident">Notifier</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) {
     <span class="kw">let</span> <span class="ident">channel</span> <span class="op">=</span> <span class="ident">Channel::init_connected</span>();
@@ -197,7 +173,7 @@
 <span class="kw">struct</span> <span class="ident">ChannelInner</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">connected</span>: <span class="ident">Cell</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
     <span class="ident">waker</span>: <span class="ident">Cell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">task::Waker</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">data</span>: <span class="ident">Cell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Payload</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">data</span>: <span class="ident">Cell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">ChannelInner</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
@@ -264,13 +240,8 @@
         <span class="self">Self</span> { <span class="ident">channel</span> }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">panicked</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">payload</span>: <span class="ident">Payload</span>) {
-        <span class="self">self</span>.<span class="ident">channel</span>.<span class="ident">inner</span>.<span class="ident">data</span>.<span class="ident">set</span>(<span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">payload</span>)));
-        <span class="self">self</span>.<span class="ident">notify</span>();
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">success</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">data</span>: <span class="ident">T</span>) {
-        <span class="self">self</span>.<span class="ident">channel</span>.<span class="ident">inner</span>.<span class="ident">data</span>.<span class="ident">set</span>(<span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="ident">data</span>)));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">data</span>: <span class="ident">T</span>) {
+        <span class="self">self</span>.<span class="ident">channel</span>.<span class="ident">inner</span>.<span class="ident">data</span>.<span class="ident">set</span>(<span class="prelude-val">Some</span>(<span class="ident">data</span>));
         <span class="self">self</span>.<span class="ident">notify</span>();
     }
 
@@ -306,12 +277,11 @@
         <span class="self">Self</span> { <span class="ident">channel</span> }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">receive</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">receive</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Cancelled</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">channel</span>.<span class="ident">inner</span>.<span class="ident">data</span>.<span class="ident">take</span>() {
-            <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="ident">data</span>)) =&gt; <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="ident">data</span>)),
-            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">payload</span>)) =&gt; <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">Error::Panicked</span>(<span class="ident">payload</span>))),
+            <span class="prelude-val">Some</span>(<span class="ident">data</span>) =&gt; <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="ident">data</span>)),
             <span class="prelude-val">None</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">channel</span>.<span class="ident">is_connected</span>() =&gt; <span class="prelude-val">None</span>,
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">Error::Cancelled</span>)),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">Cancelled</span>)),
         }
     }
 
@@ -330,5 +300,5 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (6dd68402c 2022-05-11)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (f1f721e64 2022-05-13)" ></div>
 </body></html>

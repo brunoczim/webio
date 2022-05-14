@@ -111,33 +111,10 @@
 <span id="106">106</span>
 <span id="107">107</span>
 <span id="108">108</span>
-<span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
-<span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
-<span id="117">117</span>
-<span id="118">118</span>
-<span id="119">119</span>
-<span id="120">120</span>
-<span id="121">121</span>
-<span id="122">122</span>
-<span id="123">123</span>
-<span id="124">124</span>
-<span id="125">125</span>
-<span id="126">126</span>
-<span id="127">127</span>
-<span id="128">128</span>
-<span id="129">129</span>
-<span id="130">130</span>
-<span id="131">131</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module exports items related to task spawning.</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">callback</span>, <span class="ident">panic::Payload</span>};
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt</span>, <span class="ident">future::Future</span>, <span class="ident">pin::Pin</span>, <span class="ident">task</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::callback</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">error::Error</span>, <span class="ident">fmt</span>, <span class="ident">future::Future</span>, <span class="ident">pin::Pin</span>, <span class="ident">task</span>};
 <span class="kw">use</span> <span class="ident">wasm_bindgen_futures::spawn_local</span>;
 
 <span class="doccomment">/// Spawns an asynchronous task in JS event loop.</span>
@@ -200,45 +177,22 @@
     <span class="ident">spawn</span>(<span class="kw">async</span> {}).<span class="kw">await</span>.<span class="ident">unwrap</span>()
 }
 
-<span class="doccomment">/// An error that might happen when waiting for a task.</span>
+<span class="doccomment">/// An error that might happen when waiting for a task, typically caused because</span>
+<span class="doccomment">/// the task was cancelled.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">JoinError</span> {
-    <span class="ident">kind</span>: <span class="ident">callback::Error</span>,
+    <span class="ident">cause</span>: <span class="ident">callback::Cancelled</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">JoinError</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmtr</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">fmtr</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">kind</span>)
+        <span class="macro">write!</span>(<span class="ident">fmtr</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">cause</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">JoinError</span> {
-    <span class="doccomment">/// Tests whether the target task was cancelled.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_cancelled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="macro">matches!</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">kind</span>, <span class="ident">callback::Error::Cancelled</span>)
-    }
-
-    <span class="doccomment">/// Tests whether the target task panicked.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_panic</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="macro">matches!</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">kind</span>, <span class="ident">callback::Error::Panicked</span>(<span class="kw">_</span>))
-    }
-
-    <span class="doccomment">/// Attempts to convert this error into a panic payload. Fails if the target</span>
-    <span class="doccomment">/// task didn&#39;t panicked.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_into_panic</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Payload</span>, <span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">kind</span> {
-            <span class="ident">callback::Error::Panicked</span>(<span class="ident">payload</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">payload</span>),
-            <span class="ident">kind</span> =&gt; <span class="prelude-val">Err</span>(<span class="self">Self</span> { <span class="ident">kind</span> }),
-        }
-    }
-
-    <span class="doccomment">/// Converts this error into a panic payload.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">/// Panics if this error was not caused by panic (e.g. the task was</span>
-    <span class="doccomment">/// cancelled).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_panic</span>(<span class="self">self</span>) -&gt; <span class="ident">Payload</span> {
-        <span class="self">self</span>.<span class="ident">try_into_panic</span>().<span class="ident">unwrap</span>()
+<span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">JoinError</span> {
+    <span class="kw">fn</span> <span class="ident">cause</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cause</span>)
     }
 }
 
@@ -262,9 +216,9 @@
     ) -&gt; <span class="ident">task::Poll</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">map_unchecked_mut</span>(<span class="op">|</span><span class="ident">pinned</span><span class="op">|</span> <span class="kw-2">&amp;mut</span> <span class="ident">pinned</span>.<span class="ident">inner</span>) }
             .<span class="ident">poll</span>(<span class="ident">ctx</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">result</span><span class="op">|</span> <span class="ident">result</span>.<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">kind</span><span class="op">|</span> <span class="ident">JoinError</span> { <span class="ident">kind</span> }))
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">result</span><span class="op">|</span> <span class="ident">result</span>.<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">cause</span><span class="op">|</span> <span class="ident">JoinError</span> { <span class="ident">cause</span> }))
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (6dd68402c 2022-05-11)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (f1f721e64 2022-05-13)" ></div>
 </body></html>

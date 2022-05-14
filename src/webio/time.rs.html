@@ -214,23 +214,17 @@
 <span id="209">209</span>
 <span id="210">210</span>
 <span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module implements time-related utilities.</span>
 
 <span class="kw">mod</span> <span class="ident">instant</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::callback</span>;
+<span class="kw">use</span> <span class="ident">js_sys::Function</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">future::Future</span>, <span class="ident">pin::Pin</span>, <span class="ident">task</span>, <span class="ident">time::Duration</span>};
+<span class="kw">use</span> <span class="ident">wasm_bindgen</span>::{<span class="ident">closure::Closure</span>, <span class="ident">prelude::wasm_bindgen</span>, <span class="ident">JsCast</span>, <span class="ident">JsValue</span>};
+
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;stream&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">futures::stream::Stream</span>;
-<span class="kw">use</span> <span class="ident">js_sys::Function</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;stream&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">std::pin::Pin</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">future::Future</span>, <span class="ident">task</span>, <span class="ident">time::Duration</span>};
-<span class="kw">use</span> <span class="ident">wasm_bindgen</span>::{<span class="ident">closure::Closure</span>, <span class="ident">prelude::wasm_bindgen</span>, <span class="ident">JsCast</span>, <span class="ident">JsValue</span>};
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">instant::Instant</span>;
 
@@ -359,12 +353,10 @@
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> ();
 
     <span class="kw">fn</span> <span class="ident">poll_next</span>(
-        <span class="self">self</span>: <span class="ident">Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>,
+        <span class="kw-2">mut</span> <span class="self">self</span>: <span class="ident">Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>,
         <span class="ident">ctx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">task::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
     ) -&gt; <span class="ident">task::Poll</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">map_unchecked_mut</span>(<span class="op">|</span><span class="ident">this</span><span class="op">|</span> <span class="kw-2">&amp;mut</span> <span class="ident">this</span>.<span class="ident">listener</span>) }
-            .<span class="ident">poll_next</span>(<span class="ident">ctx</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">option</span><span class="op">|</span> <span class="ident">option</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">result</span><span class="op">|</span> <span class="ident">result</span>.<span class="ident">unwrap</span>()))
+        <span class="ident">Pin::new</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">listener</span>).<span class="ident">poll_next</span>(<span class="ident">ctx</span>)
     }
 }
 
@@ -377,12 +369,10 @@
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> ();
 
     <span class="kw">fn</span> <span class="ident">poll</span>(
-        <span class="self">self</span>: <span class="ident">std::pin::Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>,
+        <span class="kw-2">mut</span> <span class="self">self</span>: <span class="ident">std::pin::Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>,
         <span class="ident">ctx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">task::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
     ) -&gt; <span class="ident">task::Poll</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
-        <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">map_unchecked_mut</span>(<span class="op">|</span><span class="ident">this</span><span class="op">|</span> <span class="kw-2">&amp;mut</span> <span class="ident">this</span>.<span class="ident">listener</span>) }
-            .<span class="ident">poll</span>(<span class="ident">ctx</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">result</span><span class="op">|</span> <span class="ident">result</span>.<span class="ident">unwrap</span>())
+        <span class="ident">Pin::new</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">listener</span>).<span class="ident">poll</span>(<span class="ident">ctx</span>).<span class="ident">map</span>(<span class="ident">Result::unwrap</span>)
     }
 }
 
@@ -436,5 +426,5 @@
     <span class="ident">IntervalHandle::new</span>(<span class="ident">listener</span>, <span class="ident">id</span>, <span class="ident">closure</span>)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (6dd68402c 2022-05-11)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (f1f721e64 2022-05-13)" ></div>
 </body></html>

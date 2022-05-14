@@ -595,45 +595,23 @@
 <span id="590">590</span>
 <span id="591">591</span>
 <span id="592">592</span>
-<span id="593">593</span>
-<span id="594">594</span>
-<span id="595">595</span>
-<span id="596">596</span>
-<span id="597">597</span>
-<span id="598">598</span>
-<span id="599">599</span>
-<span id="600">600</span>
-<span id="601">601</span>
-<span id="602">602</span>
-<span id="603">603</span>
-<span id="604">604</span>
-<span id="605">605</span>
-<span id="606">606</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module implements conversion from callbacks to futures for callbacks</span>
 <span class="doccomment">//! that are called multiple times, i.e. callbacks of events that occur more</span>
 <span class="doccomment">//! than once per callback.</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">callback</span>, <span class="ident">panic::FutureCatchUnwind</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::callback</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">future::Future</span>, <span class="ident">pin::Pin</span>, <span class="ident">task</span>};
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;stream&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::panic::Payload</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;stream&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">futures::stream::Stream</span>;
-
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">future::Future</span>, <span class="ident">panic</span>, <span class="ident">pin::Pin</span>, <span class="ident">task</span>};
 
 <span class="macro">macro_rules!</span> <span class="ident">sync_multi</span> {
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">self</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>:<span class="ident">expr</span>) =&gt; {{
         <span class="kw">let</span> (<span class="ident">notifier</span>, <span class="ident">inner_listener</span>) <span class="op">=</span> <span class="ident">callback::shared::channel</span>();
 
         <span class="kw">let</span> <span class="ident">handler</span> <span class="op">=</span> <span class="ident">Box::new</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">event_data</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">panic::catch_unwind</span>(<span class="ident">panic::AssertUnwindSafe</span>(<span class="op">|</span><span class="op">|</span> {
-                <span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>(<span class="ident">event_data</span>)
-            }));
-            <span class="kw">match</span> <span class="ident">result</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">notifier</span>.<span class="ident">success</span>(<span class="ident">data</span>),
-                <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">notifier</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
-            }
+            <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>(<span class="ident">event_data</span>);
+            <span class="ident">notifier</span>.<span class="ident">send</span>(<span class="ident">data</span>);
         });
         <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">self</span>.<span class="ident">register_fn</span>)(<span class="ident">handler</span> <span class="kw">as</span> <span class="ident">SyncCbHandler</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>);
 
@@ -649,11 +627,8 @@
             <span class="kw">let</span> <span class="ident">future</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">callback</span>(<span class="ident">event_data</span>);
             <span class="kw">let</span> <span class="ident">notifier</span> <span class="op">=</span> <span class="ident">notifier</span>.<span class="ident">clone</span>();
             <span class="kw">let</span> <span class="ident">handler_future</span> <span class="op">=</span> <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
-                <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">FutureCatchUnwind::new</span>(<span class="ident">future</span>).<span class="kw">await</span>;
-                <span class="kw">match</span> <span class="ident">result</span> {
-                    <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident">notifier</span>.<span class="ident">success</span>(<span class="ident">data</span>),
-                    <span class="prelude-val">Err</span>(<span class="ident">payload</span>) =&gt; <span class="ident">notifier</span>.<span class="ident">panicked</span>(<span class="ident">payload</span>),
-                }
+                <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">future</span>.<span class="kw">await</span>;
+                <span class="ident">notifier</span>.<span class="ident">send</span>(<span class="ident">data</span>);
             });
             <span class="ident">handler_future</span> <span class="kw">as</span> <span class="ident">AsyncCbHandlerFuture</span>
         });
@@ -1162,27 +1137,30 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listen_next</span><span class="op">&lt;</span><span class="lifetime">&#39;this</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;this</span> <span class="self">self</span>) -&gt; <span class="ident">ListenNext</span><span class="op">&lt;</span><span class="lifetime">&#39;this</span>, <span class="ident">T</span><span class="op">&gt;</span> {
         <span class="ident">ListenNext::new</span>(<span class="self">self</span>)
     }
-}
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;stream&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Stream</span> <span class="kw">for</span> <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Payload</span><span class="op">&gt;</span>;
-
-    <span class="kw">fn</span> <span class="ident">poll_next</span>(
-        <span class="self">self</span>: <span class="ident">Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>,
+    <span class="kw">fn</span> <span class="ident">generic_poll</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">ctx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">task::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="ident">task::Poll</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="ident">task::Poll</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">callback::Cancelled</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">receive</span>() {
-            <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="ident">output</span>)) =&gt; <span class="ident">task::Poll::Ready</span>(<span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="ident">output</span>))),
-            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">callback::Error::Panicked</span>(<span class="ident">payload</span>))) =&gt; {
-                <span class="ident">task::Poll::Ready</span>(<span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">payload</span>)))
-            },
-            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">callback::Error::Cancelled</span>)) =&gt; <span class="ident">task::Poll::Ready</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">Some</span>(<span class="ident">output</span>) =&gt; <span class="ident">task::Poll::Ready</span>(<span class="ident">output</span>),
             <span class="prelude-val">None</span> =&gt; {
                 <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">subscribe</span>(<span class="ident">ctx</span>.<span class="ident">waker</span>());
                 <span class="ident">task::Poll::Pending</span>
             },
         }
+    }
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;stream&quot;</span>)]</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Stream</span> <span class="kw">for</span> <span class="ident">Listener</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">T</span>;
+
+    <span class="kw">fn</span> <span class="ident">poll_next</span>(
+        <span class="self">self</span>: <span class="ident">Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>,
+        <span class="ident">ctx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">task::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
+    ) -&gt; <span class="ident">task::Poll</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">generic_poll</span>(<span class="ident">ctx</span>).<span class="ident">map</span>(<span class="ident">Result::ok</span>)
     }
 }
 
@@ -1200,21 +1178,15 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;list</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Future</span> <span class="kw">for</span> <span class="ident">ListenNext</span><span class="op">&lt;</span><span class="lifetime">&#39;list</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">callback::Error</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">callback::Cancelled</span><span class="op">&gt;</span>;
 
     <span class="kw">fn</span> <span class="ident">poll</span>(
         <span class="self">self</span>: <span class="ident">Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>,
         <span class="ident">ctx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">task::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
     ) -&gt; <span class="ident">task::Poll</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">listener</span>.<span class="ident">inner</span>.<span class="ident">receive</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">output</span>) =&gt; <span class="ident">task::Poll::Ready</span>(<span class="ident">output</span>),
-            <span class="prelude-val">None</span> =&gt; {
-                <span class="self">self</span>.<span class="ident">listener</span>.<span class="ident">inner</span>.<span class="ident">subscribe</span>(<span class="ident">ctx</span>.<span class="ident">waker</span>());
-                <span class="ident">task::Poll::Pending</span>
-            },
-        }
+        <span class="self">self</span>.<span class="ident">listener</span>.<span class="ident">generic_poll</span>(<span class="ident">ctx</span>)
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (6dd68402c 2022-05-11)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="webio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (f1f721e64 2022-05-13)" ></div>
 </body></html>
