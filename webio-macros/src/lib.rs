@@ -593,7 +593,7 @@ pub fn main(raw_attribute: TokenStream, raw_input: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro_attribute]
 pub fn test(raw_attribute: TokenStream, raw_input: TokenStream) -> TokenStream {
-    let mut input = parse_macro_input!(raw_input as ItemFn);
+    let input = parse_macro_input!(raw_input as ItemFn);
 
     /*
     let should_panic_attr_pos = input.attrs.iter().position(|attr| {

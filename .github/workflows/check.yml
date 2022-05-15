@@ -19,6 +19,12 @@ jobs:
           toolchain: stable
           override: true
 
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.3.0
+        with:
+          version: 'latest'
+
+
       - name: Run cargo check no features
         uses: actions-rs/cargo@v1
         with:
@@ -61,6 +67,14 @@ jobs:
           command: check
           args: --all-targets --features=${{ env.STABLE_FEATURES }}
 
+      - name: Run cargo check for isprime example
+        run: cd examples/isprime \
+              && wasm-pack build --all-features \
+              && cd www \
+              && npm install \
+              && npm build \
+              && cd ../../..
+
   check-nightly:
     name: Check Nightly
     runs-on: ubuntu-latest
@@ -80,6 +94,14 @@ jobs:
         with:
           command: check
           args: --all-targets --all-features
+
+      - name: Run cargo check for isprime example
+        run: cd examples/isprime \
+              && wasm-pack build --all-features \
+              && cd www \
+              && npm install \
+              && npm build \
+              && cd ../../..
 
   test-stable-linux:
     name: Test Suite On Stable (Linux)
