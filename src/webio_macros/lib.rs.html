@@ -1273,7 +1273,7 @@
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">proc_macro_attribute</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">test</span>(<span class="ident">raw_attribute</span>: <span class="ident">TokenStream</span>, <span class="ident">raw_input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">raw_input</span> <span class="kw">as</span> <span class="ident">ItemFn</span>);
+    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input!</span>(<span class="ident">raw_input</span> <span class="kw">as</span> <span class="ident">ItemFn</span>);
 
     <span class="comment">/*
     let should_panic_attr_pos = input.attrs.iter().position(|attr| {
