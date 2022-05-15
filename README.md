@@ -16,7 +16,7 @@ wasm.main();
 
 That's it (ignoring webpack configuration file, of course).
 
-# Docs
+# Docs of `main` Branch
 https://brunoczim.github.io/webio/webio/
 
 # Examples
