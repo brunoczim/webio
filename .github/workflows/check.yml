@@ -24,7 +24,6 @@ jobs:
         with:
           version: 'latest'
 
-
       - name: Run cargo check no features
         uses: actions-rs/cargo@v1
         with:
@@ -89,6 +88,11 @@ jobs:
           profile: minimal
           toolchain: nightly
           override: true
+
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.3.0
+        with:
+          version: 'latest'
 
       - name: Run cargo check all features even the ones requiring nightly
         uses: actions-rs/cargo@v1
