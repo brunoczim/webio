@@ -68,7 +68,7 @@ jobs:
           args: --all-targets --features=${{ env.STABLE_FEATURES }}
 
       - name: Run cargo check for isprime example
-        run: |
+        run: >
           cd examples/isprime
           && wasm-pack build --all-features
           && cd www
@@ -97,7 +97,7 @@ jobs:
           args: --all-targets --all-features
 
       - name: Run cargo check for isprime example
-        run: |
+        run: >
           cd examples/isprime
           && wasm-pack build --all-features
           && cd www
