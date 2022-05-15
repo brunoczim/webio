@@ -73,7 +73,7 @@ jobs:
           && wasm-pack build --all-features
           && cd www
           && npm install
-          && npm build
+          && npm run build
           && cd ../../..
 
   check-nightly:
@@ -102,7 +102,7 @@ jobs:
           && wasm-pack build --all-features
           && cd www
           && npm install
-          && npm build
+          && npm run build
           && cd ../../..
 
   test-stable-linux:
