@@ -68,12 +68,13 @@ jobs:
           args: --all-targets --features=${{ env.STABLE_FEATURES }}
 
       - name: Run cargo check for isprime example
-        run: cd examples/isprime \
-              && wasm-pack build --all-features \
-              && cd www \
-              && npm install \
-              && npm build \
-              && cd ../../..
+        run: |
+          cd examples/isprime
+          && wasm-pack build --all-features
+          && cd www
+          && npm install
+          && npm build
+          && cd ../../..
 
   check-nightly:
     name: Check Nightly
@@ -96,12 +97,13 @@ jobs:
           args: --all-targets --all-features
 
       - name: Run cargo check for isprime example
-        run: cd examples/isprime \
-              && wasm-pack build --all-features \
-              && cd www \
-              && npm install \
-              && npm build \
-              && cd ../../..
+        run: |
+          cd examples/isprime
+          && wasm-pack build --all-features
+          && cd www
+          && npm install
+          && npm build
+          && cd ../../..
 
   test-stable-linux:
     name: Test Suite On Stable (Linux)
