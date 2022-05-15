@@ -551,11 +551,16 @@ pub fn main(raw_attribute: TokenStream, raw_input: TokenStream) -> TokenStream {
             "webio::main cannot be unsafe",
         ));
     }
+    if !matches!(input.vis, syn::Visibility::Public(_)) {
+        append_error(syn::Error::new(
+            Span::call_site(),
+            "webio::main must be public",
+        ));
+    }
 
     match errors {
         Some(stored) => stored.into_compile_error().into(),
         None => {
-            let visibility = input.vis;
             let fn_token = input.sig.fn_token;
             let ident = input.sig.ident;
             let body = input.block;
@@ -563,7 +568,7 @@ pub fn main(raw_attribute: TokenStream, raw_input: TokenStream) -> TokenStream {
             let expanded = quote! {
                 #[::webio::wasm_bindgen::prelude::wasm_bindgen(start)]
                 #(#attrs)*
-                #visibility async #fn_token #ident() {
+                pub async #fn_token #ident() {
                     let (): () = #body;
                 }
             };
