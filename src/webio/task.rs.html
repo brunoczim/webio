@@ -111,9 +111,14 @@
 <span id="106">106</span>
 <span id="107">107</span>
 <span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module exports items related to task spawning.</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::callback</span>;
+<span class="kw">use</span> <span class="ident">pin_project::pin_project</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">error::Error</span>, <span class="ident">fmt</span>, <span class="ident">future::Future</span>, <span class="ident">pin::Pin</span>, <span class="ident">task</span>};
 <span class="kw">use</span> <span class="ident">wasm_bindgen_futures::spawn_local</span>;
 
@@ -197,7 +202,9 @@
 }
 
 <span class="doccomment">/// A handle that allows the caller to join a task (i.e. wait for it to end).</span>
+<span class="attribute">#[<span class="ident">pin_project</span>]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">JoinHandle</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="attribute">#[<span class="ident">pin</span>]</span>
     <span class="ident">inner</span>: <span class="ident">callback::once::Listener</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
 }
 
@@ -214,7 +221,8 @@
         <span class="self">self</span>: <span class="ident">Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>,
         <span class="ident">ctx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">task::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
     ) -&gt; <span class="ident">task::Poll</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
-        <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">map_unchecked_mut</span>(<span class="op">|</span><span class="ident">pinned</span><span class="op">|</span> <span class="kw-2">&amp;mut</span> <span class="ident">pinned</span>.<span class="ident">inner</span>) }
+        <span class="self">self</span>.<span class="ident">project</span>()
+            .<span class="ident">inner</span>
             .<span class="ident">poll</span>(<span class="ident">ctx</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">result</span><span class="op">|</span> <span class="ident">result</span>.<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">cause</span><span class="op">|</span> <span class="ident">JoinError</span> { <span class="ident">cause</span> }))
     }
