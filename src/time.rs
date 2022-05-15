@@ -4,6 +4,7 @@ mod instant;
 
 use crate::callback;
 use js_sys::Function;
+use pin_project::{pin_project, pinned_drop};
 use std::{future::Future, pin::Pin, task, time::Duration};
 use wasm_bindgen::{closure::Closure, prelude::wasm_bindgen, JsCast, JsValue};
 
@@ -32,7 +33,9 @@ fn duration_to_millis(duration: Duration) -> i32 {
 /// A handle to a [`timeout`] call. The timeout can be waited through `.await`,
 /// or it can be cancelled when the handle is dropped without the timeout
 /// completing.
+#[pin_project(PinnedDrop)]
 pub struct TimeoutHandle {
+    #[pin]
     listener: callback::once::Listener<()>,
     timeout_id: JsValue,
     _closure: JsValue,
@@ -55,14 +58,13 @@ impl Future for TimeoutHandle {
         self: std::pin::Pin<&mut Self>,
         ctx: &mut task::Context<'_>,
     ) -> task::Poll<Self::Output> {
-        unsafe { self.map_unchecked_mut(|this| &mut this.listener) }
-            .poll(ctx)
-            .map(|result| result.unwrap())
+        self.project().listener.poll(ctx).map(|result| result.unwrap())
     }
 }
 
-impl Drop for TimeoutHandle {
-    fn drop(&mut self) {
+#[pinned_drop]
+impl PinnedDrop for TimeoutHandle {
+    fn drop(self: Pin<&mut Self>) {
         clear_timeout(&self.timeout_id);
     }
 }

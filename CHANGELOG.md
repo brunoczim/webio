@@ -1,6 +1,6 @@
-# 0.1.0
+# 0.1.0-alpha
 
-## DONE
+## Features
 
 -  spawn
 -  detach
@@ -12,8 +12,3 @@
 -  main macro
 -  test macro
 -  conversion from callback to futures or streams
-
-## TODO
-
-- What should be done with panics?
-- Add Example

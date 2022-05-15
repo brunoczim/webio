@@ -1,6 +1,7 @@
 //! This module exports items related to task spawning.
 
 use crate::callback;
+use pin_project::pin_project;
 use std::{error::Error, fmt, future::Future, pin::Pin, task};
 use wasm_bindgen_futures::spawn_local;
 
@@ -84,7 +85,9 @@ impl Error for JoinError {
 }
 
 /// A handle that allows the caller to join a task (i.e. wait for it to end).
+#[pin_project]
 pub struct JoinHandle<T> {
+    #[pin]
     inner: callback::once::Listener<T>,
 }
 
@@ -101,7 +104,8 @@ impl<T> Future for JoinHandle<T> {
         self: Pin<&mut Self>,
         ctx: &mut task::Context<'_>,
     ) -> task::Poll<Self::Output> {
-        unsafe { self.map_unchecked_mut(|pinned| &mut pinned.inner) }
+        self.project()
+            .inner
             .poll(ctx)
             .map(|result| result.map_err(|cause| JoinError { cause }))
     }

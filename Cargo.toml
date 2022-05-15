@@ -8,6 +8,7 @@ edition = "2021"
 
 [dependencies]
 wasm-bindgen-futures = "^0.4.30" 
+pin-project = "1.0.7"
 
 [dependencies.wasm-bindgen-test]
 version = "^0.3.30"
