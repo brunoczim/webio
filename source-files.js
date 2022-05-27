@@ -35,5 +35,5 @@ sourcesIndex["wasm_bindgen_test"] = {"name":"","dirs":[{"name":"rt","files":["br
 sourcesIndex["wasm_bindgen_test_macro"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["web_sys"] = {"name":"","dirs":[{"name":"features","files":["gen_DragEvent.rs","gen_Event.rs","gen_EventTarget.rs","gen_FocusEvent.rs","gen_KeyboardEvent.rs","gen_MouseEvent.rs","gen_UiEvent.rs","gen_console.rs","mod.rs"]}],"files":["lib.rs"]};
 sourcesIndex["webio"] = {"name":"","dirs":[{"name":"callback","files":["multi.rs","once.rs","shared.rs"]},{"name":"time","files":["instant.rs"]}],"files":["callback.rs","event.rs","lib.rs","macros.rs","task.rs","time.rs"]};
-sourcesIndex["webio_macros"] = {"name":"","files":["error.rs","event_type.rs","lib.rs"]};
+sourcesIndex["webio_macros"] = {"name":"","files":["console.rs","error.rs","event_type.rs","join.rs","lib.rs","select.rs"]};
 createSourceSidebar();
