@@ -23,8 +23,8 @@ sourcesIndex["proc_macro2"] = {"name":"","files":["detection.rs","fallback.rs","
 sourcesIndex["quote"] = {"name":"","files":["ext.rs","format.rs","ident_fragment.rs","lib.rs","runtime.rs","spanned.rs","to_tokens.rs"]};
 sourcesIndex["scoped_tls"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["slab"] = {"name":"","files":["lib.rs"]};
-sourcesIndex["syn"] = {"name":"","dirs":[{"name":"gen","files":["clone.rs","gen_helper.rs","visit.rs","visit_mut.rs"]}],"files":["attr.rs","await.rs","bigint.rs","buffer.rs","custom_keyword.rs","custom_punctuation.rs","data.rs","derive.rs","discouraged.rs","error.rs","export.rs","expr.rs","ext.rs","file.rs","generics.rs","group.rs","ident.rs","item.rs","lib.rs","lifetime.rs","lit.rs","lookahead.rs","mac.rs","macros.rs","op.rs","parse.rs","parse_macro_input.rs","parse_quote.rs","pat.rs","path.rs","print.rs","punctuated.rs","reserved.rs","sealed.rs","span.rs","spanned.rs","stmt.rs","thread.rs","token.rs","ty.rs","verbatim.rs","whitespace.rs"]};
-sourcesIndex["unicode_xid"] = {"name":"","files":["lib.rs","tables.rs"]};
+sourcesIndex["syn"] = {"name":"","dirs":[{"name":"gen","files":["clone.rs","debug.rs","eq.rs","gen_helper.rs","hash.rs","visit.rs","visit_mut.rs"]}],"files":["attr.rs","await.rs","bigint.rs","buffer.rs","custom_keyword.rs","custom_punctuation.rs","data.rs","derive.rs","discouraged.rs","error.rs","export.rs","expr.rs","ext.rs","file.rs","generics.rs","group.rs","ident.rs","item.rs","lib.rs","lifetime.rs","lit.rs","lookahead.rs","mac.rs","macros.rs","op.rs","parse.rs","parse_macro_input.rs","parse_quote.rs","pat.rs","path.rs","print.rs","punctuated.rs","reserved.rs","sealed.rs","span.rs","spanned.rs","stmt.rs","thread.rs","token.rs","tt.rs","ty.rs","verbatim.rs","whitespace.rs"]};
+sourcesIndex["unicode_ident"] = {"name":"","files":["lib.rs","tables.rs"]};
 sourcesIndex["wasm_bindgen"] = {"name":"","dirs":[{"name":"cache","files":["intern.rs","mod.rs"]},{"name":"convert","files":["closures.rs","impls.rs","mod.rs","slices.rs","traits.rs"]}],"files":["cast.rs","closure.rs","describe.rs","externref.rs","lib.rs"]};
 sourcesIndex["wasm_bindgen_backend"] = {"name":"","files":["ast.rs","codegen.rs","encode.rs","error.rs","lib.rs","util.rs"]};
 sourcesIndex["wasm_bindgen_futures"] = {"name":"","dirs":[{"name":"task","files":["singlethread.rs"]}],"files":["lib.rs","queue.rs"]};
@@ -35,5 +35,5 @@ sourcesIndex["wasm_bindgen_test"] = {"name":"","dirs":[{"name":"rt","files":["br
 sourcesIndex["wasm_bindgen_test_macro"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["web_sys"] = {"name":"","dirs":[{"name":"features","files":["gen_DragEvent.rs","gen_Event.rs","gen_EventTarget.rs","gen_FocusEvent.rs","gen_KeyboardEvent.rs","gen_MouseEvent.rs","gen_UiEvent.rs","gen_console.rs","mod.rs"]}],"files":["lib.rs"]};
 sourcesIndex["webio"] = {"name":"","dirs":[{"name":"callback","files":["multi.rs","once.rs","shared.rs"]},{"name":"time","files":["instant.rs"]}],"files":["callback.rs","event.rs","lib.rs","macros.rs","task.rs","time.rs"]};
-sourcesIndex["webio_macros"] = {"name":"","files":["lib.rs"]};
+sourcesIndex["webio_macros"] = {"name":"","files":["error.rs","event_type.rs","lib.rs"]};
 createSourceSidebar();
