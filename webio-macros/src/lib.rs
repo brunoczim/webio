@@ -1,33 +1,13 @@
 mod error;
+mod join;
+mod select;
+mod console;
 mod event_type;
 
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span};
 use quote::{quote, ToTokens};
-use syn::{
-    parse::{Parse, ParseStream},
-    parse_macro_input,
-    token,
-    Data,
-    DeriveInput,
-    Expr,
-    Fields,
-    ItemFn,
-    Pat,
-    Visibility,
-};
-
-struct JoinInput {
-    futures: Vec<Expr>,
-}
-
-impl Parse for JoinInput {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let futures =
-            input.parse_terminated::<Expr, token::Comma>(Expr::parse)?;
-        Ok(Self { futures: futures.into_iter().collect() })
-    }
-}
+use syn::{parse_macro_input, Data, DeriveInput, Fields, ItemFn, Visibility};
 
 /// Joins a list of futures and returns their output into a tuple in the same
 /// order that the futures were given. Futures must be `'static`.
@@ -72,7 +52,7 @@ impl Parse for JoinInput {
 /// ```
 #[proc_macro]
 pub fn join(raw_input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(raw_input as JoinInput);
+    let input = parse_macro_input!(raw_input as join::Input);
     let futures = input.futures;
 
     let future_var_names = || {
@@ -229,7 +209,7 @@ pub fn join(raw_input: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro]
 pub fn try_join(raw_input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(raw_input as JoinInput);
+    let input = parse_macro_input!(raw_input as join::Input);
     let futures = input.futures;
     let output_var_names = || {
         (0 .. futures.len())
@@ -247,35 +227,6 @@ pub fn try_join(raw_input: TokenStream) -> TokenStream {
         }.await
     };
     expanded.into()
-}
-
-struct SelectArm {
-    pattern: Pat,
-    future: Expr,
-    output: Expr,
-}
-
-impl Parse for SelectArm {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let pattern = input.parse()?;
-        input.parse::<token::Eq>()?;
-        let future = input.parse()?;
-        input.parse::<token::FatArrow>()?;
-        let output = input.parse()?;
-        Ok(Self { pattern, future, output })
-    }
-}
-
-struct SelectInput {
-    arms: Vec<SelectArm>,
-}
-
-impl Parse for SelectInput {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let arms = input
-            .parse_terminated::<SelectArm, token::Comma>(SelectArm::parse)?;
-        Ok(Self { arms: arms.into_iter().collect() })
-    }
 }
 
 /// Listens to a list of futures and finishes when the first future finishes,
@@ -334,7 +285,7 @@ impl Parse for SelectInput {
 /// ```
 #[proc_macro]
 pub fn select(raw_input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(raw_input as SelectInput);
+    let input = parse_macro_input!(raw_input as select::Input);
     let arms = input.arms;
 
     let future_var_names = || {
@@ -418,27 +369,6 @@ pub fn select(raw_input: TokenStream) -> TokenStream {
     expanded.into_token_stream().into()
 }
 
-struct ConsoleInput {
-    method: Ident,
-    arguments: Vec<Expr>,
-}
-
-impl Parse for ConsoleInput {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let method = input.parse()?;
-        let mut arguments = Vec::new();
-        if input.peek(token::Semi) {
-            input.parse::<token::Semi>()?;
-            arguments.extend(
-                input
-                    .parse_terminated::<Expr, token::Comma>(Expr::parse)?
-                    .into_iter(),
-            );
-        }
-        Ok(Self { method, arguments })
-    }
-}
-
 /// Prints to the JavaScript/browser/node console using a given method.
 ///
 /// Syntax:
@@ -461,7 +391,7 @@ impl Parse for ConsoleInput {
 /// ```
 #[proc_macro]
 pub fn console(raw_input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(raw_input as ConsoleInput);
+    let input = parse_macro_input!(raw_input as console::Input);
 
     let expanded = if input.arguments.len() < 8 {
         let method = Ident::new(
