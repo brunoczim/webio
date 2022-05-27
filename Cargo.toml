@@ -55,7 +55,7 @@ path = "."
 features = ["time", "macros", "stream", "event"]
 
 [features]
-default = ["time", "macros"]
+default = ["time", "macros", "event"]
 time = ["wasm-bindgen", "js-sys"]
 macros = [
     "webio-macros",

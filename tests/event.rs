@@ -1,5 +1,7 @@
 webio::run_tests_in_browser! {}
 
+use webio::{event::EventType, EventType};
+
 macro_rules! make_event {
     (
         $fn_name:ident,
@@ -21,8 +23,6 @@ macro_rules! make_event {
         }
     };
 }
-
-use webio::event::Type;
 
 fn load_document() -> web_sys::Document {
     web_sys::window().expect("test only in browser").document().unwrap()
@@ -221,4 +221,24 @@ make_event! {
     "p",
     FocusIn,
     web_sys::FocusEvent::new("focusin").unwrap(),
+}
+
+#[derive(Debug, Clone, Copy, EventType)]
+#[event_type(name = "click", data = web_sys::MouseEvent)]
+struct CustomClick;
+
+#[webio::test]
+async fn custom_click() {
+    let element = TempElement::create("button");
+    let listener = CustomClick.add_listener(&element.js_object);
+    element
+        .js_object
+        .dispatch_event(&web_sys::MouseEvent::new("click").unwrap())
+        .unwrap();
+    listener.listen_next().await.unwrap();
+    element
+        .js_object
+        .dispatch_event(&web_sys::MouseEvent::new("click").unwrap())
+        .unwrap();
+    listener.listen_next().await.unwrap();
 }

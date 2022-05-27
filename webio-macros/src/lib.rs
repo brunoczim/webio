@@ -1,3 +1,6 @@
+mod error;
+mod event_type;
+
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span};
 use quote::{quote, ToTokens};
@@ -5,9 +8,13 @@ use syn::{
     parse::{Parse, ParseStream},
     parse_macro_input,
     token,
+    Data,
+    DeriveInput,
     Expr,
+    Fields,
     ItemFn,
     Pat,
+    Visibility,
 };
 
 struct JoinInput {
@@ -510,55 +517,52 @@ pub fn console(raw_input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn main(raw_attribute: TokenStream, raw_input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(raw_input as ItemFn);
-    let mut errors: Option<syn::Error> = None;
-    let mut append_error = |error| match errors.as_mut() {
-        Some(stored) => stored.combine(error),
-        None => errors = Some(error),
-    };
+    let mut error_dump = error::Dump::new();
+
     if !raw_attribute.is_empty() {
-        append_error(syn::Error::new(
+        error_dump.append(syn::Error::new(
             Span::call_site(),
             "webio::main attribute must not receive arguments",
         ));
     }
     if input.sig.asyncness.is_none() {
-        append_error(syn::Error::new(
+        error_dump.append(syn::Error::new(
             Span::call_site(),
             "webio::main must be an asynchronous function with async syntax",
         ));
     }
     if input.sig.constness.is_some() {
-        append_error(syn::Error::new(
+        error_dump.append(syn::Error::new(
             Span::call_site(),
             "webio::main cannot be const",
         ));
     }
     if input.sig.inputs.len() > 0 || input.sig.variadic.is_some() {
-        append_error(syn::Error::new(
+        error_dump.append(syn::Error::new(
             Span::call_site(),
             "webio::main function cannot receive parameters",
         ));
     }
     if input.sig.abi.is_some() {
-        append_error(syn::Error::new(
+        error_dump.append(syn::Error::new(
             Span::call_site(),
             "webio::main does not support ABIs",
         ));
     }
     if input.sig.unsafety.is_some() {
-        append_error(syn::Error::new(
+        error_dump.append(syn::Error::new(
             Span::call_site(),
             "webio::main cannot be unsafe",
         ));
     }
-    if !matches!(input.vis, syn::Visibility::Public(_)) {
-        append_error(syn::Error::new(
+    if !matches!(input.vis, Visibility::Public(_)) {
+        error_dump.append(syn::Error::new(
             Span::call_site(),
             "webio::main must be public",
         ));
     }
 
-    match errors {
+    match error_dump.into_errors() {
         Some(stored) => stored.into_compile_error().into(),
         None => {
             let fn_token = input.sig.fn_token;
@@ -617,49 +621,46 @@ pub fn test(raw_attribute: TokenStream, raw_input: TokenStream) -> TokenStream {
     };
     */
 
-    let mut errors: Option<syn::Error> = None;
-    let mut append_error = |error| match errors.as_mut() {
-        Some(stored) => stored.combine(error),
-        None => errors = Some(error),
-    };
+    let mut error_dump = error::Dump::new();
+
     if !raw_attribute.is_empty() {
-        append_error(syn::Error::new(
+        error_dump.append(syn::Error::new(
             Span::call_site(),
             "webio::test attribute must not receive arguments",
         ));
     }
     if input.sig.asyncness.is_none() {
-        append_error(syn::Error::new(
+        error_dump.append(syn::Error::new(
             Span::call_site(),
             "webio::test must be an asynchronous function with async syntax",
         ));
     }
     if input.sig.constness.is_some() {
-        append_error(syn::Error::new(
+        error_dump.append(syn::Error::new(
             Span::call_site(),
             "webio::test cannot be const",
         ));
     }
     if input.sig.inputs.len() > 0 || input.sig.variadic.is_some() {
-        append_error(syn::Error::new(
+        error_dump.append(syn::Error::new(
             Span::call_site(),
             "webio::test function cannot receive parameters",
         ));
     }
     if input.sig.abi.is_some() {
-        append_error(syn::Error::new(
+        error_dump.append(syn::Error::new(
             Span::call_site(),
             "webio::test does not support ABIs",
         ));
     }
     if input.sig.unsafety.is_some() {
-        append_error(syn::Error::new(
+        error_dump.append(syn::Error::new(
             Span::call_site(),
             "webio::test cannot be unsafe",
         ));
     }
 
-    match errors {
+    match error_dump.into_errors() {
         Some(stored) => stored.into_compile_error().into(),
         None => {
             let visibility = input.vis;
@@ -675,6 +676,103 @@ pub fn test(raw_attribute: TokenStream, raw_input: TokenStream) -> TokenStream {
                 }
             };
             expanded.into_token_stream().into()
+        },
+    }
+}
+
+/// Defines a custom event wrapper, with the intention of being safe. It is up
+/// to the caller type, however, to ensure that name is correct for the given
+/// event data type.
+///
+/// It is required that `event_type(name = ..., data = ...)` attribute is
+/// required, and should be placed at the top of the struct; it is ignored
+/// elsewhere.
+///
+/// # Example
+///
+/// ```ignore
+/// #[derive(EventType)]
+/// #[event_type(name = "click", data = web_sys::MouseEvent)]
+/// struct CustomClick;
+///
+/// # fn main() {
+/// # let element = todo!();
+/// let listener = CustomClick.add_listener(&element);
+///
+/// element.dispatch_event(&web_sys::MouseEvent::new("click").unwrap()).unwrap();
+/// listener.listen_next().await.unwrap();
+/// element.dispatch_event(&web_sys::MouseEvent::new("click").unwrap()).unwrap();
+/// listener.listen_next().await.unwrap();
+/// # }
+/// ```
+#[proc_macro_derive(EventType, attributes(event_type))]
+pub fn event_type(raw_input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(raw_input as DeriveInput);
+    let data = match &input.data {
+        Data::Struct(strut) => strut,
+        _ => {
+            return syn::Error::new(
+                Span::call_site(),
+                "EventType supports only unit structs",
+            )
+            .into_compile_error()
+            .into()
+        },
+    };
+    match &data.fields {
+        Fields::Unit => (),
+        _ => {
+            return syn::Error::new(
+                Span::call_site(),
+                "EventType supports only unit structs",
+            )
+            .into_compile_error()
+            .into()
+        },
+    }
+
+    let typ = input.ident;
+
+    let mut error_dump = error::Dump::new();
+    let mut partial_args = event_type::PartialArguments::new();
+    for attr in input.attrs {
+        match attr.path.get_ident() {
+            Some(ident) if ident == "event_type" => match attr.parse_args() {
+                Ok(current_partial_args) => {
+                    if let Err(error) = partial_args.merge(current_partial_args)
+                    {
+                        error_dump.append(error);
+                    }
+                },
+                Err(error) => {
+                    error_dump.append(error);
+                },
+            },
+            _ => (),
+        }
+    }
+
+    match partial_args.total() {
+        Ok(arguments) if error_dump.errors().is_none() => {
+            let name = arguments.name.value;
+            let data = arguments.data.value;
+            let quoted = quote! {
+                impl ::webio::event::EventType for #typ {
+                    type Data = #data;
+
+                    fn name(&self) -> String {
+                        #name.into()
+                    }
+                }
+            };
+            quoted.into_token_stream().into()
+        },
+
+        Ok(_) => error_dump.into_errors().unwrap().into_compile_error().into(),
+
+        Err(errors) => {
+            error_dump.append(errors);
+            error_dump.into_errors().unwrap().into_compile_error().into()
         },
     }
 }

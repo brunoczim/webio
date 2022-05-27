@@ -38,7 +38,7 @@ A few numbers to try: `7399329281`, `2199023255551`, `9410454606139`,
 use std::time::Duration;
 use num::{BigUint, Zero};
 use wasm_bindgen::JsValue;
-use webio::event::{self, Type};
+use webio::event::{self, EventType};
 
 /// Number of steps before yielding control back to browser when testing
 /// whether a number is prime or not, in order not to freeze the browser with

@@ -4,7 +4,7 @@ use num::{BigUint, Zero};
 use std::time::Duration;
 use wasm_bindgen::JsValue;
 use webio::{
-    event::{self, Type},
+    event::{self, EventType},
     time::Instant,
 };
 

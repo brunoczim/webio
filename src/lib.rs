@@ -32,7 +32,7 @@
 //! use std::time::Duration;
 //! use num::{BigUint, Zero};
 //! use wasm_bindgen::JsValue;
-//! use webio::event::{self, Type};
+//! use webio::event::{self, EventType};
 //!
 //! /// Number of steps before yielding control back to browser when testing
 //! /// whether a number is prime or not, in order not to freeze the browser with
@@ -126,6 +126,13 @@ extern crate self as webio;
 #[cfg(feature = "macros")]
 #[cfg_attr(feature = "feature-doc-cfg", doc(cfg(feature = "macros")))]
 pub use webio_macros::{console, join, main, select, test, try_join};
+
+#[cfg(all(feature = "macros", feature = "event"))]
+#[cfg_attr(
+    feature = "feature-doc-cfg",
+    doc(cfg(all(feature = "macros", feature = "event")))
+)]
+pub use webio_macros::EventType;
 
 #[doc(hidden)]
 #[cfg(feature = "macros")]
