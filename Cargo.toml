@@ -72,5 +72,6 @@ event = [
     "web-sys/KeyboardEvent",
     "web-sys/DragEvent",
     "web-sys/FocusEvent",
+    "web-sys/UiEvent",
 ]
 feature-doc-cfg = []
