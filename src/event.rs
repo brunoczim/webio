@@ -298,3 +298,4 @@ event_type!(Blur, "blur", web_sys::FocusEvent);
 event_type!(Focus, "focus", web_sys::FocusEvent);
 event_type!(FocusOut, "focusout", web_sys::FocusEvent);
 event_type!(FocusIn, "focusin", web_sys::FocusEvent);
+event_type!(WindowResize, "resize", web_sys::UiEvent);

@@ -24,8 +24,12 @@ macro_rules! make_event {
     };
 }
 
+fn load_window() -> web_sys::Window {
+    web_sys::window().expect("test only in browser")
+}
+
 fn load_document() -> web_sys::Document {
-    web_sys::window().expect("test only in browser").document().unwrap()
+    load_window().document().unwrap()
 }
 
 #[derive(Debug)]
@@ -221,6 +225,18 @@ make_event! {
     "p",
     FocusIn,
     web_sys::FocusEvent::new("focusin").unwrap(),
+}
+
+#[webio::test]
+async fn window_resize() {
+    let element = load_window();
+    let listener = webio::event::WindowResize.add_listener(&element);
+    element.dispatch_event(&web_sys::UiEvent::new("resize").unwrap()).unwrap();
+    listener.listen_next().await.unwrap();
+    element.dispatch_event(&web_sys::UiEvent::new("resize").unwrap()).unwrap();
+    listener.listen_next().await.unwrap();
+    element.dispatch_event(&web_sys::UiEvent::new("resize").unwrap()).unwrap();
+    listener.listen_next().await.unwrap();
 }
 
 #[derive(Debug, Clone, Copy, EventType)]
