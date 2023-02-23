@@ -20,7 +20,9 @@ jobs:
           override: true
 
       - name: Install wasm-pack
-        run: cargo install wasm-pack --no-default-features
+        uses: jetli/wasm-pack-action@v0.3.0
+        with:
+          version: 'latest'
 
       - name: Run cargo check no features
         uses: actions-rs/cargo@v1
@@ -88,7 +90,9 @@ jobs:
           override: true
 
       - name: Install wasm-pack
-        run: cargo install wasm-pack --no-default-features
+        uses: jetli/wasm-pack-action@v0.3.0
+        with:
+          version: 'latest'
 
       - name: Run cargo check all features even the ones requiring nightly
         uses: actions-rs/cargo@v1
@@ -120,7 +124,9 @@ jobs:
           override: true
 
       - name: Install wasm-pack
-        run: cargo install wasm-pack --no-default-features
+        uses: jetli/wasm-pack-action@v0.3.0
+        with:
+          version: 'latest'
 
       - name: Run cargo test (no features)
         uses: actions-rs/cargo@v1
@@ -181,7 +187,9 @@ jobs:
           override: true
 
       - name: Install wasm-pack
-        run: cargo install wasm-pack --no-default-features
+        uses: jetli/wasm-pack-action@v0.3.0
+        with:
+          version: 'latest'
 
       - name: Run wasm-pack test on Safari (no features)
         run: wasm-pack test --safari --headless -- --no-default-features
@@ -207,7 +215,9 @@ jobs:
           override: true
 
       - name: Install wasm-pack
-        run: cargo install wasm-pack --no-default-features
+        uses: jetli/wasm-pack-action@v0.3.0
+        with:
+          version: 'latest'
 
       - name: Run cargo test (no features)
         uses: actions-rs/cargo@v1
@@ -268,7 +278,9 @@ jobs:
           override: true
 
       - name: Install wasm-pack
-        run: cargo install wasm-pack --no-default-features
+        uses: jetli/wasm-pack-action@v0.3.0
+        with:
+          version: 'latest'
 
       - name: Run wasm-pack test on Safari (no features)
         run: wasm-pack test --safari --headless -- --no-default-features
