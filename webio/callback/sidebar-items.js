@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["multi","This module implements conversion from callbacks to futures for callbacks that are called multiple times, i.e. callbacks of events that occur more than once per callback."],["once","This module implements conversion from callbacks to futures for callbacks that are called only once."]],"struct":[["Cancelled","An error that might happen when the callback’s future is cancelled."]]});
+window.SIDEBAR_ITEMS = {"mod":["multi","once"],"struct":["Cancelled"]};

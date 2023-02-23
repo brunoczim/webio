@@ -1,1 +1,1 @@
-initSidebarItems({"attr":[["wasm_bindgen_test",""]]});
+window.SIDEBAR_ITEMS = {"attr":["wasm_bindgen_test"]};

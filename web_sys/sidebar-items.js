@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["console",""]],"struct":[["DragEvent","The `DragEvent` class."],["Event","The `Event` class."],["EventTarget","The `EventTarget` class."],["FocusEvent","The `FocusEvent` class."],["KeyboardEvent","The `KeyboardEvent` class."],["MouseEvent","The `MouseEvent` class."],["UiEvent","The `UiEvent` class."]]});
+window.SIDEBAR_ITEMS = {"mod":["console"],"struct":["DragEvent","Event","EventTarget","FocusEvent","KeyboardEvent","MouseEvent","UiEvent"]};

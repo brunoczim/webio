@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Node","Implementation of the `Formatter` trait for node.js"]]});
+window.SIDEBAR_ITEMS = {"struct":["Node"]};

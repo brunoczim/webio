@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Browser","Implementation of `Formatter` for browsers."]]});
+window.SIDEBAR_ITEMS = {"struct":["Browser"]};
