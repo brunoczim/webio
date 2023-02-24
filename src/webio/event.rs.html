@@ -299,6 +299,7 @@
 <a href="#299" id="299">299</a>
 <a href="#300" id="300">300</a>
 <a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for listening and handling JS events from Rust.
 //!
 //! # Examples
@@ -370,6 +371,7 @@
 /// [`add_listener_raw`], [`add_listener_with_sync_cb_raw`],
 /// [`add_listener_with_async_cb_raw`], [`EventType::add_listener`],
 /// [`EventType::add
+</span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>Listener&lt;T&gt; {
     inner: callback::multi::Listener&lt;T&gt;,
     event_type: String,
@@ -601,4 +603,4 @@
 <span class="macro">event_type!</span>(FocusIn, <span class="string">&quot;focusin&quot;</span>, web_sys::FocusEvent);
 <span class="macro">event_type!</span>(WindowResize, <span class="string">&quot;resize&quot;</span>, web_sys::UiEvent);
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="webio" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (fdbc4329c 2023-02-22)" data-search-js="search-14421e1532aead08.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="webio" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (07c993eba 2023-02-23)" data-search-js="search-14421e1532aead08.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>

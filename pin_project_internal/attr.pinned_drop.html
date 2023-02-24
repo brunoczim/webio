@@ -15,7 +15,7 @@ the <a href="attr.pin_project.html" title="attr pin_project_internal::pin_projec
 implemented. To drop a type that implements <code>PinnedDrop</code>, use the <a href="https://doc.rust-lang.org/nightly/core/mem/fn.drop.html" title="fn core::mem::drop"><code>drop</code></a>
 function just like dropping a type that directly implements <a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html" title="trait core::ops::drop::Drop"><code>Drop</code></a>.</p>
 <p>In particular, it will never be called more than once, just like
-<a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html#tymethod.drop" title="associated function core::ops::drop::Drop::drop"><code>Drop::drop</code></a>.</p>
+<a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html#tymethod.drop" title="method core::ops::drop::Drop::drop"><code>Drop::drop</code></a>.</p>
 <h2 id="examples"><a href="#examples">Examples</a></h2>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::pin::Pin;
 
@@ -43,7 +43,7 @@ function just like dropping a type that directly implements <a href="https://doc
 This is because destructors can be called multiple times in safe code and
 <a href="https://github.com/rust-lang/rust/pull/62360">double dropping is unsound</a>.</p>
 <p>Ideally, it would be desirable to be able to forbid manual calls in
-the same way as <a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html#tymethod.drop" title="associated function core::ops::drop::Drop::drop"><code>Drop::drop</code></a>, but the library cannot do it. So, by using
+the same way as <a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html#tymethod.drop" title="method core::ops::drop::Drop::drop"><code>Drop::drop</code></a>, but the library cannot do it. So, by using
 macros and replacing them with private traits like the following,
 this crate prevent users from calling <code>PinnedDrop::drop</code> in safe code.</p>
 
@@ -53,4 +53,4 @@ this crate prevent users from calling <code>PinnedDrop::drop</code> in safe code
 <p>This allows implementing <a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html" title="trait core::ops::drop::Drop"><code>Drop</code></a> safely using <code>#[pinned_drop]</code>.
 Also by using the <a href="https://doc.rust-lang.org/nightly/core/mem/fn.drop.html" title="fn core::mem::drop"><code>drop</code></a> function just like dropping a type that directly
 implements <a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html" title="trait core::ops::drop::Drop"><code>Drop</code></a>, can drop safely a type that implements <code>PinnedDrop</code>.</p>
-</div></details></section></div></main><div id="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="pin_project_internal" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (fdbc4329c 2023-02-22)" data-search-js="search-14421e1532aead08.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</div></details></section></div></main><div id="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="pin_project_internal" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (07c993eba 2023-02-23)" data-search-js="search-14421e1532aead08.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>

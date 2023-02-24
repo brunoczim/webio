@@ -4,7 +4,7 @@
 <h2 id="safety"><a href="#safety">Safety</a></h2>
 <p>To make using this macro safe, three things need to be ensured:</p>
 <ul>
-<li>If the struct implements <a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html#tymethod.drop" title="associated function core::ops::drop::Drop::drop"><code>Drop</code></a>, the <a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html#tymethod.drop" title="associated function core::ops::drop::Drop::drop"><code>drop</code></a> method is not allowed to
+<li>If the struct implements <a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html#tymethod.drop" title="method core::ops::drop::Drop::drop"><code>Drop</code></a>, the <a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html#tymethod.drop" title="method core::ops::drop::Drop::drop"><code>drop</code></a> method is not allowed to
 move the value of the field.</li>
 <li>If the struct wants to implement <a href="https://doc.rust-lang.org/nightly/core/marker/trait.Unpin.html" title="trait core::marker::Unpin"><code>Unpin</code></a>, it has to do so conditionally:
 The struct can only implement <a href="https://doc.rust-lang.org/nightly/core/marker/trait.Unpin.html" title="trait core::marker::Unpin"><code>Unpin</code></a> if the field’s type is <a href="https://doc.rust-lang.org/nightly/core/marker/trait.Unpin.html" title="trait core::marker::Unpin"><code>Unpin</code></a>.</li>
@@ -30,4 +30,4 @@ The struct can only implement <a href="https://doc.rust-lang.org/nightly/core/ma
 <span class="kw">impl</span>&lt;T: Unpin&gt; Unpin <span class="kw">for </span>Foo&lt;T&gt; {} <span class="comment">// Conditional Unpin impl</span></code></pre></div>
 <p>Note: borrowing the field multiple times requires using <code>.as_mut()</code> to
 avoid consuming the <code>Pin</code>.</p>
-</div></details></section></div></main><div id="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="pin_utils" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (fdbc4329c 2023-02-22)" data-search-js="search-14421e1532aead08.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</div></details></section></div></main><div id="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="pin_utils" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (07c993eba 2023-02-23)" data-search-js="search-14421e1532aead08.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
