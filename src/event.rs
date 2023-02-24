@@ -69,6 +69,7 @@ macro_rules! event_type {
 /// [`add_listener_raw`], [`add_listener_with_sync_cb_raw`],
 /// [`add_listener_with_async_cb_raw`], [`EventType::add_listener`],
 /// [`EventType::add
+#[derive(Debug)]
 pub struct Listener<T> {
     inner: callback::multi::Listener<T>,
     event_type: String,
