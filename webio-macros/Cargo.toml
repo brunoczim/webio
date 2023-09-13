@@ -7,9 +7,9 @@ edition = "2021"
 proc-macro = true
 
 [dependencies]
-proc-macro2 = "^1.0.36"
-quote = "^1.0.17"
+proc-macro2 = "^1.0.66"
+quote = "^1.0.33"
 
 [dependencies.syn]
-version = "^1.0.90"
-features = ["derive", "clone-impls", "extra-traits"]
+version = "^2.0.32"
+features = ["derive", "extra-traits", "parsing", "full"]

@@ -18,9 +18,7 @@ impl Parse for Input {
         if input.peek(token::Semi) {
             input.parse::<token::Semi>()?;
             arguments.extend(
-                input
-                    .parse_terminated::<Expr, token::Comma>(Expr::parse)?
-                    .into_iter(),
+                input.parse_terminated(Expr::parse, token::Comma)?.into_iter(),
             );
         }
         Ok(Self { method, arguments })
