@@ -11,8 +11,7 @@ pub struct Input {
 
 impl Parse for Input {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let futures =
-            input.parse_terminated::<Expr, token::Comma>(Expr::parse)?;
+        let futures = input.parse_terminated(Expr::parse, token::Comma)?;
         Ok(Self { futures: futures.into_iter().collect() })
     }
 }

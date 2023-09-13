@@ -1,13 +1,13 @@
+use proc_macro::TokenStream;
+use proc_macro2::{Ident, Span};
+use quote::{quote, ToTokens};
+use syn::{parse_macro_input, Data, DeriveInput, Fields, ItemFn, Visibility};
+
 mod error;
 mod join;
 mod select;
 mod console;
 mod event_type;
-
-use proc_macro::TokenStream;
-use proc_macro2::{Ident, Span};
-use quote::{quote, ToTokens};
-use syn::{parse_macro_input, Data, DeriveInput, Fields, ItemFn, Visibility};
 
 /// Joins a list of futures and returns their output into a tuple in the same
 /// order that the futures were given. Futures must be `'static`.
@@ -666,7 +666,7 @@ pub fn event_type(raw_input: TokenStream) -> TokenStream {
     let mut error_dump = error::Dump::new();
     let mut partial_args = event_type::PartialArguments::new();
     for attr in input.attrs {
-        match attr.path.get_ident() {
+        match attr.path().get_ident() {
             Some(ident) if ident == "event_type" => match attr.parse_args() {
                 Ok(current_partial_args) => {
                     if let Err(error) = partial_args.merge(current_partial_args)

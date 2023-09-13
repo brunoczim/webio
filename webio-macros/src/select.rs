@@ -14,7 +14,7 @@ pub struct Arm {
 
 impl Parse for Arm {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let pattern = input.parse()?;
+        let pattern = Pat::parse_single(input)?;
         input.parse::<token::Eq>()?;
         let future = input.parse()?;
         input.parse::<token::FatArrow>()?;
@@ -30,7 +30,7 @@ pub struct Input {
 
 impl Parse for Input {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let arms = input.parse_terminated::<Arm, token::Comma>(Arm::parse)?;
+        let arms = input.parse_terminated(Arm::parse, token::Comma)?;
         Ok(Self { arms: arms.into_iter().collect() })
     }
 }
