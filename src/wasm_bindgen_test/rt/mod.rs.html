@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/wasm-bindgen-test-0.3.34/src/rt/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-e5308b57e507db71.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-d59023bfa12059d2.css"><link rel="stylesheet" disabled href="../../../static.files/dark-1ca41bb1e10af075.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-18b4181a2f3fb862.css"><script src="../../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../wasm_bindgen_test/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-test-0.3.37/src/rt/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-47e7ab555ef2818a.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="wasm_bindgen_test" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (d9c8274fb 2023-09-12)" data-channel="nightly" data-search-js="search-5d3eaacf19ebf04f.js" data-settings-js="settings-74424d7eec62a23e.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-f194925aa375ae96.css" data-theme-dark-css="dark-1dd4d1ce031e15de.css" data-theme-ayu-css="ayu-49e58d069f567085.css" ><script src="../../../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-8d035c8cea6edbc4.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-f194925aa375ae96.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1dd4d1ce031e15de.css"><link rel="stylesheet" href="../../../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../wasm_bindgen_test/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -609,7 +609,100 @@
 <a href="#609" id="609">609</a>
 <a href="#610" id="610">610</a>
 <a href="#611" id="611">611</a>
-</pre><pre class="rust"><code><span class="doccomment">//! Internal-only runtime module used for the `wasm_bindgen_test` crate.
+<a href="#612" id="612">612</a>
+<a href="#613" id="613">613</a>
+<a href="#614" id="614">614</a>
+<a href="#615" id="615">615</a>
+<a href="#616" id="616">616</a>
+<a href="#617" id="617">617</a>
+<a href="#618" id="618">618</a>
+<a href="#619" id="619">619</a>
+<a href="#620" id="620">620</a>
+<a href="#621" id="621">621</a>
+<a href="#622" id="622">622</a>
+<a href="#623" id="623">623</a>
+<a href="#624" id="624">624</a>
+<a href="#625" id="625">625</a>
+<a href="#626" id="626">626</a>
+<a href="#627" id="627">627</a>
+<a href="#628" id="628">628</a>
+<a href="#629" id="629">629</a>
+<a href="#630" id="630">630</a>
+<a href="#631" id="631">631</a>
+<a href="#632" id="632">632</a>
+<a href="#633" id="633">633</a>
+<a href="#634" id="634">634</a>
+<a href="#635" id="635">635</a>
+<a href="#636" id="636">636</a>
+<a href="#637" id="637">637</a>
+<a href="#638" id="638">638</a>
+<a href="#639" id="639">639</a>
+<a href="#640" id="640">640</a>
+<a href="#641" id="641">641</a>
+<a href="#642" id="642">642</a>
+<a href="#643" id="643">643</a>
+<a href="#644" id="644">644</a>
+<a href="#645" id="645">645</a>
+<a href="#646" id="646">646</a>
+<a href="#647" id="647">647</a>
+<a href="#648" id="648">648</a>
+<a href="#649" id="649">649</a>
+<a href="#650" id="650">650</a>
+<a href="#651" id="651">651</a>
+<a href="#652" id="652">652</a>
+<a href="#653" id="653">653</a>
+<a href="#654" id="654">654</a>
+<a href="#655" id="655">655</a>
+<a href="#656" id="656">656</a>
+<a href="#657" id="657">657</a>
+<a href="#658" id="658">658</a>
+<a href="#659" id="659">659</a>
+<a href="#660" id="660">660</a>
+<a href="#661" id="661">661</a>
+<a href="#662" id="662">662</a>
+<a href="#663" id="663">663</a>
+<a href="#664" id="664">664</a>
+<a href="#665" id="665">665</a>
+<a href="#666" id="666">666</a>
+<a href="#667" id="667">667</a>
+<a href="#668" id="668">668</a>
+<a href="#669" id="669">669</a>
+<a href="#670" id="670">670</a>
+<a href="#671" id="671">671</a>
+<a href="#672" id="672">672</a>
+<a href="#673" id="673">673</a>
+<a href="#674" id="674">674</a>
+<a href="#675" id="675">675</a>
+<a href="#676" id="676">676</a>
+<a href="#677" id="677">677</a>
+<a href="#678" id="678">678</a>
+<a href="#679" id="679">679</a>
+<a href="#680" id="680">680</a>
+<a href="#681" id="681">681</a>
+<a href="#682" id="682">682</a>
+<a href="#683" id="683">683</a>
+<a href="#684" id="684">684</a>
+<a href="#685" id="685">685</a>
+<a href="#686" id="686">686</a>
+<a href="#687" id="687">687</a>
+<a href="#688" id="688">688</a>
+<a href="#689" id="689">689</a>
+<a href="#690" id="690">690</a>
+<a href="#691" id="691">691</a>
+<a href="#692" id="692">692</a>
+<a href="#693" id="693">693</a>
+<a href="#694" id="694">694</a>
+<a href="#695" id="695">695</a>
+<a href="#696" id="696">696</a>
+<a href="#697" id="697">697</a>
+<a href="#698" id="698">698</a>
+<a href="#699" id="699">699</a>
+<a href="#700" id="700">700</a>
+<a href="#701" id="701">701</a>
+<a href="#702" id="702">702</a>
+<a href="#703" id="703">703</a>
+<a href="#704" id="704">704</a>
+</pre></div><pre class="rust"><code><span class="doccomment">//! Internal-only runtime module used for the `wasm_bindgen_test` crate.
 //!
 //! No API contained in this module will respect semver, these should all be
 //! considered private APIs.
@@ -704,6 +797,7 @@
 <span class="kw">use </span>std::future::Future;
 <span class="kw">use </span>std::pin::Pin;
 <span class="kw">use </span>std::rc::Rc;
+<span class="kw">use </span>std::sync::Once;
 <span class="kw">use </span>std::task::{<span class="self">self</span>, Poll};
 <span class="kw">use </span>wasm_bindgen::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>wasm_bindgen_futures::future_to_promise;
@@ -719,6 +813,7 @@
 <span class="kw">pub mod </span>browser;
 <span class="kw">pub mod </span>detect;
 <span class="kw">pub mod </span>node;
+<span class="kw">pub mod </span>worker;
 
 <span class="doccomment">/// Runtime test harness support instantiated in JS.
 ///
@@ -746,7 +841,7 @@
     ///
     /// Each test listed here is paired with a `JsValue` that represents the
     /// exception thrown which caused the test to fail.
-    </span>failures: RefCell&lt;Vec&lt;(Test, JsValue)&gt;&gt;,
+    </span>failures: RefCell&lt;Vec&lt;(Test, Failure)&gt;&gt;,
 
     <span class="doccomment">/// Remaining tests to execute, when empty we&#39;re just waiting on the
     /// `Running` tests to finish.
@@ -761,6 +856,17 @@
     </span>formatter: Box&lt;<span class="kw">dyn </span>Formatter&gt;,
 }
 
+<span class="doccomment">/// Failure reasons.
+</span><span class="kw">enum </span>Failure {
+    <span class="doccomment">/// Normal failing test.
+    </span>Error(JsValue),
+    <span class="doccomment">/// A test that `should_panic` but didn&#39;t.
+    </span>ShouldPanic,
+    <span class="doccomment">/// A test that `should_panic` with a specific message,
+    /// but panicked with a different message.
+    </span>ShouldPanicExpected,
+}
+
 <span class="doccomment">/// Representation of one test that needs to be executed.
 ///
 /// Tests are all represented as futures, and tests perform no work until their
@@ -769,6 +875,7 @@
     name: String,
     future: Pin&lt;Box&lt;<span class="kw">dyn </span>Future&lt;Output = <span class="prelude-ty">Result</span>&lt;(), JsValue&gt;&gt;&gt;&gt;,
     output: Rc&lt;RefCell&lt;Output&gt;&gt;,
+    should_panic: <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;&gt;,
 }
 
 <span class="doccomment">/// Captured output of each test.
@@ -779,6 +886,8 @@
     info: String,
     warn: String,
     error: String,
+    panic: String,
+    should_panic: bool,
 }
 
 <span class="kw">trait </span>Formatter {
@@ -818,12 +927,27 @@
     /// tests.
     </span><span class="attr">#[wasm_bindgen(constructor)]
     </span><span class="kw">pub fn </span>new() -&gt; Context {
-        console_error_panic_hook::set_once();
+        <span class="kw">static </span>SET_HOOK: Once = Once::new();
+        SET_HOOK.call_once(|| {
+            std::panic::set_hook(Box::new(|panic_info| {
+                <span class="kw">let </span>should_panic = CURRENT_OUTPUT.with(|output| {
+                    <span class="kw">let </span><span class="kw-2">mut </span>output = output.borrow_mut();
+                    output.panic.push_str(<span class="kw-2">&amp;</span>panic_info.to_string());
+                    output.should_panic
+                });
 
-        <span class="kw">let </span>formatter = <span class="kw">match </span>node::Node::new() {
-            <span class="prelude-val">Some</span>(node) =&gt; Box::new(node) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Formatter&gt;,
-            <span class="prelude-val">None </span>=&gt; Box::new(browser::Browser::new()),
+                <span class="kw">if </span>!should_panic {
+                    console_error_panic_hook::hook(panic_info);
+                }
+            }));
+        });
+
+        <span class="kw">let </span>formatter = <span class="kw">match </span>detect::detect() {
+            detect::Runtime::Browser =&gt; Box::new(browser::Browser::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Formatter&gt;,
+            detect::Runtime::Node =&gt; Box::new(node::Node::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Formatter&gt;,
+            detect::Runtime::Worker =&gt; Box::new(worker::Worker::new()) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Formatter&gt;,
         };
+
         Context {
             state: Rc::new(State {
                 filter: Default::default(),
@@ -851,7 +975,7 @@
         </span><span class="kw">let </span><span class="kw-2">mut </span>filter = <span class="self">self</span>.state.filter.borrow_mut();
         <span class="kw">for </span>arg <span class="kw">in </span>args {
             <span class="kw">let </span>arg = arg.as_string().unwrap();
-            <span class="kw">if </span>arg.starts_with(<span class="string">&quot;-&quot;</span>) {
+            <span class="kw">if </span>arg.starts_with(<span class="string">&#39;-&#39;</span>) {
                 <span class="macro">panic!</span>(<span class="string">&quot;flag {} not supported&quot;</span>, arg);
             } <span class="kw">else if </span>filter.is_some() {
                 <span class="macro">panic!</span>(<span class="string">&quot;more than one filter argument cannot be passed&quot;</span>);
@@ -957,11 +1081,11 @@
         <span class="kw">let </span>dst = dst(<span class="kw-2">&amp;mut </span>out);
         args.for_each(<span class="kw-2">&amp;mut </span>|val, idx, _array| {
             <span class="kw">if </span>idx != <span class="number">0 </span>{
-                dst.push_str(<span class="string">&quot; &quot;</span>);
+                dst.push(<span class="string">&#39; &#39;</span>);
             }
             dst.push_str(<span class="kw-2">&amp;</span>stringify(<span class="kw-2">&amp;</span>val));
         });
-        dst.push_str(<span class="string">&quot;\n&quot;</span>);
+        dst.push(<span class="string">&#39;\n&#39;</span>);
     });
 }
 
@@ -986,22 +1110,36 @@
 <span class="kw">impl </span>Context {
     <span class="doccomment">/// Entry point for a synchronous test in wasm. The `#[wasm_bindgen_test]`
     /// macro generates invocations of this method.
-    </span><span class="kw">pub fn </span>execute_sync&lt;T: Termination&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str, f: <span class="kw">impl </span><span class="lifetime">&#39;static </span>+ FnOnce() -&gt; T) {
-        <span class="self">self</span>.execute(name, <span class="kw">async </span>{ f().into_js_result() });
+    </span><span class="kw">pub fn </span>execute_sync&lt;T: Termination&gt;(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        name: <span class="kw-2">&amp;</span>str,
+        f: <span class="kw">impl </span><span class="lifetime">&#39;static </span>+ FnOnce() -&gt; T,
+        should_panic: <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;&gt;,
+    ) {
+        <span class="self">self</span>.execute(name, <span class="kw">async </span>{ f().into_js_result() }, should_panic);
     }
 
     <span class="doccomment">/// Entry point for an asynchronous in wasm. The
     /// `#[wasm_bindgen_test(async)]` macro generates invocations of this
     /// method.
-    </span><span class="kw">pub fn </span>execute_async&lt;F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str, f: <span class="kw">impl </span>FnOnce() -&gt; F + <span class="lifetime">&#39;static</span>)
-    <span class="kw">where
+    </span><span class="kw">pub fn </span>execute_async&lt;F&gt;(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        name: <span class="kw-2">&amp;</span>str,
+        f: <span class="kw">impl </span>FnOnce() -&gt; F + <span class="lifetime">&#39;static</span>,
+        should_panic: <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;&gt;,
+    ) <span class="kw">where
         </span>F: Future + <span class="lifetime">&#39;static</span>,
         F::Output: Termination,
     {
-        <span class="self">self</span>.execute(name, <span class="kw">async </span>{ f().<span class="kw">await</span>.into_js_result() })
+        <span class="self">self</span>.execute(name, <span class="kw">async </span>{ f().<span class="kw">await</span>.into_js_result() }, should_panic)
     }
 
-    <span class="kw">fn </span>execute(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str, test: <span class="kw">impl </span>Future&lt;Output = <span class="prelude-ty">Result</span>&lt;(), JsValue&gt;&gt; + <span class="lifetime">&#39;static</span>) {
+    <span class="kw">fn </span>execute(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        name: <span class="kw-2">&amp;</span>str,
+        test: <span class="kw">impl </span>Future&lt;Output = <span class="prelude-ty">Result</span>&lt;(), JsValue&gt;&gt; + <span class="lifetime">&#39;static</span>,
+        should_panic: <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;&gt;,
+    ) {
         <span class="comment">// If our test is filtered out, record that it was filtered and move
         // on, nothing to do here.
         </span><span class="kw">let </span>filter = <span class="self">self</span>.state.filter.borrow();
@@ -1015,7 +1153,11 @@
 
         <span class="comment">// Looks like we&#39;ve got a test that needs to be executed! Push it onto
         // the list of remaining tests.
-        </span><span class="kw">let </span>output = Rc::new(RefCell::new(Output::default()));
+        </span><span class="kw">let </span>output = Output {
+            should_panic: should_panic.is_some(),
+            ..Default::default()
+        };
+        <span class="kw">let </span>output = Rc::new(RefCell::new(output));
         <span class="kw">let </span>future = TestFuture {
             output: output.clone(),
             test,
@@ -1024,6 +1166,7 @@
             name: name.to_string(),
             future: Pin::from(Box::new(future)),
             output,
+            should_panic,
         });
     }
 }
@@ -1085,14 +1228,35 @@
 
 <span class="kw">impl </span>State {
     <span class="kw">fn </span>log_test_result(<span class="kw-2">&amp;</span><span class="self">self</span>, test: Test, result: <span class="prelude-ty">Result</span>&lt;(), JsValue&gt;) {
-        <span class="comment">// Print out information about the test passing or failing
-        </span><span class="self">self</span>.formatter.log_test(<span class="kw-2">&amp;</span>test.name, <span class="kw-2">&amp;</span>result);
-
         <span class="comment">// Save off the test for later processing when we print the final
         // results.
-        </span><span class="kw">match </span>result {
-            <span class="prelude-val">Ok</span>(()) =&gt; <span class="self">self</span>.succeeded.set(<span class="self">self</span>.succeeded.get() + <span class="number">1</span>),
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="self">self</span>.failures.borrow_mut().push((test, e)),
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(should_panic) = test.should_panic {
+            <span class="kw">if let </span><span class="prelude-val">Err</span>(_e) = result {
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(expected) = should_panic {
+                    <span class="kw">if </span>!test.output.borrow().panic.contains(expected) {
+                        <span class="self">self</span>.formatter.log_test(<span class="kw-2">&amp;</span>test.name, <span class="kw-2">&amp;</span><span class="prelude-val">Err</span>(JsValue::NULL));
+                        <span class="self">self</span>.failures
+                            .borrow_mut()
+                            .push((test, Failure::ShouldPanicExpected));
+                        <span class="kw">return</span>;
+                    }
+                }
+
+                <span class="self">self</span>.formatter.log_test(<span class="kw-2">&amp;</span>test.name, <span class="kw-2">&amp;</span><span class="prelude-val">Ok</span>(()));
+                <span class="self">self</span>.succeeded.set(<span class="self">self</span>.succeeded.get() + <span class="number">1</span>);
+            } <span class="kw">else </span>{
+                <span class="self">self</span>.formatter.log_test(<span class="kw-2">&amp;</span>test.name, <span class="kw-2">&amp;</span><span class="prelude-val">Err</span>(JsValue::NULL));
+                <span class="self">self</span>.failures
+                    .borrow_mut()
+                    .push((test, Failure::ShouldPanic));
+            }
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.formatter.log_test(<span class="kw-2">&amp;</span>test.name, <span class="kw-2">&amp;</span>result);
+
+            <span class="kw">match </span>result {
+                <span class="prelude-val">Ok</span>(()) =&gt; <span class="self">self</span>.succeeded.set(<span class="self">self</span>.succeeded.get() + <span class="number">1</span>),
+                <span class="prelude-val">Err</span>(e) =&gt; <span class="self">self</span>.failures.borrow_mut().push((test, Failure::Error(e))),
+            }
         }
     }
 
@@ -1100,8 +1264,8 @@
         <span class="kw">let </span>failures = <span class="self">self</span>.failures.borrow();
         <span class="kw">if </span>failures.len() &gt; <span class="number">0 </span>{
             <span class="self">self</span>.formatter.writeln(<span class="string">&quot;\nfailures:\n&quot;</span>);
-            <span class="kw">for </span>(test, error) <span class="kw">in </span>failures.iter() {
-                <span class="self">self</span>.print_failure(test, error);
+            <span class="kw">for </span>(test, failure) <span class="kw">in </span>failures.iter() {
+                <span class="self">self</span>.print_failure(test, failure);
             }
             <span class="self">self</span>.formatter.writeln(<span class="string">&quot;failures:\n&quot;</span>);
             <span class="kw">for </span>(test, <span class="kw">_</span>) <span class="kw">in </span>failures.iter() {
@@ -1131,17 +1295,39 @@
         logs.push(<span class="string">&#39;\n&#39;</span>);
     }
 
-    <span class="kw">fn </span>print_failure(<span class="kw-2">&amp;</span><span class="self">self</span>, test: <span class="kw-2">&amp;</span>Test, error: <span class="kw-2">&amp;</span>JsValue) {
+    <span class="kw">fn </span>print_failure(<span class="kw-2">&amp;</span><span class="self">self</span>, test: <span class="kw-2">&amp;</span>Test, failure: <span class="kw-2">&amp;</span>Failure) {
         <span class="kw">let </span><span class="kw-2">mut </span>logs = String::new();
         <span class="kw">let </span>output = test.output.borrow();
+
+        <span class="kw">match </span>failure {
+            Failure::ShouldPanic =&gt; {
+                logs.push_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+                    <span class="string">&quot;note: {} did not panic as expected\n\n&quot;</span>,
+                    test.name
+                ));
+            }
+            Failure::ShouldPanicExpected =&gt; {
+                logs.push_str(<span class="string">&quot;note: panic did not contain expected string\n&quot;</span>);
+                logs.push_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;      panic message: `\&quot;{}\&quot;`,\n&quot;</span>, output.panic));
+                logs.push_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+                    <span class="string">&quot; expected substring: `\&quot;{}\&quot;`\n\n&quot;</span>,
+                    test.should_panic.unwrap().unwrap()
+                ));
+            }
+            <span class="kw">_ </span>=&gt; (),
+        }
+
         <span class="self">self</span>.accumulate_console_output(<span class="kw-2">&amp;mut </span>logs, <span class="string">&quot;debug&quot;</span>, <span class="kw-2">&amp;</span>output.debug);
         <span class="self">self</span>.accumulate_console_output(<span class="kw-2">&amp;mut </span>logs, <span class="string">&quot;log&quot;</span>, <span class="kw-2">&amp;</span>output.log);
         <span class="self">self</span>.accumulate_console_output(<span class="kw-2">&amp;mut </span>logs, <span class="string">&quot;info&quot;</span>, <span class="kw-2">&amp;</span>output.info);
         <span class="self">self</span>.accumulate_console_output(<span class="kw-2">&amp;mut </span>logs, <span class="string">&quot;warn&quot;</span>, <span class="kw-2">&amp;</span>output.warn);
         <span class="self">self</span>.accumulate_console_output(<span class="kw-2">&amp;mut </span>logs, <span class="string">&quot;error&quot;</span>, <span class="kw-2">&amp;</span>output.error);
-        logs.push_str(<span class="string">&quot;JS exception that was thrown:\n&quot;</span>);
-        <span class="kw">let </span>error_string = <span class="self">self</span>.formatter.stringify_error(error);
-        logs.push_str(<span class="kw-2">&amp;</span>tab(<span class="kw-2">&amp;</span>error_string));
+
+        <span class="kw">if let </span>Failure::Error(error) = failure {
+            logs.push_str(<span class="string">&quot;JS exception that was thrown:\n&quot;</span>);
+            <span class="kw">let </span>error_string = <span class="self">self</span>.formatter.stringify_error(error);
+            logs.push_str(<span class="kw-2">&amp;</span>tab(<span class="kw-2">&amp;</span>error_string));
+        }
 
         <span class="kw">let </span>msg = <span class="macro">format!</span>(<span class="string">&quot;---- {} output ----\n{}&quot;</span>, test.name, tab(<span class="kw-2">&amp;</span>logs));
         <span class="self">self</span>.formatter.writeln(<span class="kw-2">&amp;</span>msg);
@@ -1216,9 +1402,8 @@
     <span class="kw">for </span>line <span class="kw">in </span>s.lines() {
         result.push_str(<span class="string">&quot;    &quot;</span>);
         result.push_str(line);
-        result.push_str(<span class="string">&quot;\n&quot;</span>);
+        result.push(<span class="string">&#39;\n&#39;</span>);
     }
-    <span class="kw">return </span>result;
+    result
 }
-</code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="wasm_bindgen_test" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (07c993eba 2023-02-23)" data-search-js="search-14421e1532aead08.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

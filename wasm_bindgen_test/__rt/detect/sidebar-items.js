@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["is_browser"]};
+window.SIDEBAR_ITEMS = {"enum":["Runtime"],"fn":["detect"]};
