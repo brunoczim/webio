@@ -9,12 +9,12 @@ use std::{
 
 use futures::Future;
 
-type Card = usize;
+type Token = usize;
 
 #[derive(Debug, Clone, Default)]
 struct Queue {
-    owner: Option<Card>,
-    on_hold: BTreeMap<Card, Waker>,
+    owner: Option<Token>,
+    on_hold: BTreeMap<Token, Waker>,
 }
 
 impl Queue {
@@ -22,37 +22,37 @@ impl Queue {
         Self::default()
     }
 
-    fn new_card(&self) -> Card {
+    fn new_token(&self) -> Token {
         self.on_hold
-            .first_key_value()
-            .map(|(card, _)| *card)
+            .last_key_value()
+            .map(|(token, _)| *token)
             .max(self.owner)
-            .map_or(0, |card| card + 1)
+            .map_or(0, |token| token + 1)
     }
 
-    fn acquire(&mut self, waker: Waker, card: Card) {
+    fn acquire(&mut self, waker: Waker, token: Token) {
         if self.owner.is_some() {
-            self.on_hold.insert(card, waker);
+            self.on_hold.insert(token, waker);
         } else {
-            self.owner = Some(card);
+            self.owner = Some(token);
             waker.wake();
         }
     }
 
-    fn try_acquire(&mut self) -> Option<Card> {
+    fn try_acquire(&mut self) -> Option<Token> {
         if self.owner.is_some() {
             None
         } else {
-            let card = self.new_card();
-            self.owner = Some(card);
-            Some(card)
+            let token = self.new_token();
+            self.owner = Some(token);
+            Some(token)
         }
     }
 
     fn release(&mut self) {
         self.owner = None;
-        if let Some((card, waker)) = self.on_hold.pop_first() {
-            self.owner = Some(card);
+        if let Some((token, waker)) = self.on_hold.pop_first() {
+            self.owner = Some(token);
             waker.wake();
         }
     }
@@ -108,6 +108,15 @@ impl<T> Mutex<T> {
     }
 }
 
+impl<T> Default for Mutex<T>
+where
+    T: Default,
+{
+    fn default() -> Self {
+        Self::new(T::default())
+    }
+}
+
 impl<T> fmt::Debug for Mutex<T>
 where
     T: fmt::Debug,
@@ -151,7 +160,7 @@ impl<'mutex, T> Drop for MutexGuard<'mutex, T> {
 #[derive(Debug, Clone, Copy)]
 enum SubscriberState {
     NotSubscribed,
-    Subscribed(Card),
+    Subscribed(Token),
     Acquired,
 }
 
@@ -170,9 +179,9 @@ impl<'mutex, T> Future for Subscriber<'mutex, T> {
     ) -> Poll<Self::Output> {
         match self.state {
             SubscriberState::Acquired => Poll::Ready(()),
-            SubscriberState::Subscribed(card) => {
+            SubscriberState::Subscribed(token) => {
                 self.mutex.with_queue(|queue| {
-                    if queue.owner == Some(card) {
+                    if queue.owner == Some(token) {
                         self.state = SubscriberState::Acquired;
                         Poll::Ready(())
                     } else {
@@ -181,9 +190,9 @@ impl<'mutex, T> Future for Subscriber<'mutex, T> {
                 })
             },
             SubscriberState::NotSubscribed => self.mutex.with_queue(|queue| {
-                let card = queue.new_card();
-                queue.acquire(cx.waker().clone(), card);
-                self.state = SubscriberState::Subscribed(card);
+                let token = queue.new_token();
+                queue.acquire(cx.waker().clone(), token);
+                self.state = SubscriberState::Subscribed(token);
                 Poll::Pending
             }),
         }
