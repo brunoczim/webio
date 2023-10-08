@@ -55,8 +55,19 @@ impl Queue {
             waker.wake();
         }
     }
+
+    fn cancel(&mut self, token: Token) {
+        if self.owner == Some(token) {
+            self.release();
+        } else {
+            self.on_hold.remove(&token);
+        }
+    }
 }
 
+/// Mutual exclusion of critical sections. Behaves much like
+/// [`tokio::sync::Mutex`], but  designed for WASM (single-thread, thus this
+/// struct is Unsync). This mutex is fair.
 pub struct Mutex<T> {
     data: RefCell<T>,
     queue: Cell<Queue>,
@@ -73,18 +84,25 @@ impl<T> Mutex<T> {
         output
     }
 
+    /// Creates a mutex from initial protected data.
     pub fn new(data: T) -> Self {
         Self { data: RefCell::new(data), queue: Cell::new(Queue::new()) }
     }
 
+    /// Using a mutable reference to the mutex, get protected data mutably as
+    /// well.
     pub fn get_mut(&mut self) -> &mut T {
         self.data.get_mut()
     }
 
+    /// Consumes the mutex to take back protected data.
     pub fn into_inner(self) -> T {
         self.data.into_inner()
     }
 
+    /// Tries to lock without blocking. If already locked, returns `None`,
+    /// otherwise, locks and returns a guard. While the guard is not dropped,
+    /// the mutex remains locked.
     pub fn try_lock(&self) -> Option<MutexGuard<T>> {
         self.with_queue(|queue| {
             if queue.try_acquire().is_some() {
@@ -95,6 +113,8 @@ impl<T> Mutex<T> {
         })
     }
 
+    /// Locks, waiting if already locked. When the lock is acquired, returns a
+    /// guard. While the guard is not dropped, the mutex remains locked.
     pub async fn lock(&self) -> MutexGuard<T> {
         let subscriber =
             Subscriber { mutex: self, state: SubscriberState::NotSubscribed };
@@ -130,6 +150,8 @@ where
     }
 }
 
+/// A guard of a current locking on a [`Mutex`]. Can be derreferenced to get
+/// access to protected data.
 #[derive(Debug)]
 pub struct MutexGuard<'mutex, T> {
     mutex: &'mutex Mutex<T>,
@@ -163,7 +185,7 @@ enum SubscriberState {
     Acquired,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 struct Subscriber<'mutex, T> {
     mutex: &'mutex Mutex<T>,
     state: SubscriberState,
@@ -194,6 +216,16 @@ impl<'mutex, T> Future for Subscriber<'mutex, T> {
                 self.state = SubscriberState::Subscribed(token);
                 Poll::Pending
             }),
+        }
+    }
+}
+
+impl<'mutex, T> Drop for Subscriber<'mutex, T> {
+    fn drop(&mut self) {
+        if let SubscriberState::Subscribed(token) = self.state {
+            self.mutex.with_queue(|queue| {
+                queue.cancel(token);
+            })
         }
     }
 }

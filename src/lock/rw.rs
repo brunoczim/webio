@@ -35,15 +35,6 @@ impl Queue {
             .map_or(0, |token| token + 1)
     }
 
-    fn acquire_write(&mut self, waker: Waker, token: Token) {
-        if self.write_owner.is_some() || !self.read_owners.is_empty() {
-            self.writes_on_hold.insert(token, waker);
-        } else {
-            self.write_owner = Some(token);
-            waker.wake();
-        }
-    }
-
     fn acquire_read(&mut self, waker: Waker, token: Token) {
         if self.write_owner.is_some()
             || self
@@ -58,13 +49,12 @@ impl Queue {
         }
     }
 
-    fn try_acquire_write(&mut self) -> Option<Token> {
+    fn acquire_write(&mut self, waker: Waker, token: Token) {
         if self.write_owner.is_some() || !self.read_owners.is_empty() {
-            None
+            self.writes_on_hold.insert(token, waker);
         } else {
-            let token = self.new_token();
             self.write_owner = Some(token);
-            Some(token)
+            waker.wake();
         }
     }
 
@@ -83,39 +73,13 @@ impl Queue {
         }
     }
 
-    fn release_write(&mut self) {
-        self.write_owner = None;
-
-        if let Some((write_token, write_waker)) =
-            self.writes_on_hold.pop_first()
-        {
-            let mut has_read_candidate = false;
-
-            while let Some((read_token, read_waker)) =
-                self.reads_on_hold.pop_first()
-            {
-                if read_token > write_token {
-                    self.reads_on_hold.insert(read_token, read_waker);
-                    break;
-                }
-                has_read_candidate = true;
-                self.read_owners.insert(read_token);
-                read_waker.wake();
-            }
-
-            if has_read_candidate {
-                self.writes_on_hold.insert(write_token, write_waker);
-            } else {
-                self.write_owner = Some(write_token);
-                write_waker.wake();
-            }
+    fn try_acquire_write(&mut self) -> Option<Token> {
+        if self.write_owner.is_some() || !self.read_owners.is_empty() {
+            None
         } else {
-            while let Some((read_token, read_waker)) =
-                self.reads_on_hold.pop_first()
-            {
-                self.read_owners.insert(read_token);
-                read_waker.wake();
-            }
+            let token = self.new_token();
+            self.write_owner = Some(token);
+            Some(token)
         }
     }
 
@@ -131,8 +95,64 @@ impl Queue {
             }
         }
     }
+
+    fn release_write(&mut self) {
+        self.write_owner = None;
+
+        if let Some((write_token, write_waker)) =
+            self.writes_on_hold.pop_first()
+        {
+            self.forward_reads(Some(write_token));
+
+            if self.read_owners.is_empty() {
+                self.write_owner = Some(write_token);
+                write_waker.wake();
+            } else {
+                self.writes_on_hold.insert(write_token, write_waker);
+            }
+        } else {
+            self.forward_reads(None);
+        }
+    }
+
+    fn cancel_read(&mut self, token: Token) {
+        if self.read_owners.contains(&token) {
+            self.release_read(token);
+        } else {
+            self.reads_on_hold.remove(&token);
+        }
+    }
+
+    fn cancel_write(&mut self, token: Token) {
+        if self.write_owner == Some(token) {
+            self.release_write();
+        } else {
+            self.writes_on_hold.remove(&token);
+            self.forward_reads(
+                self.writes_on_hold.first_key_value().map(|(token, _)| *token),
+            );
+        }
+    }
+
+    fn forward_reads(&mut self, write_token: Option<Token>) {
+        while let Some((read_token, read_waker)) =
+            self.reads_on_hold.pop_first()
+        {
+            if write_token.is_some_and(|token| token < read_token) {
+                self.reads_on_hold.insert(read_token, read_waker);
+                break;
+            }
+            self.read_owners.insert(read_token);
+            read_waker.wake();
+        }
+    }
 }
 
+/// Read-Write lock over critical sections where data can be locked shared or
+/// exclusively. When locked shared, only reads are allowed, while when locked
+/// exclusively, writes are also allowed.  Behaves much like
+/// [`tokio::sync::RwLock`], but designed for WASM (single-thread, thus this
+/// struct is Unsync). This lock is fair.
 pub struct RwLock<T> {
     data: RefCell<T>,
     queue: Cell<Queue>,
@@ -149,18 +169,25 @@ impl<T> RwLock<T> {
         output
     }
 
+    /// Creates a read-write-lock from initial protected data.
     pub fn new(data: T) -> Self {
         Self { data: RefCell::new(data), queue: Cell::new(Queue::new()) }
     }
 
+    /// Using a mutable reference to the lock, get protected data mutably as
+    /// well.
     pub fn get_mut(&mut self) -> &mut T {
         self.data.get_mut()
     }
 
+    /// Consumes the lock to take back protected data.
     pub fn into_inner(self) -> T {
         self.data.into_inner()
     }
 
+    /// Tries to read-lock without blocking. If write-locked, returns `None`,
+    /// otherwise, locks and returns a guard. While the guard is not dropped,
+    /// the lock remains locked.
     pub fn try_read(&self) -> Option<ReadGuard<T>> {
         self.with_queue(|queue| {
             if let Some(token) = queue.try_acquire_read() {
@@ -171,6 +198,8 @@ impl<T> RwLock<T> {
         })
     }
 
+    /// Read-locks, waiting if write-locked. When the lock is acquired, returns
+    /// a guard. While the guard is not dropped, the lock remains locked.
     pub async fn read(&self) -> ReadGuard<T> {
         let subscriber = ReadSubscriber {
             rw_lock: self,
@@ -184,6 +213,9 @@ impl<T> RwLock<T> {
         ReadGuard { rw_lock: self, token, ref_borrow: self.data.borrow() }
     }
 
+    /// Tries to write-lock without blocking. If already write-locked, or if
+    /// read-locked, returns `None`, otherwise, locks and returns a guard.
+    /// While the guard is not dropped, the lock remains locked.
     pub fn try_write(&self) -> Option<WriteGuard<T>> {
         self.with_queue(|queue| {
             if queue.try_acquire_write().is_some() {
@@ -194,6 +226,9 @@ impl<T> RwLock<T> {
         })
     }
 
+    /// Write-locks, waiting if already write-locked, or if read-locked. When
+    /// the lock is acquired, returns a guard. While the guard is not
+    /// dropped, the lock remains locked.
     pub async fn write(&self) -> WriteGuard<T> {
         let subscriber = WriteSubscriber {
             rw_lock: self,
@@ -231,6 +266,8 @@ where
     }
 }
 
+/// A guard of a current read/shared-locking on a [`RwLock`]. Can be
+/// derreferenced to get read access to protected data.
 #[derive(Debug)]
 pub struct ReadGuard<'rw, T> {
     rw_lock: &'rw RwLock<T>,
@@ -252,6 +289,8 @@ impl<'rw, T> Drop for ReadGuard<'rw, T> {
     }
 }
 
+/// A guard of a current write/exclusive-locking on a [`RwLock`]. Can be
+/// derreferenced to get both read and write access to protected data.
 #[derive(Debug)]
 pub struct WriteGuard<'rw, T> {
     rw_lock: &'rw RwLock<T>,
@@ -285,13 +324,13 @@ enum ReadSubscriberState {
     Acquired(Token),
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 struct ReadSubscriber<'rw, T> {
     rw_lock: &'rw RwLock<T>,
     state: ReadSubscriberState,
 }
 
-impl<'mutex, T> Future for ReadSubscriber<'mutex, T> {
+impl<'rw, T> Future for ReadSubscriber<'rw, T> {
     type Output = Token;
 
     fn poll(
@@ -322,6 +361,16 @@ impl<'mutex, T> Future for ReadSubscriber<'mutex, T> {
     }
 }
 
+impl<'rw, T> Drop for ReadSubscriber<'rw, T> {
+    fn drop(&mut self) {
+        if let ReadSubscriberState::Subscribed(token) = self.state {
+            self.rw_lock.with_queue(|queue| {
+                queue.cancel_read(token);
+            })
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 enum WriteSubscriberState {
     NotSubscribed,
@@ -329,13 +378,13 @@ enum WriteSubscriberState {
     Acquired,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 struct WriteSubscriber<'rw, T> {
     rw_lock: &'rw RwLock<T>,
     state: WriteSubscriberState,
 }
 
-impl<'mutex, T> Future for WriteSubscriber<'mutex, T> {
+impl<'rw, T> Future for WriteSubscriber<'rw, T> {
     type Output = ();
 
     fn poll(
@@ -362,6 +411,16 @@ impl<'mutex, T> Future for WriteSubscriber<'mutex, T> {
                     Poll::Pending
                 })
             },
+        }
+    }
+}
+
+impl<'rw, T> Drop for WriteSubscriber<'rw, T> {
+    fn drop(&mut self) {
+        if let WriteSubscriberState::Subscribed(token) = self.state {
+            self.rw_lock.with_queue(|queue| {
+                queue.cancel_write(token);
+            })
         }
     }
 }
