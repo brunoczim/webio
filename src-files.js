@@ -34,7 +34,7 @@ var srcIndex = JSON.parse('{\
 "wasm_bindgen_test":["",[["rt",[],["browser.rs","detect.rs","mod.rs","node.rs","worker.rs"]]],["lib.rs"]],\
 "wasm_bindgen_test_macro":["",[],["lib.rs"]],\
 "web_sys":["",[["features",[],["gen_DragEvent.rs","gen_Event.rs","gen_EventTarget.rs","gen_FocusEvent.rs","gen_KeyboardEvent.rs","gen_MouseEvent.rs","gen_UiEvent.rs","gen_console.rs","mod.rs"]]],["lib.rs"]],\
-"webio":["",[["callback",[],["multi.rs","once.rs","shared.rs"]],["time",[],["instant.rs"]]],["callback.rs","event.rs","lib.rs","macros.rs","task.rs","time.rs"]],\
+"webio":["",[["callback",[],["multi.rs","once.rs","shared.rs"]],["sync",[],["mutex.rs","rw_lock.rs"]],["time",[],["instant.rs"]]],["callback.rs","event.rs","lib.rs","macros.rs","sync.rs","task.rs","time.rs"]],\
 "webio_macros":["",[],["console.rs","error.rs","event_type.rs","join.rs","lib.rs","select.rs"]]\
 }');
 createSrcSidebar();
