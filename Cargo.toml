@@ -37,6 +37,10 @@ optional = true
 path = "./webio-macros"
 optional = true
 
+[dependencies.console_error_panic_hook]
+version = "^0.1.7"
+optional = true
+
 [dev-dependencies.wasm-bindgen-test]
 version = "^0.3.30"
 
@@ -66,6 +70,7 @@ macros = [
     "wasm-bindgen-test",
     "js-sys",
     "web-sys/console",
+    "console_error_panic_hook",
 ]
 stream = ["futures"]
 event = [

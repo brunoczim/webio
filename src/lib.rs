@@ -123,6 +123,11 @@
 #[cfg_attr(feature = "feature-doc-cfg", doc(cfg(feature = "macros")))]
 extern crate self as webio;
 
+#[doc(hidden)]
+#[cfg(feature = "macros")]
+#[cfg_attr(feature = "feature-doc-cfg", doc(cfg(feature = "macros")))]
+pub use console_error_panic_hook::set_once as set_test_panic_hook;
+
 #[cfg(feature = "macros")]
 #[cfg_attr(feature = "feature-doc-cfg", doc(cfg(feature = "macros")))]
 pub use webio_macros::{console, join, main, select, test, try_join};
@@ -161,6 +166,8 @@ mod macros;
 pub mod task;
 
 pub mod callback;
+
+pub mod sync;
 
 #[cfg(feature = "time")]
 #[cfg_attr(feature = "feature-doc-cfg", doc(cfg(feature = "time")))]

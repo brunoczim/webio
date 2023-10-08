@@ -602,6 +602,7 @@ pub fn test(raw_attribute: TokenStream, raw_input: TokenStream) -> TokenStream {
                 #[::webio::wasm_bindgen_test::wasm_bindgen_test]
                 #(#attrs)*
                 #visibility async #fn_token #ident() {
+                    webio::set_test_panic_hook();
                     let (): () = #body;
                 }
             };
