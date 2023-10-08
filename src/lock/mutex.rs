@@ -2,12 +2,11 @@ use std::{
     cell::{Cell, RefCell, RefMut},
     collections::BTreeMap,
     fmt,
+    future::Future,
     ops::{Deref, DerefMut},
     pin::Pin,
     task::{Context, Poll, Waker},
 };
-
-use futures::Future;
 
 type Token = usize;
 

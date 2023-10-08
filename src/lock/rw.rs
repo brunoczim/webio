@@ -2,12 +2,11 @@ use std::{
     cell::{Cell, Ref, RefCell, RefMut},
     collections::{BTreeMap, BTreeSet},
     fmt,
+    future::Future,
     ops::{Deref, DerefMut},
     pin::Pin,
     task::{Context, Poll, Waker},
 };
-
-use futures::Future;
 
 type Token = usize;
 
@@ -27,7 +26,7 @@ impl Queue {
     fn new_token(&self) -> Token {
         let max_write_owner = self.write_owner;
         let max_read_owner = self.read_owners.iter().next_back().copied();
-        let max_write_on_hold = self.reads_on_hold.keys().next_back().copied();
+        let max_write_on_hold = self.writes_on_hold.keys().next_back().copied();
         let max_read_on_hold = self.reads_on_hold.keys().next_back().copied();
         max_write_owner
             .max(max_read_owner)
@@ -123,11 +122,13 @@ impl Queue {
     fn release_read(&mut self, token: Token) {
         self.read_owners.remove(&token);
 
-        if let Some((write_token, write_waker)) =
-            self.writes_on_hold.pop_first()
-        {
-            self.write_owner = Some(write_token);
-            write_waker.wake();
+        if self.read_owners.is_empty() {
+            if let Some((write_token, write_waker)) =
+                self.writes_on_hold.pop_first()
+            {
+                self.write_owner = Some(write_token);
+                write_waker.wake();
+            }
         }
     }
 }
