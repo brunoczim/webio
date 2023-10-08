@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use webio::{
-    lock::{Mutex, RwLock},
+    sync::{Mutex, RwLock},
     task,
 };
 

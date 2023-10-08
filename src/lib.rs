@@ -167,7 +167,7 @@ pub mod task;
 
 pub mod callback;
 
-pub mod lock;
+pub mod sync;
 
 #[cfg(feature = "time")]
 #[cfg_attr(feature = "feature-doc-cfg", doc(cfg(feature = "time")))]

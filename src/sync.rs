@@ -6,8 +6,8 @@
 //! insert an `.await` between two steps.
 
 mod mutex;
-mod rw;
+mod rw_lock;
 
 pub use mutex::{Mutex, MutexGuard};
 
-pub use rw::{ReadGuard, RwLock, WriteGuard};
+pub use rw_lock::{ReadGuard, RwLock, WriteGuard};
